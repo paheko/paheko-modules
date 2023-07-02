@@ -1,0 +1,38 @@
+{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{:admin_header title="Configuration"}}
+
+<nav class="tabs">
+	<aside>{{:linkbutton shape="plus" label="Nouvel événement" href="edit.html?new=1"}}</aside>
+</nav>
+
+{{if $_GET.ok}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{#list select="$$.label AS \'Événément\'" where="$$.type = 'event'"}}
+	<tr>
+		<th>{{$label}}</th>
+		<td class="actions">
+			{{:linkbutton label="Configurer les créneaux" href="slots.html?id=%s"|args:$key shape="calendar"}}
+			{{:linkbutton label="Modifier" href="edit.html?id=%s"|args:$key shape="edit"}}
+			{{:linkbutton label="Supprimer" href="delete.html?id=%s"|args:$key shape="delete"}}
+		</td>
+	</tr>
+{{else}}
+	<p class="alert block">
+		Il n'y a aucun événement configuré.<br />
+		{{:linkbutton shape="plus" label="Nouvel événement" href="edit.html?new=1"}}
+	</p>
+{{/list}}
+
+<div class="help block">
+	<h4>Accès à la réservation</h4>
+	<p>Les membres connectés pourront réserver un créneau via le menu « Réservations » à gauche.</p>
+	<p>Les non-membres pourront réserver un créneau via l'adresse suivante :<br />
+		{{:input copy=true name="url" type="url" readonly=true default=$module.url size=$module.url|strlen}}
+		{{:linkbutton href=$module.url label="Ouvrir" target="_blank" shape="eye"}}
+	</p>
+	<p>Les gestionnaires pourront visionner les réservations et gérer les inscrit⋅e⋅s dans le menu « Réservations ».</p>
+</div>
+
+{{:admin_footer}}

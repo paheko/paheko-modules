@@ -1,0 +1,56 @@
+{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{:admin_header title="Configuration d'un créneau"}}
+
+{{if $_GET.id}}
+	{{#load key=$_GET.id assign="slot"}}
+		{{:assign key=$key}}
+		{{:assign event=$event}}
+	{{else}}
+		{{:error message="Créneau introuvable"}}
+	{{/load}}
+{{else}}
+	{{:assign key=""|uuid}}
+	{{:assign event=$_GET.new}}
+{{/if}}
+
+{{#form on="save"}}
+	{{:save key=$key
+		schema="./slot.schema.json"
+		type="slot"
+		event=$event
+		label=$_POST.label|trim
+		description=$_POST.description|trim
+		email=$_POST.email|boolval
+		fields=$_POST.fields|array_transpose
+	}}
+	{{:redirect to="./config.html?ok=1"}}
+{{/form}}
+
+{{:form_errors}}
+
+{{:include file="./_common.tpl" keep="frequencies,days"}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Date et heures</legend>
+		<dl>
+			{{:input type="select" name="frequency" required=true label="Fréquence" options=$frequencies source=$slot default="every"}}
+		</dl>
+		<dl class="freq-only">
+			{{:input type="date" name="date" required=true label="Date" source=$slot}}
+		</dl>
+		<dl class="freq-every">
+			{{:input type="select" name="day" required=true label="Jour" options=$days source=$slot}}
+		</dl>
+		<dl>
+			{{:input type="time" name="start" required=true label="Heure de début" source=$slot}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" shape="right" name="save" label="Enregistrer" class="main"}}
+	</p>
+
+</form>
+
+{{:admin_footer}}

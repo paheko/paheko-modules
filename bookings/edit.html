@@ -1,0 +1,97 @@
+{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{:admin_header title="Configuration d'un événement"}}
+
+{{if $_GET.id}}
+	{{#load key=$_GET.id assign="event"}}
+		{{:assign key=$key}}
+	{{else}}
+		{{:error message="Événément introuvable"}}
+	{{/load}}
+{{else}}
+	{{:assign key=""|uuid}}
+{{/if}}
+
+{{#form on="save"}}
+	{{:save key=$key
+		schema="./event.schema.json"
+		type="event"
+		label=$_POST.label|trim
+		description=$_POST.description|trim
+		email=$_POST.email|boolval
+		fields=$_POST.fields|array_transpose
+	}}
+	{{:redirect to="./config.html?ok=1"}}
+{{/form}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Événément</legend>
+		<dl>
+			{{:input type="text" name="label" label="Nom" required=true source=$event}}
+			{{:input type="textarea" cols=70 rows=7 name="description" label="Description" required=false source=$event help="Sera affiché sur la page d'inscription à l'événement"}}
+			<dd class="help">Syntaxe MarkDown acceptée. {{:linkbutton shape="help" target="_dialog" href="!static/doc/markdown.html" label="Aide de la syntaxe MarkDown"}}</dd>
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Informations à demander aux inscrits</legend>
+		<dl>
+			<dd class="help">Pour chaque inscription, le nom de la personne sera toujours demandé.</dd>
+			{{:input type="checkbox" name="email" value="1" label="Demander aussi l'adresse e-mail" help="Une confirmation d'inscription sera envoyée" source=$event}}
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Autres informations à demander</legend>
+		<table class="list fields">
+			<thead>
+				<tr>
+					<td>Type de champ</td>
+					<td>Libellé du champ</td>
+					<td>Texte d'aide en dessous du champ</td>
+					<td>Obligatoire&nbsp;?</td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody>
+			{{:assign var="types"
+				checkbox="Case à cocher"
+				date="Date"
+				datetime="Date et heure"
+				tel="Numéro de téléphone"
+				text="Texte"
+				textarea="Texte multi-lignes"
+			}}
+			{{#foreach from=$event.fields item="field"}}
+				<tr>
+					<td>{{:input type="select" name="fields[type][]" default=$field.type required=true options=$types}}</td>
+					<td>{{:input type="text" name="fields[label][]" default=$field.label required=true}}</td>
+					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
+					<td>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required label="Obligatoire"}}</td>
+					<td class="actions">{{:button shape="minus" label="Enlever cette ligne" onclick="this.parentNode.parentNode.remove();"}}</td>
+				</tr>
+			{{else}}
+				<tr>
+					<td>{{:input type="select" name="fields[type][]" options=$types default="text" required=true}}</td>
+					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
+					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
+					<td>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required label="Obligatoire"}}</td>
+					<td class="actions">{{:button shape="minus" label="Enlever cette ligne" onclick="this.parentNode.parentNode.remove();"}}</td>
+				</tr>
+			{{/foreach}}
+			</tbody>
+		</table>
+		<p class="actions">
+			{{:button shape="plus" label="Ajouter une ligne" onclick="var a = $('.fields tbody')[0].lastElementChild; console.log(a); a.parentNode.append(a.cloneNode(true));"}}
+		</p>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" shape="right" name="save" label="Enregistrer" class="main"}}
+	</p>
+
+</form>
+
+{{:admin_footer}}

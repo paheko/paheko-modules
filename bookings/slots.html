@@ -1,0 +1,50 @@
+{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{:admin_header title="Configuration des créneaux"}}
+
+{{#load key=$_GET.id assign="event"}}
+	{{:assign key=$key}}
+{{else}}
+	{{:error message="Événément introuvable"}}
+{{/load}}
+
+<nav class="tabs">
+	<aside>{{:linkbutton shape="plus" label="Nouveau créneau" href="edit_slot.html?new=%s"|args:$key}}</aside>
+</nav>
+
+{{#load count=true where="$$.type = 'slots' AND $$.event = :event" :event=$key}}
+	{{if $count}}
+		<table class="list">
+			<tbody>
+			{{#load where="$$.type = 'slots' AND $$.event = :event" :event=$key}}
+				<tr>
+					<th>
+						{{if $date}}
+							{{$date|date_short}}
+						{{else}}
+						{{/if}}
+						{{if $end}}
+							de {{$start}} à {{$end}}
+						{{else}}
+							à {{$start}}
+						{{/if}}
+					</th>
+					<td class="actions">
+						{{:linkbutton label="Modifier" href="edit_slot.html?id=%s"|args:$key shape="edit"}}
+						{{:linkbutton label="Supprimer" href="delete_slot.html?id=%s"|args:$key shape="delete"}}
+					</td>
+				</tr>
+			{{/load}}
+			</tbody>
+		</table>
+
+	{{else}}
+
+		<p class="alert block">
+			Il n'y a aucun créneau configuré.<br />
+			{{:linkbutton shape="plus" label="Nouveau créneau" href="edit_slot.html?new=%s"|args:$key}}
+		</p>
+
+	{{/if}}
+{{/load}}
+
+{{:admin_footer}}
