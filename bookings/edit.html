@@ -13,7 +13,7 @@
 
 {{#form on="save"}}
 	{{:save key=$key
-		schema="./event.schema.json"
+		validate_schema="./event.schema.json"
 		type="event"
 		label=$_POST.label|trim
 		description=$_POST.description|trim

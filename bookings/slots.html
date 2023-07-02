@@ -1,33 +1,50 @@
 {{#restrict section="config" level="admin" block=true}}{{/restrict}}
-{{:admin_header title="Configuration des créneaux"}}
 
-{{#load key=$_GET.id assign="event"}}
-	{{:assign key=$key}}
-{{else}}
+{{if $_GET.id}}
+	{{#load key=$_GET.id assign="event"}}{{/load}}
+{{/if}}
+
+{{if !$event.key}}
 	{{:error message="Événément introuvable"}}
-{{/load}}
+{{/if}}
+
+{{:admin_header title="%s — Créneaux"|args:$event.label}}
 
 <nav class="tabs">
-	<aside>{{:linkbutton shape="plus" label="Nouveau créneau" href="edit_slot.html?new=%s"|args:$key}}</aside>
+	<aside>{{:linkbutton shape="plus" label="Nouveau créneau" href="edit_slot.html?new=%s"|args:$event.key}}</aside>
+	{{:linkbutton shape="left" label="Retour" href="config.html"}}
 </nav>
 
-{{#load count=true where="$$.type = 'slots' AND $$.event = :event" :event=$key}}
+{{if $_GET.ok}}
+	<p class="block confirm">Créneaux enregistrés.</p>
+{{/if}}
+
+{{:include file="./_common.tpl" keep="frequencies,days"}}
+
+{{#load count=true where="$$.type = 'slot' AND $$.event = :event" :event=$event.key}}
 	{{if $count}}
 		<table class="list">
 			<tbody>
-			{{#load where="$$.type = 'slots' AND $$.event = :event" :event=$key}}
+			{{#load where="$$.type = 'slot' AND $$.event = :event" :event=$event.key order="$$.date, $$.day, $$.open"}}
 				<tr>
 					<th>
 						{{if $date}}
 							{{$date|date_short}}
 						{{else}}
+							{{:assign var="f" from="frequencies.%s"|args:$frequency}}
+							{{:assign var="d" from="days.%s"|args:$day}}
+							{{$f}}
+							{{$d}}
 						{{/if}}
-						{{if $end}}
-							de {{$start}} à {{$end}}
+						{{if $close}}
+							de {{$open}} à {{$close}}
 						{{else}}
-							à {{$start}}
+							à {{$open}}
 						{{/if}}
 					</th>
+					<td>
+						{{$seats}} places
+					</td>
 					<td class="actions">
 						{{:linkbutton label="Modifier" href="edit_slot.html?id=%s"|args:$key shape="edit"}}
 						{{:linkbutton label="Supprimer" href="delete_slot.html?id=%s"|args:$key shape="delete"}}

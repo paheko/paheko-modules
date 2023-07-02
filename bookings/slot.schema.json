@@ -21,7 +21,7 @@
 		"day": {
 			"description": "Jour",
 			"type": ["string", "null"],
-			"enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+			"enum": [null, "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 		},
 		"open": {
 			"description": "Heure de début",
@@ -39,11 +39,7 @@
 			"description": "Nombre de places",
 			"type": "integer",
 			"minimum": 0
-		},
-		"split": {
-			"description": "Séparer par créneaux de X minutes",
-			"type": ["null", "integer"]
-		},
+		}
 	},
-	"required": ["event," "date", "frequency", "day", "open", "close", "seats", "split"]
+	"required": ["event", "date", "frequency", "day", "open", "close", "seats"]
 }

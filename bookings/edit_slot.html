@@ -13,26 +13,52 @@
 	{{:assign event=$_GET.new}}
 {{/if}}
 
+{{:include file="./_common.tpl" keep="frequencies,days"}}
+
 {{#form on="save"}}
+	{{if !$frequencies|keys|has:$_POST.frequency}}
+		{{:error message="Fréquence invalide"}}
+	{{/if}}
+	{{if $_POST.frequency == 'only'}}
+		{{:assign date=$_POST.date|parse_date}}
+		{{:assign day=null}}
+		{{if !$date}}
+			{{:error message="Date invalide"}}
+		{{/if}}
+	{{else}}
+		{{:assign date=null}}
+		{{:assign day=$_POST.day}}
+		{{if !$days|keys|has:$day}}
+			{{:error message="Jour invalide"}}
+		{{/if}}
+	{{/if}}
+	{{if !$_POST.open|parse_time}}
+		{{:error message="Heure de début invalide"}}
+	{{/if}}
+
+	{{if $_POST.close && !$_POST.close|parse_time}}
+		{{:error message="Heure de fin invalide"}}
+	{{/if}}
+
 	{{:save key=$key
-		schema="./slot.schema.json"
+		validate_schema="./slot.schema.json"
 		type="slot"
 		event=$event
-		label=$_POST.label|trim
-		description=$_POST.description|trim
-		email=$_POST.email|boolval
-		fields=$_POST.fields|array_transpose
+		frequency=$_POST.frequency
+		day=$day
+		date=$date|or:null
+		open=$_POST.open|parse_time
+		close=$_POST.close|parse_time|or:null
+		seats=$_POST.seats|intval
 	}}
-	{{:redirect to="./config.html?ok=1"}}
+	{{:redirect to="./slots.html?id=%s&ok=1"|args:$event}}
 {{/form}}
 
 {{:form_errors}}
 
-{{:include file="./_common.tpl" keep="frequencies,days"}}
-
 <form method="post" action="">
 	<fieldset>
-		<legend>Date et heures</legend>
+		<legend>Date et heure</legend>
 		<dl>
 			{{:input type="select" name="frequency" required=true label="Fréquence" options=$frequencies source=$slot default="every"}}
 		</dl>
@@ -43,7 +69,15 @@
 			{{:input type="select" name="day" required=true label="Jour" options=$days source=$slot}}
 		</dl>
 		<dl>
-			{{:input type="time" name="start" required=true label="Heure de début" source=$slot}}
+			{{:input type="time" name="open" required=true label="Heure de début" source=$slot}}
+			{{:input type="time" name="close" label="Heure de fin" source=$slot}}
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Jauge</legend>
+		<dl>
+			{{:input type="number" name="seats" required=true min=0 step=1 label="Nombre de places disponibles" source=$slot}}
 		</dl>
 	</fieldset>
 
@@ -52,5 +86,17 @@
 	</p>
 
 </form>
+
+<script type="text/javascript">
+function selectFrequency () {
+	var v = $('#f_frequency').value;
+
+	g.toggle('.freq-only', v == 'only');
+	g.toggle('.freq-every', v != 'only');
+}
+
+$('#f_frequency').onchange = selectFrequency;
+selectFrequency();
+</script>
 
 {{:admin_footer}}
