@@ -6,7 +6,13 @@
 		<th>{{$date|date_short}}</th>
 		<td>{{$label}}</td>
 		<td>{{$debit|money_currency}}</td>
-		<td class="actions">{{:linkbutton href="%s?me=%d&print=pdf"|args:$module.url:$id shape="download" label="Télécharger le reçu (PDF)"}}</td>
+		<td class="actions">
+			{{if $pdf_enabled}}
+				{{:linkbutton href="%s?me=%d&print=pdf"|args:$module.url:$id shape="download" label="Télécharger le reçu (PDF)"}}
+			{{else}}
+				{{:linkbutton href="%s?me=%d"|args:$module.url:$id target="_dialog" shape="document" label="Voir le reçu"}}
+			{{/if}}
+		</td>
 	</tr>
 {{/transactions}}
 </table>

@@ -20,7 +20,9 @@
 			</dl>
 		</fieldset>
 		<p class="submit">
-			{{:button type="submit" label="Générer en PDF" name="pdf" shape="pdf" class="main"}}
+			{{if $pdf_enabled}}
+				{{:button type="submit" label="Générer en PDF" name="pdf" shape="pdf" class="main"}}
+			{{/if}}
 			{{:button type="submit" label="Prévisualiser" name="preview" shape="eye"}}
 			{{:button type="submit" label="Imprimer la planche" name="print" shape="print"}}
 		</p>
