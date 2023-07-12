@@ -1,0 +1,151 @@
+{{if $my_bookings}}
+
+	<form method="post" action="{$self_url}">
+		<fieldset class="mine">
+			<legend>Mes réservations</legend>
+			<dl>
+				<dt>Vous avez réservé les créneaux suivants&nbsp;:</dt>
+				<dd class="date">{$booking.date|strftime:"%A %e %B %Y à %H:%M"}</dd>
+				{if $booking.nom_categorie}<dd>Créneau : {$booking.nom_categorie}</dd>{/if}
+				{if $booking.numero}<dd>Numéro de membre : {$booking.numero}</dd>{/if}
+				{if $booking.nom}<dd>Nom : {$booking.nom}</dd>{/if}
+				{if $booking.champ}<dd>{$cat.champ.title} : {$booking.champ}</dd>{/if}
+				<dd><input type="submit" name="cancel" value="Annuler ma réservation" /></dd>
+			</dl>
+		</fieldset>
+	</form>
+
+{{else}}
+
+	{{if $_GET.event}}
+		{{#load type="event" key=$_GET.event assign="event"}}
+		{{else}}
+			{{:error message="L'événement indiqué est introuvable"}}
+		{{/load}}
+	{{else}}
+		{{#load type="event" group="$$.type HAVING COUNT(*) = 1" assign="event"}}
+		{{/load}}
+	{{/if}}
+
+	{{if !$event}}
+
+		<section class="booking_events">
+			{{#load type="event" order="$$.label"}}
+			<article>
+				<h2><a href="?event={{$key}}">{{$label}}</a></h2>
+			</article>
+			{{else}}
+				<p class="block alert">Il n'y a aucun événement réservable.</p>
+			{{/load}}
+		</section>
+
+	{{else}}
+
+		<form method="post" action="" class="booking_event">
+
+		<article>
+			<h2>{{$event.label}}</h2>
+
+			{{if $event.description}}
+				{{$event.description|raw|markdown}}
+			{{/if}}
+		</article>
+
+		<fieldset class="slots">
+		<legend>Créneaux disponibles</legend>
+		{{:assign last_date=null}}
+		{{#load :event=$event.key where="$$.type = 'slot' AND $$.event = :event AND $$.seats > 0 AND ($$.date IS NULL OR ($$.date > date() OR ($$.date = date() AND $$.open <= strftime('%H:%M'))))" order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
+			{{if $frequency == 'this'}}
+				{{:assign timestamp="%s %s, %s"|args:$frequency:$day:$open|strtotime}}
+			{{elseif $frequency != 'other'}}
+				{{:assign timestamp="%s %s of this month, %s"|args:$frequency:$day:$open|strtotime}}
+			{{else}}
+				{{:assign timestamp="%s %s"|args:$date:$open|strtotime}}
+			{{/if}}
+
+			{{* Make sure slot is in the future, can't book for past dates *}}
+			{{if $frequency != 'other' && $timestamp < $now|date:'U'}}
+				{{if $frequency == 'this'}}
+					{{:assign timestamp="next %s %s, %s"|args:$frequency:$day:$open|strtotime}}
+				{{else}}
+					{{:assign timestamp="%s %s of next month, %s"|args:$frequency:$day:$open|strtotime}}
+				{{/if}}
+			{{/if}}
+
+			{{* This shouldn't happen, but make sure it doesn't *}}
+			{{if $timestamp < $now|date:'U'}}
+				{{:continue}}
+			{{/if}}
+
+			{{:assign this_date=$timestamp|date:"Y-m-d"}}
+			{{:assign this_datetime=$timestamp|date:"Y-m-d H:i"}}
+
+			{{#load count=true where="$$.slot=:slot AND $$.date = :date" :slot=$slot.key :date=$this_date}}
+				{{:assign count=$count}}
+			{{else}}
+				{{:assign count=0}}
+			{{/load}}
+
+			{{:assign available="%d-%d"|math:$seats:$count}}
+
+			{{if $this_date != $last_date}}
+				{{if $last_date}}
+						</dl>
+					</article>
+				{{/if}}
+				{{:assign last_date=$this_date}}
+				<article>
+					<h2>{{$timestamp|date_long}}</h2>
+					<dl>
+			{{/if}}
+
+			{{if !$available}}
+				{{:assign disabled=true}}
+			{{else}}
+				{{:assign disabled=false}}
+			{{/if}}
+
+			{{if $available == 1}}
+				{{:assign label="1 place disponible"}}
+			{{else}}
+				{{:assign label="%d places disponibles"|args:$available}}
+			{{/if}}
+
+			{{:input type="radio-btn" name="book[%s]"|args:$key value=$this_datetime label=$timestamp|date_hour disabled=$disabled help=$label}}
+
+		{{else}}
+			<p class="alert block">Aucun créneau disponible.</p>
+		{{/load}}
+
+		{{if $last_date}}
+			</dl>
+		</article>
+
+		</fieldset>
+
+		<fieldset class="info">
+			<legend>Informations</legend>
+			<dl>
+				{{:input type="text" name="name" label="Prénom et nom" required=true default=$logged_user._name}}
+				{{:input type="email" name="email" label="Adresse e-mail" required=$event.email help="Une confirmation d'inscription vous sera envoyée à cette adresse" default=$logged_user._email}}
+				{{#foreach from=$event.fields item="field"}}
+					{{if $field.type == 'checkbox'}}
+						{{:assign value="Coché"}}
+					{{else}}
+						{{:assign value=null}}
+					{{/if}}
+					{{:input name="fields[]" label=$field.label type=$field.type help=$field.help required=$field.required value=$value}}
+
+				{{/foreach}}
+			</dl>
+		</fieldset>
+
+		<p class="submit">
+			{{:button type="submit" name="book" label="Confirmer la réservation" shape="right" class="main"}}
+		</p>
+		{{/if}}
+	</form>
+	{{/if}}
+
+{{/if}}
+

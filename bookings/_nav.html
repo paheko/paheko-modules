@@ -1,0 +1,11 @@
+{{#restrict section="users" level="write"}}
+<nav class="tabs">
+	<ul>
+		<li{{if $current == 'index'}} class="current"{{/if}}><a href="./">Inscription</a></li>
+		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="bookings.html">Voir les inscrits</a></li>
+		{{#restrict section="config" level="admin"}}
+			<li{{if $current == 'config'}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
+		{{/restrict}}
+	</ul>
+</nav>
+{{/restrict}}

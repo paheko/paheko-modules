@@ -14,13 +14,16 @@
 				"type": "object",
 				"properties": {
 					"type": {
-						"type": "string",
+						"type": "string"
 					},
 					"label": {
-						"type": "string",
+						"type": "string"
 					},
 					"help": {
-						"type": ["string", "null"],
+						"type": ["string", "null"]
+					},
+					"required": {
+						"type": "boolean"
 					}
 				},
 				"required": ["type", "label", "help"]

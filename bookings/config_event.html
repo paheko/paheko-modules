@@ -11,14 +11,32 @@
 	{{:assign key=""|uuid}}
 {{/if}}
 
+{{:assign var="types"
+	checkbox="Case à cocher"
+	date="Date"
+	datetime="Date et heure"
+	tel="Numéro de téléphone"
+	text="Texte"
+	textarea="Texte multi-lignes"
+}}
+
 {{#form on="save"}}
+	{{#foreach from=$_POST.fields|array_transpose item="field"}}
+		{{if !$field.label|trim || !$field.type}}
+			{{:continue}}
+		{{/if}}
+		{{if !$types|keys|has:$field.type}}
+			{{:error message="Type inconnu: %s"|args:$field.type}}
+		{{/if}}
+		{{:assign var="fields." required=$field.required|boolval type=$field.type label=$field.label help=$field.help|or:null}}
+	{{/foreach}}
 	{{:save key=$key
 		validate_schema="./event.schema.json"
 		type="event"
 		label=$_POST.label|trim
 		description=$_POST.description|trim
 		email=$_POST.email|boolval
-		fields=$_POST.fields|array_transpose
+		fields=$fields|arrayval
 	}}
 	{{:redirect to="./config.html?ok=1"}}
 {{/form}}
@@ -56,25 +74,17 @@
 				</tr>
 			</thead>
 			<tbody>
-			{{:assign var="types"
-				checkbox="Case à cocher"
-				date="Date"
-				datetime="Date et heure"
-				tel="Numéro de téléphone"
-				text="Texte"
-				textarea="Texte multi-lignes"
-			}}
 			{{#foreach from=$event.fields item="field"}}
 				<tr>
-					<td>{{:input type="select" name="fields[type][]" default=$field.type required=true options=$types}}</td>
-					<td>{{:input type="text" name="fields[label][]" default=$field.label required=true}}</td>
+					<td>{{:input type="select" name="fields[type][]" default=$field.type options=$types}}</td>
+					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
 					<td>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required label="Obligatoire"}}</td>
 					<td class="actions">{{:button shape="minus" label="Enlever cette ligne" onclick="this.parentNode.parentNode.remove();"}}</td>
 				</tr>
 			{{else}}
 				<tr>
-					<td>{{:input type="select" name="fields[type][]" options=$types default="text" required=true}}</td>
+					<td>{{:input type="select" name="fields[type][]" options=$types default="text"}}</td>
 					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
 					<td>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required label="Obligatoire"}}</td>

@@ -2,7 +2,7 @@
 {{:admin_header title="Configuration"}}
 
 <nav class="tabs">
-	<aside>{{:linkbutton shape="plus" label="Nouvel événement" href="edit.html?new=1"}}</aside>
+	<aside>{{:linkbutton shape="plus" label="Nouvel événement" href="config_event.html?new=1"}}</aside>
 </nav>
 
 {{if $_GET.ok}}
@@ -13,15 +13,15 @@
 	<tr>
 		<th>{{$label}}</th>
 		<td class="actions">
-			{{:linkbutton label="Configurer les créneaux" href="slots.html?id=%s"|args:$key shape="calendar"}}
-			{{:linkbutton label="Modifier" href="edit.html?id=%s"|args:$key shape="edit"}}
-			{{:linkbutton label="Supprimer" href="delete.html?id=%s"|args:$key shape="delete"}}
+			{{:linkbutton label="Configurer les créneaux" href="config_event_slots.html?id=%s"|args:$key shape="calendar"}}
+			{{:linkbutton label="Modifier" href="config_event.html?id=%s"|args:$key shape="edit"}}
+			{{:linkbutton label="Supprimer" href="config_event_delete.html?id=%s"|args:$key shape="delete"}}
 		</td>
 	</tr>
 {{else}}
 	<p class="alert block">
 		Il n'y a aucun événement configuré.<br />
-		{{:linkbutton shape="plus" label="Nouvel événement" href="edit.html?new=1"}}
+		{{:linkbutton shape="plus" label="Nouvel événement" href="config_event.html?new=1"}}
 	</p>
 {{/list}}
 

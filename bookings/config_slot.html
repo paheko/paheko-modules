@@ -1,5 +1,4 @@
 {{#restrict section="config" level="admin" block=true}}{{/restrict}}
-{{:admin_header title="Configuration d'un créneau"}}
 
 {{if $_GET.id}}
 	{{#load key=$_GET.id assign="slot"}}
@@ -10,9 +9,14 @@
 	{{/load}}
 {{else}}
 	{{:assign key=""|uuid}}
-	{{:assign event=$_GET.new}}
+	{{#load key=$_GET.new}}
+		{{:assign event=$key}}
+	{{else}}
+		{{:error message="Événement inconnu"}}
+	{{/load}}
 {{/if}}
 
+{{:admin_header title="Configuration d'un créneau"}}
 {{:include file="./_common.tpl" keep="frequencies,days"}}
 
 {{#form on="save"}}
@@ -51,7 +55,7 @@
 		close=$_POST.close|parse_time|or:null
 		seats=$_POST.seats|intval
 	}}
-	{{:redirect to="./slots.html?id=%s&ok=1"|args:$event}}
+	{{:redirect to="./config_event_slots.html?id=%s&ok=1"|args:$event}}
 {{/form}}
 
 {{:form_errors}}

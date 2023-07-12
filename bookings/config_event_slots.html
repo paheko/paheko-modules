@@ -46,8 +46,8 @@
 						{{$seats}} places
 					</td>
 					<td class="actions">
-						{{:linkbutton label="Modifier" href="edit_slot.html?id=%s"|args:$key shape="edit"}}
-						{{:linkbutton label="Supprimer" href="delete_slot.html?id=%s"|args:$key shape="delete"}}
+						{{:linkbutton label="Modifier" href="config_slot.html?id=%s"|args:$key shape="edit"}}
+						{{:linkbutton label="Supprimer" href="config_delete_slot.html?id=%s"|args:$key shape="delete"}}
 					</td>
 				</tr>
 			{{/load}}
@@ -58,7 +58,7 @@
 
 		<p class="alert block">
 			Il n'y a aucun créneau configuré.<br />
-			{{:linkbutton shape="plus" label="Nouveau créneau" href="edit_slot.html?new=%s"|args:$key}}
+			{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key}}
 		</p>
 
 	{{/if}}
