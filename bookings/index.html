@@ -1,10 +1,18 @@
 {{:assign var="custom_css." value="./style.css"}}
 {{:assign var="custom_css." value="/content.css"}}
+{{if !$logged_user}}{{:assign layout="public"}}{{/if}}
+{{:admin_header title="Réservations" custom_css=$custom_css layout=$layout}}
 
-{{:admin_header title="Réservations" hide_title=$hide_title custom_css=$custom_css}}
-
-{{:include file="./_nav.html" current="index"}}
+{{if $logged_user}}
+	{{:include file="./_nav.html" current="index"}}
+{{/if}}
 
 {{:include file="./_form.html" current="index"}}
+
+{{if !$logged_user}}
+	<p>
+		{{:linkbutton shape="left" label="Retour à notre site" href=$site_url}}
+	</p>
+{{/if}}
 
 {{:admin_footer}}

@@ -15,12 +15,6 @@
 
 {{:form_errors}}
 
-{{if $_GET.b && $_GET.booked}}
-<p class="confirm block">
-	Votre réservation a bien été enregistrée.
-</p>
-{{/if}}
-
 {{if $_GET.deleted}}
 <p class="confirm block" data-delete-booking="{{$_GET.deleted}}">
 	La réservation a bien été annulée.
@@ -30,6 +24,12 @@
 <section class="my_bookings">
 {{* New booking *}}
 {{if $_GET.b}}
+	{{if $_GET.booked}}
+	<p class="confirm block">
+		Votre réservation a bien été enregistrée.
+	</p>
+	{{/if}}
+
 	{{#load type="booking" key=$_GET.b}}
 		{{#load type="event" key=$event assign="e"}}{{/load}}
 		{{:assign var="booking" label=$e.label event=$e.key key=$key date_str=$date|date_long date=$date|strtotime time_str=$date|date_hour}}
@@ -78,6 +78,8 @@
 {{if !$event}}
 
 	<section class="booking_events">
+		<h1 class="ruler">Réservations</h1>
+		<p class="help">Choisir un événement&nbsp;:</p>
 		{{#load type="event" order="$$.label"}}
 		<article>
 			<h2><a href="?event={{$key}}">{{$label}}</a></h2>

@@ -30,7 +30,7 @@
 						"type": "string"
 					},
 					"value": {
-						"type": "string"
+						"type": ["null", "string"]
 					}
 				}
 			}
