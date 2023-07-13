@@ -3,7 +3,7 @@
 	"type": "object",
 	"properties": {
 		"slot": {
-			"type": "string"
+			"type": ["null", "string"]
 		},
 		"event": {
 			"type": "string"

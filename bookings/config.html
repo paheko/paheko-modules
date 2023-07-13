@@ -13,7 +13,9 @@
 	<tr>
 		<th>{{$label}}</th>
 		<td class="actions">
+			{{if !$use_openings}}
 			{{:linkbutton label="Configurer les créneaux" href="config_event_slots.html?id=%s"|args:$key shape="calendar"}}
+			{{/if}}
 			{{:linkbutton label="Modifier" href="config_event.html?id=%s"|args:$key shape="edit"}}
 			{{:linkbutton label="Supprimer" href="config_event_delete.html?id=%s"|args:$key shape="delete"}}
 		</td>

@@ -40,10 +40,6 @@
 		{{:error message="Heure de début invalide"}}
 	{{/if}}
 
-	{{if $_POST.close && !$_POST.close|parse_time}}
-		{{:error message="Heure de fin invalide"}}
-	{{/if}}
-
 	{{:save key=$key
 		validate_schema="./slot.schema.json"
 		type="slot"
@@ -52,7 +48,6 @@
 		day=$day
 		date=$date|or:null
 		open=$_POST.open|parse_time
-		close=$_POST.close|parse_time|or:null
 		seats=$_POST.seats|intval
 	}}
 	{{:redirect to="./config_event_slots.html?id=%s&ok=1"|args:$event}}
@@ -74,7 +69,6 @@
 		</dl>
 		<dl>
 			{{:input type="time" name="open" required=true label="Heure de début" source=$slot}}
-			{{:input type="time" name="close" label="Heure de fin" source=$slot}}
 		</dl>
 	</fieldset>
 

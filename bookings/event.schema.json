@@ -8,6 +8,15 @@
 		"description": {
 			"type": ["null", "string"]
 		},
+		"use_openings": {
+			"type": "boolean"
+		},
+		"openings_seats": {
+			"type": ["null", "integer"]
+		},
+		"openings_seats_split": {
+			"type": ["null", "integer"]
+		},
 		"use_closings": {
 			"type": "boolean"
 		},
@@ -36,5 +45,5 @@
 			"type": "boolean"
 		}
 	},
-	"required": ["label", "description", "use_closings", "fields", "email"]
+	"required": ["label", "description", "use_openings", "openings_seats", "openings_seats_split", "use_closings", "fields", "email"]
 }
