@@ -9,7 +9,7 @@
 	<p class="block confirm">Configuration enregistrée.</p>
 {{/if}}
 
-{{#list select="$$.label AS \'Événément\'" where="$$.type = 'event'"}}
+{{#list select="$$.label AS \'Événément\'" where="$$.type = 'event'" order="1"}}
 	<tr>
 		<th>{{$label}}</th>
 		<td class="actions">

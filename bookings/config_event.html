@@ -2,7 +2,7 @@
 {{:admin_header title="Configuration d'un événement"}}
 
 {{if $_GET.id}}
-	{{#load key=$_GET.id assign="event"}}
+	{{#load key=$_GET.id type="event" assign="event"}}
 		{{:assign key=$key}}
 	{{else}}
 		{{:error message="Événément introuvable"}}

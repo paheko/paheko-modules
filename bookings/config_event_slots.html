@@ -11,7 +11,7 @@
 {{:admin_header title="%s — Créneaux"|args:$event.label}}
 
 <nav class="tabs">
-	<aside>{{:linkbutton shape="plus" label="Nouveau créneau" href="edit_slot.html?new=%s"|args:$event.key}}</aside>
+	<aside>{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key}}</aside>
 	{{:linkbutton shape="left" label="Retour" href="config.html"}}
 </nav>
 
@@ -21,11 +21,11 @@
 
 {{:include file="./_common.tpl" keep="frequencies,days"}}
 
-{{#load count=true where="$$.type = 'slot' AND $$.event = :event" :event=$event.key}}
+{{#load count=true type="slot" event=$event.key}}
 	{{if $count}}
 		<table class="list">
 			<tbody>
-			{{#load where="$$.type = 'slot' AND $$.event = :event" :event=$event.key order="$$.date, $$.day, $$.open"}}
+			{{#load type="slot" event=$event.key order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
 				<tr>
 					<th>
 						{{if $date}}

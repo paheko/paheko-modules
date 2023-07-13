@@ -1,4 +1,7 @@
-{{:admin_header title="Réservations" custom_css="./style.css"}}
+{{:assign var="custom_css." value="./style.css"}}
+{{:assign var="custom_css." value="/content.css"}}
+{{if !$logged_user}}{{:assign hide_title=true}}{{/if}}
+{{:admin_header title="Réservations" hide_title=$hide_title custom_css=$custom_css}}
 
 {{:include file="./_nav.html" current="index"}}
 

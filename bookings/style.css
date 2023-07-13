@@ -1,0 +1,110 @@
+.booking_event {
+	max-width: 50rem;
+}
+
+.booking_event > article > h1 {
+	padding-bottom: .8rem;
+	margin-bottom: .8rem;
+	border-bottom: .2rem solid #999;
+	text-align: center;
+}
+
+.booking_event fieldset {
+	border: none;
+	border-top: .2rem solid #999;
+}
+
+.booking_event fieldset legend {
+	text-align: center;
+	font-size: 1.5em;
+}
+
+.booking_event fieldset article {
+	max-width: 30rem;
+	margin: 1rem auto;
+}
+
+.booking_event fieldset.info {
+	text-align: center;
+}
+
+.booking_event fieldset.info .help {
+	font-size: .9em;
+}
+
+.booking_event p.submit {
+	max-width: 30rem;
+	margin: 1rem auto;
+	text-align: center;
+}
+
+.booking_event fieldset article h3 {
+	margin-bottom: .5rem;
+}
+
+form .radio-btn div {
+	background-color: #dfd;
+	border: 1px solid #ccc;
+}
+
+form .radio-btn.available_1 div {
+	background-color: #fcc;
+}
+
+form .radio-btn.available_2 div {
+	background-color: #ffc;
+}
+
+form .radio-btn.available_0 div {
+	background-color: #ccc;
+}
+
+form .radio-btn input:checked + label div {
+	background-color: #FFD580;
+	border-color: #999;
+	box-shadow: 0px 0px 5px orange;
+}
+
+input[type=radio] + label::before {
+	font-size: 1.5em;
+	color: #666;
+}
+
+.mycaptcha {
+	text-align: center;
+	padding: .5em;
+	background: #ddd;
+	border-radius: .5em;
+}
+
+.mycaptcha h4 {
+	border-bottom: .1rem solid #666;
+	margin-bottom: .5rem;
+	font-size: 1.2em;
+}
+
+.mycaptcha label {
+	display: block;
+}
+
+.booking_events article {
+	margin: 1rem;
+	font-size: 1.2em;
+}
+
+.my_bookings {
+	max-width: 40rem;
+	margin: 1rem auto;
+}
+
+.my_bookings article {
+	margin: 1rem;
+	text-align: center;
+	padding: .5em;
+	border: .2rem solid #ddd;
+	border-radius: .5em;
+}
+
+.my_bookings article form {
+	margin: 1rem 0;
+}
