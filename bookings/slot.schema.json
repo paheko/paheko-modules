@@ -35,5 +35,5 @@
 			"minimum": 0
 		}
 	},
-	"required": ["event", "date", "frequency", "day", "open", "close", "seats"]
+	"required": ["event", "date", "frequency", "day", "open", "seats"]
 }
