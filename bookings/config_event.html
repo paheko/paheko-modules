@@ -57,11 +57,13 @@
 			{{#module name="openings"}}
 				<dt>Synchronisation avec les ouvertures</dt>
 				{{:input type="checkbox" name="use_openings" value=1 source=$event label="Utiliser les horaires d'ouverture" onchange="g.toggle('.openings_options', this.checked)"}}
+				<dd class="help">Si cette case est cochée, les créneaux seront automatiquement configurés à partir des informations indiquées dans l'extension {{:link href="%sconfig.html"|args:$url label="Horaires d'ouverture"}}.<br />Sinon, il faudra configurer les créneaux manuellement.</dd>
 			</dl>
 			<dl class="openings_options{{if !$event.use_openings}} hidden{{/if}}">
 				{{:input type="number" min=0 name="openings_seats" source=$event label="Nombre de places par ouverture"}}
 				{{:assign var="split_options" 5="de 5 minutes" 10="de 10 minutes" 15="de 15 minutes" 30="de 30 minutes" 60="de 1 heure" 120="de 2 heures" 240="de 4 heures"}}
 				{{:input type="select" name="openings_seats_split" source=$event label="Répartir les places par créneaux" options=$split_options default_empty="— Ne pas répartir —"}}
+				<dd class="help">Exemple, si 8 places sont disponibles pour une ouverture de 15h00 à 19h00&nbsp;:<br/>avec une répartition par créneaux de 1 heure, seront proposés 4 créneaux de 2 places, à 15h00, 16h00, 17h00 et 18h00.</dd>
 			</dl>
 			<dl>
 				{{:input type="checkbox" name="use_closings" value=1 source=$event label="Ne pas proposer de créneaux pendant les périodes de fermeture"}}
@@ -74,19 +76,23 @@
 		<legend>Informations à demander aux inscrits</legend>
 		<dl>
 			<dd class="help">Pour chaque inscription, le nom de la personne sera toujours demandé.</dd>
-			{{:input type="checkbox" name="email" value="1" label="Demander aussi l'adresse e-mail" help="Une confirmation d'inscription sera envoyée" source=$event}}
+			{{:input type="checkbox" name="email" value="1" label="Demander aussi l'adresse e-mail" source=$event}}
+			<dd class="help">Si la personne indique une adresse e-mail, une confirmation d'inscription lui sera envoyée. Cocher cette case pour rendre l'adresse e-mail obligatoire.</dd>
 		</dl>
 	</fieldset>
 
 	<fieldset>
-		<legend>Autres informations à demander</legend>
+		<legend>Autres informations à demander aux inscrits</legend>
+		<p class="help">
+			À utiliser si l'inscription nécessite d'autres informations, comme un numéro de téléphone par exemple.
+		</p>
 		<table class="list fields">
 			<thead>
 				<tr>
 					<td>Type de champ</td>
 					<td>Libellé du champ</td>
 					<td>Texte d'aide en dessous du champ</td>
-					<td>Obligatoire&nbsp;?</td>
+					<td>Champ obligatoire&nbsp;?</td>
 					<td></td>
 				</tr>
 			</thead>
@@ -105,13 +111,13 @@
 					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
 					<td>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required label="Obligatoire"}}</td>
-					<td class="actions">{{:button shape="minus" label="Enlever cette ligne" onclick="this.parentNode.parentNode.remove();"}}</td>
+					<td class="actions">{{:button shape="minus" label="Enlever ce champ" onclick="this.parentNode.parentNode.remove();"}}</td>
 				</tr>
 			{{/foreach}}
 			</tbody>
 		</table>
 		<p class="actions">
-			{{:button shape="plus" label="Ajouter une ligne" onclick="var a = $('.fields tbody')[0].lastElementChild; console.log(a); a.parentNode.append(a.cloneNode(true));"}}
+			{{:button shape="plus" label="Ajouter un champ" onclick="var a = $('.fields tbody')[0].lastElementChild; console.log(a); a.parentNode.append(a.cloneNode(true));"}}
 		</p>
 	</fieldset>
 
