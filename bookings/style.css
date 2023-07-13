@@ -3,10 +3,13 @@
 }
 
 .booking_event > article > h1 {
-	padding-bottom: .8rem;
-	margin-bottom: .8rem;
-	border-bottom: .2rem solid #999;
+	margin-bottom: 1rem;
 	text-align: center;
+}
+
+.booking_event > article .web-content {
+	padding-top: .8rem;
+	border-top: .2rem solid #999;
 }
 
 .booking_event fieldset {
@@ -94,7 +97,7 @@ input[type=radio] + label::before {
 
 .my_bookings {
 	max-width: 40rem;
-	margin: 1rem auto;
+	margin: 1rem 5rem;
 }
 
 .my_bookings article {
@@ -107,4 +110,21 @@ input[type=radio] + label::before {
 
 .my_bookings article form {
 	margin: 1rem 0;
+}
+
+.my_bookings article h5 {
+	font-weight: normal;
+	color: #666;
+	margin: .5rem;
+}
+
+.my_bookings article h3 span {
+	border-radius: .5rem;
+	padding: .2rem .3rem;
+	color: darkred;
+	background: #fdd;
+}
+
+.booking_list article {
+	margin: 1rem;
 }

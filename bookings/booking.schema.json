@@ -18,6 +18,9 @@
 		"email": {
 			"type": ["null", "string"]
 		},
+		"id_user": {
+			"type": ["null", "integer"]
+		},
 		"fields": {
 			"type": ["null", "array"],
 			"items": {
@@ -33,5 +36,5 @@
 			}
 		}
 	},
-	"required": ["date", "slot", "event", "name", "email", "fields"]
+	"required": ["date", "slot", "event", "name", "email", "id_user", "fields"]
 }

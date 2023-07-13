@@ -1,0 +1,78 @@
+{{#restrict section="users" level="write" block=true}}{{/restrict}}
+
+{{if $_GET.event}}
+	{{#load type="event" key=$_GET.event assign="event"}}
+	{{else}}
+		{{:error message="L'événement indiqué est introuvable"}}
+	{{/load}}
+{{else}}
+	{{#load type="event" group="$$.type HAVING COUNT(*) = 1" assign="event"}}
+	{{/load}}
+{{/if}}
+
+{{if $event}}
+	{{:assign title="Inscriptions — %s"|args:$event.label}}
+{{else}}
+	{{:assign title="Inscriptions"}}
+{{/if}}
+
+{{:admin_header title=$title custom_css="./style.css"}}
+
+{{:include file="./_nav.html" current="bookings"}}
+
+{{if !$event}}
+
+	<section class="booking_events">
+		{{#load type="event" order="$$.label"}}
+		<article>
+			<h2><a href="?event={{$key}}">{{$label}}</a></h2>
+			<p>Voir les inscrits pour cet événement</p>
+		</article>
+		{{else}}
+			<p class="block alert">Il n'y a aucun événement.</p>
+		{{/load}}
+	</section>
+
+{{else}}
+
+	{{if $_GET.cancel}}
+		{{:delete key=$_GET.cancel type="booking" event=$event.key}}
+		{{:redirect to="?event=%s"|args:$event.key}}
+	{{/if}}
+
+
+	<section class="booking_list">
+
+		{{:assign current_day=null}}
+		<p class="actions">
+			{{:exportmenu right=true}}
+		</p>
+		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'" type="booking" event=$event.key where="date($$.date) >= date()" order="2"}}
+			<tr>
+				<td>
+					{{if $col1 !== $current_day}}
+						{{$date|date_long}}
+						{{:assign current_day=$col1}}
+					{{/if}}
+				</td>
+				<td>{{$date|date_hour}}</td>
+				<th>{{$name}}</th>
+				<td>
+					{{if $email}}<a href="mailto:{{$email}}">{{$email}}</a><br />{{/if}}
+					{{#foreach from=$fields item="field"}}
+						<strong>{{$field.label}}&nbsp;:</strong> {{$field.value}}<br />
+					{{/foreach}}
+				</td>
+				<td class="actions">
+					{{:linkbutton shape="delete" label="Annuler" href="?event=%s&cancel=%s"|args:$event.key:$key onclick="return confirm('Annuler ?');"}}
+				</td>
+			</tr>
+		{{else}}
+			<p class="alert block">Aucune réservation.</p>
+		{{/list}}
+
+	</section>
+{{/if}}
+
+
+{{:admin_footer}}
