@@ -176,6 +176,24 @@
 	<fieldset class="slots">
 	<legend>Créneaux disponibles</legend>
 
+	{{* Prendre en compte les périodes de fermeture depuis le module "ouvertures" *}}
+	{{if $event.use_closings}}
+		{{#module name="openings"}}
+			{{#foreach from=$config.closed item="slot"}}
+				{{:assign
+					start="%s %s, 00:00:00"|args:$slot.close_day:$slot.close_month|strtotime
+					end="%s %s, 23:59:59"|args:$slot.reopen_day:$slot.reopen_month|strtotime
+				}}
+				{{if $end < $start}}
+					{{:assign
+						end="%s %s, 23:59:59, +1 year"|args:$slot.reopen_day:$slot.reopen_month|strtotime
+					}}
+				{{/if}}
+				{{:assign var="closed." start=$start end=$end}}
+			{{/foreach}}
+		{{/module}}
+	{{/if}}
+
 	{{:assign slots_available=false}}
 	{{#load
 		type="slot"
@@ -184,14 +202,14 @@
 		order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
 		{{if $frequency == 'this'}}
 			{{:assign timestamp="%s %s, %s"|args:$frequency:$day:$open|strtotime}}
-		{{elseif $frequency != 'other' && !$date}}
+		{{elseif !$date}}
 			{{:assign timestamp="%s %s of this month, %s"|args:$frequency:$day:$open|strtotime}}
 		{{else}}
 			{{:assign timestamp="%s %s"|args:$date:$open|strtotime}}
 		{{/if}}
 
 		{{* Make sure slot is in the future, can't book for past dates *}}
-		{{if $frequency != 'other' && $timestamp < $now|date:'U'}}
+		{{if $frequency != 'only' && $timestamp < $now|date:'U'}}
 			{{if $frequency == 'this'}}
 				{{:assign timestamp="next %s %s, %s"|args:$frequency:$day:$open|strtotime}}
 			{{else}}
@@ -203,6 +221,24 @@
 		{{if $timestamp < $now|date:'U'}}
 			{{:continue}}
 		{{/if}}
+
+		{{* take into account the closing dates *}}
+		{{if $event.use_closings}}
+			{{#foreach from=$closed item="closing"}}
+				{{if $closing.start <= $timestamp && $closing.end >= $timestamp}}
+					{{if $frequency == 'only'}}
+						{{:continue 2}}
+					{{elseif $frequency == 'this'}}
+						{{:assign end_date="%d+86400"|math:$closing.end|date:'Y-m-d'}}
+						{{:assign timestamp="%s, %s %s, %s"|args:$end_date:$frequency:$day:$open|strtotime}}
+					{{else}}
+						{{:assign end_date="%d+86400"|math:$closing.end|date:'Y-m'}}
+						{{:assign timestamp="%s, %s %s, %s"|args:$end_date:$frequency:$day:$open|strtotime}}
+					{{/if}}
+				{{/if}}
+			{{/foreach}}
+		{{/if}}
+
 		{{:assign .="slots.%d"|args:$timestamp}}
 	{{/load}}
 

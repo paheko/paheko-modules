@@ -35,6 +35,7 @@
 		type="event"
 		label=$_POST.label|trim
 		description=$_POST.description|trim
+		use_closings=$_POST.use_closings|boolval
 		email=$_POST.email|boolval
 		fields=$fields|arrayval
 	}}
@@ -50,6 +51,11 @@
 			{{:input type="text" name="label" label="Nom" required=true source=$event}}
 			{{:input type="textarea" cols=70 rows=7 name="description" label="Description" required=false source=$event help="Sera affiché sur la page d'inscription à l'événement"}}
 			<dd class="help">Syntaxe MarkDown acceptée. {{:linkbutton shape="help" target="_dialog" href="!static/doc/markdown.html" label="Aide de la syntaxe MarkDown"}}</dd>
+			{{#module name="openings"}}
+				<dt>Périodes de fermeture</dt>
+				{{:input type="checkbox" name="use_closings" value=1 source=$event label="Ne pas proposer de créneaux pendant les périodes de fermeture"}}
+				<dd class="help">{{:linkbutton shape="settings" href="%sconfig.html"|args:$url label="Configurer les périodes de fermeture"}}</dd>
+			{{/module}}
 		</dl>
 	</fieldset>
 

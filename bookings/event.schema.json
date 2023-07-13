@@ -8,6 +8,9 @@
 		"description": {
 			"type": ["null", "string"]
 		},
+		"use_closings": {
+			"type": "boolean"
+		},
 		"fields": {
 			"type": "array",
 			"items": {
@@ -33,5 +36,5 @@
 			"type": "boolean"
 		}
 	},
-	"required": ["label", "description", "fields", "email"]
+	"required": ["label", "description", "use_closings", "fields", "email"]
 }
