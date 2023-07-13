@@ -218,18 +218,20 @@
 					{{* Split opening slot *}}
 					{{if $event.openings_seats_split}}
 						{{* Calculate number of slots *}}
-						{{:assign nb_slots="((%d-%d)/60)/%d"|math:$end:$start:$event.openings_seats_split}}
+						{{:assign nb_slots="min(%d, ((%d-%d)/60)/%d)"|math:$event.openings_seats:$end:$start:$event.openings_seats_split}}
 						{{* Calculate number of seats per slot *}}
 						{{:assign seats_per_slot="ceil(%d/%d)"|math:$event.openings_seats:$nb_slots}}
 						{{* Because we are rounding above to avoid giving 0.5 seats, we have to fix it in the last slot *}}
-						{{if "%d*%d"|math:$seats_per_slot:$nb_slots > $event.openings_seats}}
-							{{:assign last_seats="abs(%d-(%d*%d))"|math:$event.openings_seats:$seats_per_slot:$nb_slots}}
+						{{if "%d*%d"|math:$seats_per_slot:$nb_slots != $event.openings_seats}}
+							{{:assign last_seats="max(0, %d-(%d*%d))"|math:$event.openings_seats:$seats_per_slot:$nb_slots}}
 						{{/if}}
 						{{:assign last_slot="%d-1"|math:$nb_slots}}
 
+						{{*:debug nb_slots=$nb_slots seats_per_slot=$seats_per_slot last_seats=$last_seats*}}
+
 						{{#foreach count=$nb_slots key="i"}}
 							{{if $i == $last_slot}}
-								{{:assign seats=$last_seats}}
+								{{:assign seats=$last_seats|or:$seats_per_slot}}
 							{{else}}
 								{{:assign seats=$seats_per_slot}}
 							{{/if}}
