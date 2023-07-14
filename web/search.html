@@ -1,16 +1,6 @@
 {{:include file="./_head.html" title="Recherche"}}
 
 <section class="articles search">
-	<form method="get" action="">
-		<fieldset>
-			<legend>Rechercher dans le site</legend>
-			<p>
-				<input type="search" name="search" value="{{ $_GET.search }}" />
-				<input type="submit" value="Chercher" />
-			</p>
-		</fieldset>
-	</form>
-
 	{{#pages search=$_GET.search future=false count=true}}
 		{{if !$count}}
 			<p class="alert">Aucun résultat trouvé.</p>

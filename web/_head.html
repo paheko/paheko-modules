@@ -59,10 +59,17 @@
 </header>
 
 <nav class="main">
+
+{{#module name="bookings"}}
+	<p class="booking-btn">
+		<a href="{{$url}}" target="_blank"><span></span><b>Réserver un créneau</b></a>
+	</p>
+{{/module}}
+
 	<form method="get" action="{{ $root_url }}search.html" class="search-widget">
 		<p>
-			<input type="search" name="search" placeholder="Rechercher…" />
-			<input type="submit" value="»" />
+			<input type="search" name="search" placeholder="Rechercher…" value="{{ $_GET.search }}" />
+			<input type="submit" value="&rarr;" title="Lancer la recherche" />
 		</p>
 	</form>
 
