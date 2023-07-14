@@ -1,3 +1,8 @@
+{{if "random_int(1, 10)"|math == 10}}
+	{{* Prune old bookings from time to time *}}
+	{{:delete type="booking" where="date($$.date) < date('now', '-1 month')"}}
+{{/if}}
+
 {{if $_GET.event}}
 	{{#load type="event" key=$_GET.event assign="event"}}
 	{{else}}

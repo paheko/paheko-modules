@@ -60,19 +60,19 @@
 			{{#module name="openings"}}
 				<dt><strong>Synchronisation avec les ouvertures</strong></dt>
 				{{:input type="checkbox" name="use_closings" value=1 source=$event label="Ne pas proposer de créneaux pendant les périodes de fermeture"}}
-				{{:input type="checkbox" name="use_openings" value=1 source=$event label="Utiliser les horaires d'ouverture comme créneaux" onchange="g.toggle('.openings_options', this.checked)"}}
+				{{:input type="checkbox" name="use_openings" value=1 source=$event label="Utiliser les horaires d'ouverture comme créneaux"}}
 				<dd class="help">Si cette case est cochée, les créneaux seront automatiquement configurés à partir des informations indiquées dans l'extension {{:link href="%sconfig.html"|args:$url label="Horaires d'ouverture"}}.<br />Sinon, il faudra configurer les créneaux manuellement.</dd>
 				<dd class="help">{{:linkbutton shape="settings" href="%sconfig.html"|args:$url label="Configurer les ouvertures et fermetures"}}</dd>
 			</dl>
 		</fieldset>
-		<fieldset class="openings_options{{if !$event.use_openings}} hidden{{/if}}">
+		<fieldset class="openings_options">
 			<legend>Pour chaque ouverture…</legend>
 			<dl>
-				{{:input type="number" min=0 name="openings_slots" source=$event label="Nombre de créneaux par ouverture" default=1 required=true onkeyup="g.toggle('.openings_delay', this.value > 1)"}}
+				{{:input type="number" min=0 name="openings_slots" source=$event label="Nombre de créneaux par ouverture" default=1 required=true}}
 				{{:input type="number" min=0 name="openings_seats" source=$event label="Nombre de places par créneau" required=true}}
 				{{:assign var="delay_options" 5="5 minutes" 10="10 minutes" 15="15 minutes" 20="20 minutes" 30="30 minutes" 60="1 heure" 120="2 heures" 240="4 heures"}}
 			</dl>
-			<dl class="openings_delay{{if $event.openings_slots <= 1}} hidden{{/if}}">
+			<dl class="openings_delay">
 				{{:input type="select" name="openings_delay" source=$event label="Intervalle entre chaque créneau" options=$delay_options required=true}}
 			{{/module}}
 		</dl>
@@ -132,5 +132,21 @@
 	</p>
 
 </form>
+
+<script type="text/javascript">
+var c = $('#f_use_openings_1');
+function checkOpenings () {
+	g.toggle('.openings_options', c.checked);
+}
+checkOpenings();
+c.onchange = checkOpenings;
+
+var a = $('#f_openings_slots');
+function changeOpeningsSlots() {
+	g.toggle('.openings_delay', a.value > 1);
+}
+a.onkeyup = changeOpeningsSlots;
+changeOpeningsSlots();
+</script>
 
 {{:admin_footer}}
