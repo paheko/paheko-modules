@@ -18,7 +18,10 @@
 		"openings_seats": {
 			"type": ["null", "integer"]
 		},
-		"openings_seats_split": {
+		"openings_slots": {
+			"type": ["null", "integer"]
+		},
+		"openings_delay": {
 			"type": ["null", "integer"]
 		},
 		"use_closings": {
@@ -49,5 +52,5 @@
 			"type": "boolean"
 		}
 	},
-	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_seats_split", "use_closings", "fields", "email"]
+	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_slots", "openings_delay", "use_closings", "fields", "email"]
 }
