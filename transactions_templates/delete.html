@@ -1,28 +1,18 @@
 {{#restrict section="accounting" level="write" block=true}}{{/restrict}}
-{{:admin_header title="Supprimer écriture"}}
+{{:admin_header title="Supprimer modèle"}}
 
-{{if $_GET.id}}
-	{{#load assign="tpl" id=$_GET.id|intval}}{{/load}}
-{{/if}}
-
-{{if !$tpl}}
+{{#load assign="tpl" id=$_GET.id|intval}}
+{{else}}
 	{{:error message="Aucun modèle trouvé"}}
-{{/if}}
+{{/load}}
 
-{{if $_POST.delete}}
+{{#form on="delete"}}
 	{{:delete id=$tpl.id}}
 	{{:http redirect="./"}}
-{{/if}}
+{{/form}}
 
-<form method="post" action="">
-<fieldset>
-	<legend>Supprimer un modèle</legend>
-	<h3 class="warning">Supprimer le modèle "{{$tpl.name}}" ?</h3>
-</fieldset>
+{{:form_errors}}
 
-<p class="submit">
-	{{:button type="submit" shape="delete" label="Supprimer" name="delete" class="main"}}
-</p>
-</form>
+{{:delete_form legend="Supprimer un modèle" warning="Supprimer le modèle '%s' ?"|args:$tpl.name}}
 
 {{:admin_footer}}

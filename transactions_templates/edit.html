@@ -1,7 +1,7 @@
 {{#restrict section="accounting" level="write" block=true}}{{/restrict}}
 {{:admin_header title="Écriture"}}
 
-{{:assign var="types" 0="Avancé" 1="Recette" 2="Dépense" 3="Virement" 4="Dette" 5="Créance"}}
+{{:assign var="types" 1="Recette" 2="Dépense" 3="Virement" 4="Dette" 5="Créance" 0="Avancé"}}
 
 {{if $_GET.id}}
 	{{#load assign="tpl" id=$_GET.id|intval}}{{/load}}
