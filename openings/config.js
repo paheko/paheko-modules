@@ -20,12 +20,10 @@ const open_row = `<tr>
 		</select>
 	</td>
 	<td>
-		<input type="number" name="slots[open_hour][]" min="0" max="23" step="1" required="required" size="2" class="time" pattern="^\d{1,2}$" />
-		: <input type="number" name="slots[open_minutes][]" min="0" max="59" step="1" required="required" size="2" class="time" pattern="^\d{1,2}$" />
+		<input type="text" name="slots[open][]" placeholder="HH:MM" size=8 maxlength=5 pattern="\\d\\d?:\\d\\d?" />
 	</td>
 	<td>
-		<input type="number" name="slots[close_hour][]" min="0" max="23" step="1" required="required" size="2" class="time" pattern="^\d{1,2}$" />
-		: <input type="number" name="slots[close_minutes][]" min="0" max="59" step="1" required="required" size="2" class="time" pattern="^\d{1,2}$" />
+		<input type="text" name="slots[close][]" placeholder="HH:MM" size=8 maxlength=5 pattern="\\d\\d?:\\d\\d?" />
 	</td>
 	<td class="actions">
 		<button data-icon="➖" type="button">Enlever cette ligne</button>
@@ -68,15 +66,6 @@ const add_slot_row = (data) => {
 	if (!data) {
 		return;
 	}
-
-	data.open = data.open.split(':');
-	data.close = data.close.split(':');
-	data.open_hour = data.open[0];
-	data.open_minutes = data.open[1];
-	data.close_hour = data.close[0];
-	data.close_minutes = data.close[1];
-
-	delete data.open, data.close;
 
 	Object.entries(data).forEach((e) => {
 		const [k, v] = e;

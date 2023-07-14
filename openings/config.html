@@ -4,11 +4,12 @@
 {{if $_POST.save}}
 	{{#foreach from=$_POST.slots|array_transpose key="i" item="slot"}}
 		{{:assign line="%d+1"|math:$i}}
+		{{:assign open=$slot.open|explode:':' close=$slot.close|explode:':'}}
 		{{:assign var="slot"
 			day=$slot.day
 			frequency=$slot.frequency
-			open='%02d:%02d'|args:$slot.open_hour:$slot.open_minutes
-			close='%02d:%02d'|args:$slot.close_hour:$slot.close_minutes
+			open='%02d:%02d'|args:$open.0:$open.1
+			close='%02d:%02d'|args:$close.0:$close.1
 		}}
 		{{:assign var="slots.%d"|args:$i value=$slot}}
 
@@ -48,7 +49,7 @@
 		<table class="list">
 			<thead>
 				<tr>
-					<td>Occurence</td>
+					<td>Occurrence</td>
 					<td>Jour</td>
 					<td>De</td>
 					<td>À</td>
