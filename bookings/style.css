@@ -132,3 +132,8 @@ input[type=radio] + label::before {
 .booking_list article {
 	margin: 1rem;
 }
+
+p.back {
+	text-align: center;
+	margin-top: 5em;
+}
