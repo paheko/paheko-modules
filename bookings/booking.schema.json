@@ -2,6 +2,10 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["booking"]
+		},
 		"slot": {
 			"type": ["null", "string"]
 		},
@@ -36,5 +40,5 @@
 			}
 		}
 	},
-	"required": ["date", "slot", "event", "name", "email", "id_user", "fields"]
+	"required": ["type", "event", "slot", "date", "name", "email", "id_user", "fields"]
 }

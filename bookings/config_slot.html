@@ -16,7 +16,7 @@
 	{{/load}}
 {{/if}}
 
-{{:admin_header title="Configuration d'un créneau"}}
+{{:admin_header title="Configuration d'un créneau" current="module_bookings"}}
 {{:include file="./_common.tpl" keep="frequencies,days"}}
 
 {{#form on="save"}}
@@ -55,7 +55,7 @@
 
 {{:form_errors}}
 
-<form method="post" action="">
+<form method="post" action="" data-focus=1>
 	<fieldset>
 		<legend>Date et heure</legend>
 		<dl>

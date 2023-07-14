@@ -1,5 +1,5 @@
 {{#restrict section="config" level="admin" block=true}}{{/restrict}}
-{{:admin_header title="Configuration d'un événement"}}
+{{:admin_header title="Configuration d'un événement" current="module_bookings"}}
 
 {{if $_GET.id}}
 	{{#load key=$_GET.id type="event" assign="event"}}
@@ -10,6 +10,8 @@
 {{else}}
 	{{:assign key=""|uuid}}
 {{/if}}
+
+{{:include file="./_nav.html" current="config" event=null}}
 
 {{:assign var="types"
 	checkbox="Case à cocher"
@@ -34,7 +36,7 @@
 		validate_schema="./event.schema.json"
 		type="event"
 		label=$_POST.label|trim
-		description=$_POST.description|trim
+		description=$_POST.description|trim|or:null
 		use_closings=$_POST.use_closings|boolval
 		use_openings=$_POST.use_openings|boolval
 		openings_seats=$_POST.openings_seats|intval|or:null
@@ -47,7 +49,7 @@
 
 {{:form_errors}}
 
-<form method="post" action="">
+<form method="post" action="" data-focus=1>
 	<fieldset>
 		<legend>Événément</legend>
 		<dl>

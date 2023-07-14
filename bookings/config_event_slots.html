@@ -8,12 +8,9 @@
 	{{:error message="Événément introuvable"}}
 {{/if}}
 
-{{:admin_header title="%s — Créneaux"|args:$event.label}}
+{{:admin_header title="%s — Créneaux"|args:$event.label current="module_bookings"}}
 
-<nav class="tabs">
-	<aside>{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key}}</aside>
-	{{:linkbutton shape="left" label="Retour" href="config.html"}}
-</nav>
+{{:include file="./_nav.html" current="config" event=$event}}
 
 {{if $_GET.ok}}
 	<p class="block confirm">Créneaux enregistrés.</p>
@@ -42,8 +39,8 @@
 						{{$seats}} places
 					</td>
 					<td class="actions">
-						{{:linkbutton label="Modifier" href="config_slot.html?id=%s"|args:$key shape="edit"}}
-						{{:linkbutton label="Supprimer" href="config_delete_slot.html?id=%s"|args:$key shape="delete"}}
+						{{:linkbutton label="Modifier" href="config_slot.html?id=%s"|args:$key shape="edit" target="_dialog"}}
+						{{:linkbutton label="Supprimer" href="config_slot_delete.html?id=%s"|args:$key shape="delete" target="_dialog"}}
 					</td>
 				</tr>
 			{{/load}}
@@ -54,7 +51,7 @@
 
 		<p class="alert block">
 			Il n'y a aucun créneau configuré.<br />
-			{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key}}
+			{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key target="_dialog"}}
 		</p>
 
 	{{/if}}

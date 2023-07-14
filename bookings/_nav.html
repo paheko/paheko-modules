@@ -1,5 +1,15 @@
 {{#restrict section="users" level="write"}}
 <nav class="tabs">
+	{{if $current == 'config'}}
+		<aside>
+		{{if $event}}
+			{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key target="_dialog"}}
+		{{else}}
+			{{:linkbutton shape="plus" label="Nouvel événement" href="config_event.html?new=1"}}
+		{{/if}}
+		</aside>
+	{{/if}}
+
 	<ul>
 		<li{{if $current == 'index'}} class="current"{{/if}}><a href="./">Inscription</a></li>
 		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="bookings.html">Voir les inscrits</a></li>
@@ -7,5 +17,11 @@
 			<li{{if $current == 'config'}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
 		{{/restrict}}
 	</ul>
+
+	{{if $event}}
+		<ul class="sub">
+			<li class="title">{{$event.label}}</li>
+		</ul>
+	{{/if}}
 </nav>
 {{/restrict}}

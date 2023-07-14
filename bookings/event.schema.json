@@ -2,6 +2,10 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["event"]
+		},
 		"label": {
 			"type": "string"
 		},
@@ -45,5 +49,5 @@
 			"type": "boolean"
 		}
 	},
-	"required": ["label", "description", "use_openings", "openings_seats", "openings_seats_split", "use_closings", "fields", "email"]
+	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_seats_split", "use_closings", "fields", "email"]
 }
