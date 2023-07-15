@@ -1,6 +1,10 @@
 {{#restrict block=true section="accounting" level="write"}}
 {{/restrict}}
 
+{{if !$module.config.objet_asso}}
+	{{:redirect to="config.html?msg=MISSING"}}
+{{/if}}
+
 {{:include file="./_config_default.tpl" keep="module.config"}}
 
 {{#form on="create"}}

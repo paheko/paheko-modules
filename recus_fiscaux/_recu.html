@@ -45,8 +45,9 @@
 	<p>N'envoyez pas ce reçu au service des impôts. Conservez-le au moins 3 ans.</p>
 </div>
 
-<h1>Reçu au titre des dons à certains organismes d’intérêt général</h1>
-<p><em>Article 200, 238 bis et 978 du code général des impôts (CGI)</em></p>
+<h3>Reçu au titre des dons à certains organismes d’intérêt général<br />
+	<em>Article 200, 238 bis et 978 du code général des impôts (CGI)</em>
+	</h3>
 
 <h4>Numéro d'ordre du reçu&nbsp;: {{if $preview}}(Brouillon){{else}}N°%ID%{{/if}}</h4>
 
@@ -59,7 +60,7 @@
 	</tr>
 	<tr>
 		<th>Adresse&nbsp;:</th>
-		<td>{{$config.org_address|escape|nl2br}}</td>
+		<td>{{$config.org_address|escape|replace:"\n":" — "}}</td>
 	</tr>
 	<tr>
 		<th>Type&nbsp;:</th>
@@ -67,7 +68,7 @@
 	</tr>
 	<tr>
 		<th>Objet&nbsp;:</th>
-		<td>{{$module.config.objet_asso|escape|nl2br}}
+		<td>{{$module.config.objet_asso|escape|replace:"\n":" — "}}
 		</td>
 	</tr>
 </table>
@@ -81,7 +82,7 @@
 	</tr>
 	<tr>
 		<th>Adresse&nbsp;:</th>
-		<td>{{$r.adresse|escape|nl2br}}</td>
+		<td>{{$r.adresse|escape|replace:"\n":" — "}}</td>
 	</tr>
 </table>
 
