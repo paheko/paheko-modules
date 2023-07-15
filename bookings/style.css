@@ -1,4 +1,4 @@
-.booking_event {
+.booking_event, .booking_events {
 	max-width: 50rem;
 }
 
@@ -136,4 +136,9 @@ input[type=radio] + label::before {
 p.back {
 	text-align: center;
 	margin-top: 5em;
+}
+
+.booking_event p.back {
+	margin-top: 0;
+	margin-bottom: 2em;
 }

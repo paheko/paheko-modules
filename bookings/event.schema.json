@@ -50,7 +50,10 @@
 		},
 		"email": {
 			"type": "boolean"
+		},
+		"archived": {
+			"type": "boolean"
 		}
 	},
-	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_slots", "openings_delay", "use_closings", "fields", "email"]
+	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_slots", "openings_delay", "use_closings", "fields", "email", "archived"]
 }

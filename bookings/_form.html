@@ -4,12 +4,13 @@
 {{/if}}
 
 {{if $_GET.event}}
-	{{#load type="event" key=$_GET.event assign="event"}}
+	{{#load type="event" key=$_GET.event assign="event" archived=false debug=true}}
+		{{:assign event_selected=true}}
 	{{else}}
 		{{:error message="L'événement indiqué est introuvable"}}
 	{{/load}}
 {{else}}
-	{{#load type="event" group="$$.type HAVING COUNT(*) = 1" assign="event"}}
+	{{#load type="event" archived=false group="$$.type HAVING COUNT(*) = 1" assign="event"}}
 	{{/load}}
 {{/if}}
 
@@ -85,7 +86,7 @@
 	<section class="booking_events">
 		<h1 class="ruler">Réservations</h1>
 		<p class="help">Choisir un événement&nbsp;:</p>
-		{{#load type="event" order="$$.label"}}
+		{{#load type="event" order="$$.label" archived=false}}
 		<article>
 			<h2><a href="?event={{$key}}">{{$label}}</a></h2>
 		</article>
@@ -172,6 +173,10 @@
 	<form method="post" action="" class="booking_event">
 
 	<article>
+		{{if $event_selected}}
+			<p class="back">{{:linkbutton shape="left" label="Liste des événements" href="./"}}</p>
+		{{/if}}
+
 		<h1>{{$event.label}}</h1>
 
 		{{if $event.description}}

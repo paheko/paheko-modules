@@ -43,6 +43,7 @@
 		openings_slots=$_POST.openings_slots|intval|or:null
 		openings_delay=$_POST.openings_delay|intval|or:null
 		email=$_POST.email|boolval
+		archived=$_POST.archived|boolval
 		fields=$fields|arrayval
 	}}
 	{{:redirect to="./config.html?ok=1"}}
@@ -57,6 +58,8 @@
 			{{:input type="text" name="label" label="Nom" required=true source=$event}}
 			{{:input type="textarea" cols=70 rows=7 name="description" label="Description" required=false source=$event help="Sera affiché sur la page d'inscription à l'événement"}}
 			<dd class="help">Syntaxe MarkDown acceptée. {{:linkbutton shape="help" target="_dialog" href="!static/doc/markdown.html" label="Aide de la syntaxe MarkDown"}}</dd>
+			{{:input type="checkbox" label="Archiver cet événement" name="archived" source=$event value=1}}
+			<dd class="help">Si coché, cet événement ne sera plus visible dans la liste et ne pourra plus être réservé.</dd>
 			{{#module name="openings"}}
 				<dt><strong>Synchronisation avec les ouvertures</strong></dt>
 				{{:input type="checkbox" name="use_closings" value=1 source=$event label="Ne pas proposer de créneaux pendant les périodes de fermeture"}}
