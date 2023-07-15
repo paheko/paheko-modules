@@ -229,9 +229,9 @@
 	function selectType() {
 		var type = $('[name="type"]:checked')[0].value;
 
-		g.toggle('.type-user', type == 'user');
-		g.toggle('.type-transaction', type == 'transaction');
-		g.toggle('.submit', true);
+		g.toggle('.type-user', type == 'user', false);
+		g.toggle('.type-transaction', type == 'transaction', false);
+		g.toggle('.submit', true, false);
 		g.resizeParentDialog();
 	}
 	</script>
@@ -280,8 +280,8 @@
 	});
 
 	function selectType() {
-		g.toggle('.type-numeraire', $('#f_numeraire_1').checked);
-		g.toggle('.submit', $('#f_numeraire_1').checked || $('#f_nature_1').checked);
+		g.toggle('.type-numeraire', $('#f_numeraire_1').checked, false);
+		g.toggle('.submit', $('#f_numeraire_1').checked || $('#f_nature_1').checked, false);
 		g.resizeParentDialog();
 	}
 
