@@ -4,7 +4,7 @@
 {{/if}}
 
 {{if $_GET.event}}
-	{{#load type="event" key=$_GET.event assign="event" archived=false debug=true}}
+	{{#load type="event" key=$_GET.event assign="event" archived=false}}
 		{{:assign event_selected=true}}
 	{{else}}
 		{{:error message="L'événement indiqué est introuvable"}}
