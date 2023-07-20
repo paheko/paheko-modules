@@ -38,11 +38,12 @@
 
 	{{#load type="booking" key=$_GET.b}}
 		{{#load type="event" key=$event assign="e"}}{{/load}}
-		{{:assign var="booking" label=$e.label event=$e.key key=$key date_str=$date|date_long date=$date|strtotime time_str=$date|date_hour}}
+		{{:assign var="booking" label=$e.label name=$name event=$e.key key=$key date_str=$date|date_long date=$date|strtotime time_str=$date|date_hour}}
 		<article data-new-booking="{{$booking|json_encode}}">
 			<h5>Vous avez réservé&nbsp;:</h5>
 			<h2>{{$e.label}}</h2>
 			<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+			<h5>(Au nom de&nbsp;: {{$name}})</h5>
 			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" class="main"}}
 			</form>
@@ -59,6 +60,7 @@
 			<h5>Vous avez réservé&nbsp;:</h5>
 			<h2>{{$e.label}}</h2>
 			<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+			<h5>(Au nom de&nbsp;: {{$name}})</h5>
 			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
 			</form>
@@ -70,6 +72,7 @@
 			<h5>Vous avez réservé&nbsp;:</h5>
 			<h2>#label#</h2>
 			<h3>#date_str# à <span>#time_str#</span></h3>
+			<h5>(Au nom de&nbsp;: #name#)</h5>
 			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 				{{:button type="submit" name="cancel" value="#key#" label="Annuler cette réservation" shape="delete" }}
 			</form>

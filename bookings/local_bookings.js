@@ -26,12 +26,8 @@
 	// Append booking
 	else if (a = document.querySelector('[data-new-booking]')) {
 		var data = JSON.parse(a.dataset.newBooking);
-
-		if (!bookings.hasOwnProperty(data.key)) {
-			bookings[data.key] = data;
-			s.setItem('bookings', JSON.stringify(bookings));
-		}
-
+		bookings[data.key] = data;
+		s.setItem('bookings', JSON.stringify(bookings));
 		return;
 	}
 
@@ -53,7 +49,8 @@
 		}
 
 		let html = tpl.innerHTML;
-		html = html.replace(/#(\w+)#/g, (_, m) => escape(b[m]));
+
+		html = html.replace(/#(\w+)#/g, (_, m) => escape(b[m] ?? ''));
 		tpl.parentNode.insertAdjacentHTML('beforeend', html);
 	});
 })();
