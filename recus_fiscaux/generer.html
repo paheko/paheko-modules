@@ -62,6 +62,8 @@
 {{if !$_GET.id_year}}
 	{{#years order="end_date DESC"}}
 		{{:assign var="years.%d"|args:$id value=$label}}
+	{{else}}
+		{{:error message="Aucun exercice comptable n'est disponible."}}
 	{{/years}}
 
 	<form method="get" action="">
