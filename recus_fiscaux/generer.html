@@ -90,120 +90,129 @@
 	{{:assign var="total" value=0}}
 	{{:assign var="count" value=0}}
 
-	<form method="post" action="">
+	{{#select *,
+		GROUP_CONCAT(tid, ',') AS id_transaction,
+		SUM(numeraire) AS numeraire,
+		SUM(nature) AS nature,
+		SUM(especes) AS especes,
+		SUM(cheques) AS cheques,
+		SUM(autres) AS autres
+		FROM (
+			SELECT
+			u.id AS id_user,
+			!champs_numero AS numero,
+			t.id AS tid,
+			SUM(l1.credit) AS montant,
+			a1.code AS account,
+			!champs_nom AS nom,
+			!champs_adresse AS adresse,
+			-- Paiements en espèces?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
+				WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
+			-- Paiements en chèques?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
+				WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
+			-- Paiements en autres moyens?
+			(SELECT GROUP_CONCAT(DISTINCT a2.code) FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND NOT a2.!code_cheques AND NOT a2.!code_especes
+				WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS autres,
+			-- Dons en nature ?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
+				WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS nature,
+			-- Dons en numeraire ?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
+				WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS numeraire
 
-	<table class="list">
-		<thead>
-			<tr>
-				<td class="check"></td>
-				<td class="num">Num.</td>
-				<td>Nom du membre</td>
-				<td>Adresse</td>
-				<td>Espèces</td>
-				<td>Chèque</td>
-				<td>Autres</td>
-				<td>En nature</td>
-				<td>Montant des dons</td>
-				<td></td>
-			</tr>
-		</thead>
-		<tbody>
-		{{#select *,
-			GROUP_CONCAT(tid, ',') AS id_transaction,
-			SUM(numeraire) AS numeraire,
-			SUM(nature) AS nature,
-			SUM(especes) AS especes,
-			SUM(cheques) AS cheques,
-			SUM(autres) AS autres
-			FROM (
-				SELECT
-				u.id AS id_user,
-				!champs_numero AS numero,
-				t.id AS tid,
-				SUM(l1.credit) AS montant,
-				a1.code AS account,
-				!champs_nom AS nom,
-				!champs_adresse AS adresse,
-				-- Paiements en espèces?
-				(SELECT 1 FROM acc_transactions_lines l2
-					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
-					WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
-				-- Paiements en chèques?
-				(SELECT 1 FROM acc_transactions_lines l2
-					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
-					WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
-				-- Paiements en autres moyens?
-				(SELECT GROUP_CONCAT(DISTINCT a2.code) FROM acc_transactions_lines l2
-					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND NOT a2.!code_cheques AND NOT a2.!code_especes
-					WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS autres,
-				-- Dons en nature ?
-				(SELECT 1 FROM acc_transactions_lines l2
-					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
-					WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS nature,
-				-- Dons en numeraire ?
-				(SELECT 1 FROM acc_transactions_lines l2
-					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
-					WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS numeraire
+			FROM acc_transactions t
+			INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
+			INNER JOIN users u ON tu.id_user = u.id
+			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
+			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
 
-				FROM acc_transactions t
-				INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
-				INNER JOIN users u ON tu.id_user = u.id
-				INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
-				INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
+			WHERE t.id_year = {$_GET.id_year|intval}
 
-				WHERE t.id_year = {$_GET.id_year|intval}
+			GROUP BY tu.id_user
+		)
+		GROUP BY id_user HAVING id_user IS NOT NULL
+		ORDER BY nom COLLATE U_NOCASE;
 
-				GROUP BY tu.id_user
-			)
-			ORDER BY nom COLLATE U_NOCASE;
+		!champs_nom=$champs_nom
+		!champs_adresse=$champs_adresse
+		!champs_numero=$champs_numero
+		!code_don_nature="code"|sql_where:"IN":$codes_don_nature
+		!code_don="code"|sql_where:"IN":$codes_don
+		!code_especes="code"|sql_where:"IN":$codes_especes
+		!code_cheques="code"|sql_where:"IN":$codes_cheques
+		assign="rows."
+	}}
+	{{/select}}
 
-			!champs_nom=$champs_nom
-			!champs_adresse=$champs_adresse
-			!champs_numero=$champs_numero
-			!code_don_nature="code"|sql_where:"IN":$codes_don_nature
-			!code_don="code"|sql_where:"IN":$codes_don
-			!code_especes="code"|sql_where:"IN":$codes_especes
-			!code_cheques="code"|sql_where:"IN":$codes_cheques
-		}}
-			{{:assign .="row"}}
-			<tr class="checked">
-				<td class="check">
-					{{:input type="checkbox" name="new[]" value=$row|json_encode checked=true}}
-				</td>
-				<td class="num">
-					{{:link href="!users/details.php?id=%d"|args:$id_user label=$numero}}
-				</td>
-				<th>{{$nom}}</th>
-				<td>{{$adresse}}</td>
-				<td>{{if $especes}}{{:icon shape="check"}}{{/if}}</td>
-				<td>{{if $cheques}}{{:icon shape="check"}}{{/if}}</td>
-				<td>{{if $autres}}{{:icon shape="check"}}{{/if}}</td>
-				<td>{{if $nature}}{{:icon shape="check"}}{{/if}}</td>
-				<td class="money">{{$montant|money}}</td>
-				<td class="actions">{{:linkbutton shape="menu" href="!acc/transactions/user.php?id=%d&year=%d"|args:$id_user:$_GET.id_year label="Liste des écritures" target="_dialog"}}</td>
-			</tr>
-			{{:assign var="total" value="%d+%d"|math:$total:$montant}}
-			{{:assign var="count" value="%d+1"|math:$count}}
-		{{/select}}
-		</tbody>
-		<tfoot>
-			<tr>
-				<td colspan="2"></td>
-				<td colspan="6">Total des dons</td>
-				<td class="money">{{$total|money}}</td>
-				<td></td>
-			</tr>
-		</tfoot>
-	</table>
+	{{if !$rows}}
+		<p class="alert block">Aucune écriture correspondant aux comptes configurés n'a été trouvée.</p>
+	{{else}}
+		<form method="post" action="">
 
-	<p class="help">
-		Note&nbsp;: un reçu créé ne peut plus être modifié, mais seulement annulé.
-	</p>
+		<table class="list">
+			<thead>
+				<tr>
+					<td class="check"></td>
+					<td class="num">Num.</td>
+					<td>Nom du membre</td>
+					<td>Adresse</td>
+					<td>Espèces</td>
+					<td>Chèque</td>
+					<td>Autres</td>
+					<td>En nature</td>
+					<td>Montant des dons</td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody>
+			{{#foreach from=$rows item="row"}}
+				<tr class="checked">
+					<td class="check">
+						{{:input type="checkbox" name="new[]" value=$row|json_encode checked=true}}
+					</td>
+					<td class="num">
+						{{:link href="!users/details.php?id=%d"|args:$id_user label=$numero}}
+					</td>
+					<th>{{$nom}}</th>
+					<td>{{$adresse}}</td>
+					<td>{{if $especes}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $cheques}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $autres}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $nature}}{{:icon shape="check"}}{{/if}}</td>
+					<td class="money">{{$montant|money}}</td>
+					<td class="actions">{{:linkbutton shape="menu" href="!acc/transactions/user.php?id=%d&year=%d"|args:$id_user:$_GET.id_year label="Liste des écritures" target="_dialog"}}</td>
+				</tr>
+				{{:assign var="total" value="%d+%d"|math:$total:$montant}}
+				{{:assign var="count" value="%d+1"|math:$count}}
+			{{/foreach}}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td colspan="2"></td>
+					<td colspan="6">Total des dons</td>
+					<td class="money">{{$total|money}}</td>
+					<td></td>
+				</tr>
+			</tfoot>
+		</table>
 
-	<p class="submit">
-		{{:button type="submit" name="create" shape="right" label="Créer ces reçus" class="main"}}
-	</p>
-	</form>
+		<p class="help">
+			Note&nbsp;: un reçu créé ne peut plus être modifié, mais seulement annulé.
+		</p>
+
+		<p class="submit">
+			{{:button type="submit" name="create" shape="right" label="Créer ces reçus" class="main"}}
+		</p>
+
+		</form>
+	{{/if}}
 {{/if}}
 
 {{:admin_footer}}
