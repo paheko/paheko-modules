@@ -137,7 +137,7 @@
 
 			GROUP BY tu.id_user
 		)
-		GROUP BY id_user HAVING id_user IS NOT NULL
+		GROUP BY id_user
 		ORDER BY nom COLLATE U_NOCASE;
 
 		!champs_nom=$champs_nom

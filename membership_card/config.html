@@ -61,14 +61,14 @@
 		</dd>
 
 		{{:assign var="file_fields." value="— Aucun, ne pas afficher de photo —"}}
-		{{#select name, label FROM config_users_fields WHERE type = 'file' ORDER BY sort_order; assign_assoc="file_fields"}}{{/select}}
+		{{#select name, label FROM config_users_fields WHERE type = 'file' ORDER BY sort_order;}}{{:assign var="file_fields.%s"|args:$name value=$label}}{{/select}}
 
 		{{if $file_fields|count > 1}}
 			{{:input type="select" name="photo" label="Champ utilisé pour la photo du membre" options=$file_fields required=true source=$module.config}}
 		{{/if}}
 
 		{{:assign var="services." value="— Aucune, ne pas afficher d'activité —"}}
-		{{#select id, label FROM services WHERE end_date IS NULL OR end_date >= date() ORDER BY label COLLATE U_NOCASE; assign_assoc="services"}}{{/select}}
+		{{#select id, label FROM services WHERE end_date IS NULL OR end_date >= date() ORDER BY label COLLATE U_NOCASE;}}{{:assign var="services.%s"|args:$name value=$label}}{{/select}}
 		{{if $services|count}}
 			{{:input type="select" name="id_service" label="Activité à afficher" options=$services required=true help="Utile pour afficher par exemple la date d'expiration de la cotisation annuelle." source=$module.config}}
 		{{/if}}
