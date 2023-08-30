@@ -130,8 +130,13 @@ h1 {
 .number span:nth-child(2) {
 	font-size: 14pt;
 }
+
 h3 {
 	margin-top: .5em;
 	font-weight: normal;
 	font-size: 11pt;
+}
+
+.web-content p {
+	margin-bottom: .4rem;
 }
