@@ -1,14 +1,10 @@
-{{:admin_header title="Configuration du reçu fiscal"}}
+{{:admin_header title="Configuration du reçu de don"}}
 
 {{if $_POST.save}}
-	{{if $_POST.accounts|trim == ''}}
-		<p class="error block">Les numéros de comptes éligibles n'ont pas été renseignés.</p>
-	{{else}}
-		{{:save key="config"
-			accounts=$_POST.accounts
-		}}
-		{{:http redirect="?ok=1"}}
-	{{/if}}
+	{{:save key="config"
+		accounts=$_POST.accounts|trim
+	}}
+	{{:http redirect="?ok=1"}}
 {{/if}}
 
 {{if $_GET.ok}}
