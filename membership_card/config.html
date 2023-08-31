@@ -68,7 +68,7 @@
 		{{/if}}
 
 		{{:assign var="services." value="— Aucune, ne pas afficher d'activité —"}}
-		{{#select id, label FROM services WHERE end_date IS NULL OR end_date >= date() ORDER BY label COLLATE U_NOCASE;}}{{:assign var="services.%s"|args:$name value=$label}}{{/select}}
+		{{#select id, label FROM services WHERE end_date IS NULL OR end_date >= date() ORDER BY label COLLATE U_NOCASE;}}{{:assign var="services.%s"|args:$id value=$label}}{{/select}}
 		{{if $services|count}}
 			{{:input type="select" name="id_service" label="Activité à afficher" options=$services required=true help="Utile pour afficher par exemple la date d'expiration de la cotisation annuelle." source=$module.config}}
 		{{/if}}
