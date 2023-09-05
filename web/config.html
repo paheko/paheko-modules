@@ -1,0 +1,37 @@
+{{:admin_header title="Configuration du site web"}}
+
+{{#form on="save"}}
+	{{:save key="config"
+		color1=$_POST.color1|trim|or:null
+		color2=$_POST.color2|trim|or:null
+		layout=$_POST.layout|trim|or:null
+	}}
+	{{:redirect to="?ok=1"}}
+{{/form}}
+
+{{if $_GET.ok}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+
+{{:assign var="layouts" 2col="Classique — 2 colonnes" wide="Large — 2 colonnes"}}
+
+<fieldset>
+	<legend>Configuration du site web</legend>
+	<dl>
+		{{:input type="select" name="layout" label="Disposition sur grand écran" required=true default="2c" options=$layouts help="Sur petit écran (mobile), la disposition reste sur une colonne" source=$module.config}}
+		{{:input type="color" name="color1" default=$config.color1 label="Couleur primaire" required=false source=$module.config}}
+		{{:input type="color" name="color2" default=$config.color2 label="Couleur secondaire" required=false source=$module.config}}
+	</dl>
+</fieldset>
+
+<p class="submit">
+	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+</p>
+
+</form>
+
+{{:admin_footer}}

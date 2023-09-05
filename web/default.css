@@ -22,47 +22,9 @@ body {
     color: #000;
     font-family: "Trebuchet MS", Helvetica, Sans-serif;
     background: #eee;
-    background: rgba(var(--first-color), 0.2);
-}
-
-/* DISPOSITION GÉNÉRALE DE LA PAGE */
-main {
-    max-width: 950px;
-    margin: 0 auto;
-    display: grid;
-    grid-gap: 1em;
-    grid-template-columns: 1.4fr 0.6fr;
-    grid-template-areas:
-        "header header"
-        "content nav"
-}
-
-header.main {
-    grid-area: header;
-    display: grid;
-    grid-gap: 1em;
-    grid-template-columns: 1.4fr 0.6fr;
-}
-nav.main { grid-area: nav; }
-section.page { grid-area: content; }
-
-header.main h1, header.main .contacts, nav.main {
-    background: #fff;
-    padding: 1em;
-    border-radius: .5em
-}
-
-header.main .contacts {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-}
-
-section.page article {
-    margin-bottom: 1em;
-    padding: 1em;
-    background: #fff;
-    clear: both;
-    border-radius: .5em;
+    background: hsl(var(--first-color), 50%, 90%);
+    background: linear-gradient(200deg, hsl(var(--first-color), 50%, 90%) 20%, hsl(var(--second-color), 30%, 90%) 70%);
+    min-height: 100vh;
 }
 
 /* ENTÊTE AVEC LOGO ET CONTACTS */
@@ -87,24 +49,16 @@ header.main h1 a {
 header.main h1 a span {
     font-size: 1.5em;
     font-weight: normal;
-    color: rgb(var(--first-color));
+    color: hsl(var(--first-color), 30%, 30%);
     display: block;
 }
 
 header.main h1 a:hover span {
-    color: rgb(var(--second-color));
+    color: hsl(var(--second-color), 50%, 50%);
 }
 
 header.main h1 a:hover img {
     opacity: 0.8;
-}
-
-header.main h1 a img {
-    max-height: 200px;
-}
-
-header.main.home h1 a img {
-    max-height: 300px;
 }
 
 header.main.home h1 a span {
@@ -121,33 +75,26 @@ header.main .contacts {
 /* NAVIGATION EN HAUT DE LA PAGE (ACCUEIL/CONNEXION) */
 header.nav {
     background: #ddd;
-    background: rgba(var(--second-color), 0.2);
-    border-bottom: 1px solid #999;
-    border-top: .3em solid #666;
-    text-align: center;
-    padding-top: .3em;
-    border-color: rgba(var(--first-color), 1);
+    border-bottom: 1px solid #ccc;
 }
 
-header.nav li {
-    display: inline-block;
-    padding: .2em .5em;
-    margin-bottom: -3px;
+header.nav ul {
+    display: flex;
+    justify-content: center;
+    padding-top: .2em;
 }
 
 header.nav li a {
     padding: .1em .5em;
-    text-transform: uppercase;
     color: #666;
     text-decoration: none;
+    font-size: .9em;
+    margin: 0 1em;
 }
 
 header.nav li.current a {
     background: #fff;
-    border: .1em solid #999;
-    border-bottom: none;
-    border-top-left-radius: .3em;
-    border-top-right-radius: .3em;
+    border-radius: .3em .3em 0 0;
 }
 
 header.nav li a:hover {
@@ -172,7 +119,7 @@ section.page .subcategories {
     color: #006;
     text-decoration: underline;
     background: #ddd;
-    background: rgba(var(--second-color), 0.2);
+    background: hsl(var(--first-color), 60%, 80%);
     border-radius: .5rem;
     display: inline-block;
     transition: background-color .2s, color .2s;
@@ -190,12 +137,12 @@ nav.main .subcategories li a {
     padding: .5em 1em;
     display: block;
     border-radius: 0;
-    border-bottom: 2px solid rgba(var(--first-color), 0.2);
+    border-bottom: 2px solid hsl(var(--first-color), 50%, 85%);
     background: none;
 }
 
 nav.main .subcategories li:first-child a {
-    border-top: 2px solid rgba(var(--first-color), 0.2);
+    border-top: 2px solid hsl(var(--first-color), 50%, 85%);
 }
 
 section.page .subcategories li a {
@@ -205,7 +152,7 @@ section.page .subcategories li a {
 .subcategories li a:hover {
     color: darkred;
     background: #eee;
-    background: rgba(var(--second-color), 0.2) !important;
+    background: hsl(var(--second-color), 50%, 90%) !important;
 }
 
 /* Formulaire de recherche */
@@ -422,7 +369,7 @@ section.documents aside a {
     display: block;
     text-decoration: none;
     border-radius: .5em;
-    background: rgba(var(--first-color), 0.2) no-repeat center center;
+    background: hsl(var(--first-color), 50%, 90%) no-repeat center center;
     background-image: url('data:image/svg+xml;utf8,<svg width="33.87mm" height="33.87mm" version="1.1" viewBox="0 0 33.87 33.87" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-45.16 -132.5)"><path d="m46.87 166.3c-1.895-0.8504-2.04-3.422-1.368-5.124 0.4287-0.9042 1.363-1.675 2.405-1.471h29.27c1.387 0.5818 2.074 2.134 1.853 3.586 0.137 1.429-0.8551 3.219-2.472 3.059-8.696 0.1509-17.4 0.0429-26.09 0.0478-1.196-0.027-2.4 0.0278-3.591-0.0985zm14.74-10.2c-2.695-3.234-5.319-6.532-7.861-9.888-0.6409-1.955 1.712-1.953 2.991-1.809h1.863c5.01e-4 -3.406 1e-3 -6.812 0.0015-10.22 0.3553-1.875 2.409-1.689 3.866-1.626 1.341-0.2301 3.068 0.2243 3.15 1.818 4.92e-4 3.342 9.83e-4 6.684 0.0015 10.03 1.442 0.0378 2.903-0.0975 4.331 0.1108 1.533 1.159-0.2458 2.66-0.9956 3.69-2.104 2.658-4.17 5.352-6.377 7.926-0.2941 0.1659-0.6875 0.1582-0.9702-0.0291z" fill="%23fff" stroke-width=".07256"/></g></svg>');
     padding: .5em;
     color: #666;
@@ -433,7 +380,7 @@ section.documents aside a {
 section.documents aside a:hover {
     background-color: #eee;
     color: #333;
-    box-shadow: 0px 0px 5px rgba(var(--first-color), 1);
+    box-shadow: 0px 0px 5px hsl(var(--first-color), 50%, 50%);
 }
 
 section.documents aside a:hover b {
@@ -494,7 +441,7 @@ fieldset dl dd {
 
 .booking-btn a {
     display: flex;
-    background: #666;
+    background: hsl(var(--second-color), 35%, 25%);
     border-radius: .5rem .5rem 0 0;
     color: #fff;
     font-size: 1.3em;
@@ -530,9 +477,12 @@ fieldset dl dd {
 
 section.page article.opening-next {
     background: #fff;
-    background: rgba(90, 0, 0, 0.6);
+    background: hsl(var(--second-color), 30%, 35%);
+    border-radius: .3em;
     color: #fff;
     box-shadow: 0px 0px 5px #000;
+    margin-bottom: .5em;
+    padding: .5rem;
 }
 
 section.page article.opening-hours, article.opening-hours {
@@ -557,7 +507,7 @@ section.page article.opening-hours table {
 }
 
 article.opening-hours div {
-    background: rgba(var(--first-color), .1);
+    background: hsl(var(--first-color), 50%, 92%);
     padding: .5rem;
     border-radius: .5em;
 }
@@ -584,6 +534,115 @@ nav.main article.opening-hours h4 {
 nav.main article.opening-hours table tr {
     display: flex;
     flex-direction: column;
+}
+
+/* Modifications du style pour les grands écrans */
+@media screen and (min-width: 981px) {
+    /* DISPOSITION GÉNÉRALE DE LA PAGE */
+    main {
+        max-width: 950px;
+        margin: 0 auto;
+        display: grid;
+    }
+
+    .layout-2col main {
+        grid-gap: 1em;
+        grid-template-columns: 1.4fr 0.6fr;
+        grid-template-areas:
+            "header header"
+            "content nav"
+    }
+
+    .layout-wide main {
+        max-width: 1100px;
+        grid-gap: 1em;
+        grid-template-columns: 18em 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+            "header content"
+            "nav content";
+        align-items: flex-start;
+        padding: 0 1em;
+    }
+
+    .layout-wide header.main {
+        grid-area: header;
+        display: flex;
+        grid-gap: 1em;
+        flex-direction: column;
+    }
+
+    .layout-wide section.page {
+        background: #fff;
+        border-radius: 0 0 .5em .5em;
+        padding: 1em;
+    }
+
+    header.main h1 a img {
+        max-height: 200px;
+    }
+
+    .layout-2col header.main.home h1 a img {
+        max-height: 300px;
+    }
+
+    .layout-2col header.main {
+        grid-area: header;
+        display: grid;
+        grid-gap: 1em;
+        grid-template-columns: 1.4fr 0.6fr;
+    }
+
+    nav.main { grid-area: nav; }
+    section.page { grid-area: content; }
+
+    header.main h1, header.main .contacts, nav.main {
+        background: #fff;
+        padding: 1em;
+        border-radius: .5em
+    }
+
+    .layout-2col header.main .contacts {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    header.main h1 {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding: 0;
+    }
+
+    .layout-wide header.main h1 {
+        font-size: 1.2em;
+    }
+
+    .layout-wide header.main h1 a {
+        justify-content: flex-start;
+    }
+
+    .layout-2col section.page article {
+        margin-bottom: 1em;
+        padding: 1em;
+        background: #fff;
+        clear: both;
+        border-radius: .5em;
+    }
+
+    .layout-wide .breadcrumbs {
+        margin: 1em 0;
+        text-align: left;
+    }
+
+    .layout-wide section.articles article {
+        margin: 1em 0;
+        padding-bottom: 1em;
+        border-bottom: 2px solid #ccc;
+    }
+
+    .layout-wide section.page > h1 {
+        text-align: left;
+    }
 }
 
 /* Modifications du style pour les petits écrans */

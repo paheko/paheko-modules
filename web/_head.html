@@ -6,8 +6,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi" />
 	<style type="text/css">
 	:root {
-		--first-color: {{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}120, 120, 120{{/if}};
-		--second-color: {{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}30, 30, 30{{/if}};
+		{{:assign color1=$module.config.color1|or:$config.color1|or:"#999999"|css_hex_extract_hsv}}
+		{{:assign color2=$module.config.color2|or:$config.color2|or:"#333333"|css_hex_extract_hsv}}
+		--first-color: {{$color1.h}};
+		--second-color: {{$color2.h}};
 	}
 	</style>
 	<link rel="stylesheet" type="text/css" href="{{$root_url}}default.css?h={{$version_hash}}" media="screen,projection,handheld" />
@@ -16,12 +18,12 @@
 	<link rel="icon" type="image/png" href="{{$config.files.favicon}}" />
 </head>
 
-<body>
+<body class="layout-{{$module.config.layout|or:"2col"}}">
 
 <header class="nav">
 	<nav>
 		<ul>
-			<li class="current"><a href="{{$root_url}}">Accueil</a></li>
+			<li class="current"><a href="{{$root_url}}">{{$config.org_name}}</a></li>
 			<li><a href="{{$admin_url}}">Connexion</a></li>
 		</ul>
 	</nav>
