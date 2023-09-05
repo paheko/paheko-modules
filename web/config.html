@@ -19,10 +19,40 @@
 
 {{:assign var="layouts" 2col="Classique — 2 colonnes" wide="Large — 2 colonnes"}}
 
+<style type="text/css">
+#preview {
+	width: 500px;
+	height: 400px;
+	overflow: hidden;
+	float: right;
+	margin: 1em;
+	border: 2px solid #ccc;
+}
+iframe {
+	border: none;
+    transform: scale(0.5);
+    -ms-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    -o-transform-origin: 0 0;
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+</style>
+
+{{if $config.site_disabled}}
+<p class="block alert">Le site est actuellement désactivé.</p>
+{{else}}
+<div id="preview">
+	<iframe src="{{$site_url}}?dezoom=1" width="1000" height="800" scrolling="no"></iframe>
+</div>
+{{/if}}
+
 <fieldset>
 	<legend>Configuration du site web</legend>
 	<dl>
-		{{:input type="select" name="layout" label="Disposition sur grand écran" required=true default="2c" options=$layouts help="Sur petit écran (mobile), la disposition reste sur une colonne" source=$module.config}}
+		{{:input type="select" name="layout" label="Disposition sur grand écran" required=true default="2col" options=$layouts help="Sur petit écran (mobile), la disposition reste sur une colonne" source=$module.config}}
 		{{:input type="color" name="color1" default=$config.color1 label="Couleur primaire" required=false source=$module.config}}
 		{{:input type="color" name="color2" default=$config.color2 label="Couleur secondaire" required=false source=$module.config}}
 	</dl>
@@ -31,6 +61,58 @@
 <p class="submit">
 	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
 </p>
+
+<script type="text/javascript">
+function rgbToHsl(r, g, b){
+    r /= 255, g /= 255, b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0; // achromatic
+    }else{
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h, s, l];
+}
+
+function getHue(color) {
+	var r = parseInt(color.substr(1,2), 16);
+	var g = parseInt(color.substr(3,2), 16);
+	var b = parseInt(color.substr(5,2), 16);
+	return Math.floor(rgbToHsl(r, g, b)[0] * 360);
+}
+
+function updateColors() {
+	var color1 = $('#f_color1').value;
+	var color2 = $('#f_color2').value;
+	console.log(color1, color2);
+	color1 = getHue(color1);
+	color2 = getHue(color2);
+	console.log(color1, color2);
+
+	var doc = $('#preview iframe')[0].contentWindow.document;
+	doc.body.style = `--first-color: ${color1}; --second-color: ${color2};`;
+}
+
+$('#f_layout').onchange = (e) => {
+	var layout = e.target.value;
+	var doc = $('#preview iframe')[0].contentWindow.document;
+	doc.body.className = 'layout-' + layout;
+}
+
+$('#f_color1').oninput = updateColors;
+$('#f_color2').oninput = updateColors;
+
+</script>
 
 </form>
 

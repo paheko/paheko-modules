@@ -12,14 +12,12 @@
 	{{/categories}}
 </section>
 
-{{if $page.content|trim}}
 <article class="single">
 	{{$page.html|raw}}
 
 	{{:include file="./gallery.html" parent=$page.path}}
 	{{:include file="./documents.html" parent=$page.path}}
 </article>
-{{/if}}
 
 <section class="articles">
 	{{#articles parent=$page.path order="published DESC" future=false}}
