@@ -114,9 +114,14 @@
     text-align: center;
 }
 
-.web-content table th {
-    background: #eee;
+.web-content table thead {
+    background: #ddd;
     font-weight: bold;
+    border-bottom: 5px solid #999;
+}
+
+.web-content table tbody tr:nth-child(even) {
+    background: #eee;
 }
 
 .web-content mark {

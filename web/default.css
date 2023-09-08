@@ -60,10 +60,6 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
     }
 
     header.main h1 a img {
-        max-height: 200px;
-    }
-
-    .layout-2col header.main.home h1 a img {
         max-height: 300px;
     }
 
@@ -96,10 +92,6 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
 
     .layout-wide header.main h1 {
         font-size: 1.2em;
-    }
-
-    .layout-wide header.main h1 a {
-        justify-content: flex-start;
     }
 
     .layout-2col section.page article {
@@ -689,12 +681,8 @@ nav.main article.opening-hours table tr {
     }
 
     header.main h1 a img {
-        max-height: 100px;
+        max-height: 200px;
         max-width: 100%;
-    }
-
-    header.main.home h1 a img {
-        max-height: 300px;
     }
 
     .search-widget p {
@@ -741,5 +729,51 @@ nav.main article.opening-hours table tr {
 
     footer.main {
         font-size: .8em;
+    }
+
+    .booking-btn {
+        margin: 0;
+    }
+
+    .booking-btn a {
+        border-radius: 0;
+    }
+
+    .search-widget {
+        margin: .5em;
+    }
+
+    nav.main .subcategories {
+        margin: 1em 0;
+    }
+
+    nav.main .subcategories li a {
+        border: none !important;
+        background: rgba(255, 255, 255, 0.7);
+        margin: .2em;
+        border-radius: .5em;
+    }
+
+    .search-widget input {
+        width: 80%;
+    }
+
+    nav.main .opening-hours {
+        display: none;
+    }
+
+    section.page article.opening-next {
+        border-radius: 0;
+    }
+
+    section.page article.opening-hours, article.opening-hours {
+        flex-direction: column;
+        margin: .8em 0;
+    }
+
+    .articles article, article.single {
+        margin: .5rem 0;
+        background: #fff;
+        padding: .5em;
     }
 }

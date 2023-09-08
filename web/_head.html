@@ -14,6 +14,7 @@
 	</style>
 	<link rel="stylesheet" type="text/css" href="{{$root_url}}default.css?h={{$version_hash}}" media="screen,projection,handheld" />
 	<link rel="stylesheet" type="text/css" href="{{$root_url}}content.css?h={{$version_hash}}" media="all" />
+	<link rel="stylesheet" type="text/css" href="{{$root_url}}print.css?h={{$version_hash}}" media="print" />
 	<link rel="alternate" type="application/atom+xml" title="{{$config.org_name}}" href="{{$root_url}}atom.xml" />
 	<link rel="icon" type="image/png" href="{{$config.files.favicon}}" />
 </head>
@@ -35,7 +36,7 @@
 	<h1>
 		<a href="{{$root_url}}">
 		{{if $config.files.logo}}
-			<img src="{{$config.files.logo}}&500px" alt="" class="logo" />
+			<img src="{{$config.files.logo}}&500px" alt="{{$config.org_name}}" class="logo" />
 		{{else}}
 			<span>{{$config.org_name}}</span>
 		{{/if}}
