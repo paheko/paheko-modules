@@ -11,7 +11,14 @@
 			open='%02d:%02d'|args:$open.0:$open.1
 			close='%02d:%02d'|args:$close.0:$close.1
 		}}
-		{{:assign var="slots.%d"|args:$i value=$slot}}
+		{{* Use timestamp to order slots *}}
+		{{:assign timestamp="%s %s of this month, %s:00"|args:$slot.frequency:$slot.day:$slot.open|strtotime}}
+
+		{{if !$timestamp}}
+			{{:error message="Date invalide : %s %s of this month, %s:00"|args:$slot.frequency:$slot.day:$slot.open}}
+		{{/if}}
+
+		{{:assign var="slots.%d"|args:$timestamp value=$slot}}
 
 		{{if !"%s %s"|args:$slot.frequency:$slot.day|trim|strtotime}}
 			{{:assign error="Ouvertures - ligne %d : le sélecteur de jour est invalide: %s %s"|args:$line:$slot.frequency:$slot.day}}
@@ -30,7 +37,7 @@
 	{{else}}
 		{{:save key="config"
 			validate_schema="./schema.json"
-			open=$slots
+			open=$slots|ksort|values
 			closed=$_POST.closed|array_transpose
 		}}
 		{{:http redirect="?ok=1"}}
