@@ -37,6 +37,14 @@
 				start="%s %s, %s:00"|args:$slot.frequency:$slot.day:$slot.open|strtotime
 				end="%s %s, %s:00"|args:$slot.frequency:$slot.day:$slot.close|strtotime
 			}}
+
+			{{* Try next week *}}
+			{{if $end < $now}}
+				{{:assign
+					start="next %s, %s:00"|args:$slot.day:$slot.open|strtotime
+					end="next %s, %s:00"|args:$slot.day:$slot.close|strtotime
+				}}
+			{{/if}}
 		{{/if}}
 		{{if $now >= $start && $now <= $end}}
 			<h3 class="open">Ouvert aujourd'hui jusqu'à {{$slot.close}}</h3>

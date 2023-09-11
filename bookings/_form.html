@@ -210,6 +210,7 @@
 
 			{{* Créer les créneaux à partir du module "ouvertures" *}}
 			{{if $event.use_openings && $event.openings_slots > 0}}
+				{{:assign now="now"|strtotime}}
 				{{#foreach from=$config.open item="slot"}}
 					{{if $slot.frequency != "this"}}
 						{{:assign
@@ -217,7 +218,7 @@
 							end="%s %s of this month, %s:00"|args:$slot.frequency:$slot.day:$slot.close|strtotime
 						}}
 						{{* Try next month *}}
-						{{if $start < $now && $end < $now}}
+						{{if $end < $now}}
 							{{:assign
 								start="%s %s of next month, %s:00"|args:$slot.frequency:$slot.day:$slot.open|strtotime
 								end="%s %s of next month, %s:00"|args:$slot.frequency:$slot.day:$slot.close|strtotime
@@ -228,6 +229,13 @@
 							start="%s %s, %s:00"|args:$slot.frequency:$slot.day:$slot.open|strtotime
 							end="%s %s, %s:00"|args:$slot.frequency:$slot.day:$slot.close|strtotime
 						}}
+						{{* Try next week *}}
+						{{if $end < $now}}
+							{{:assign
+								start="next %s, %s:00"|args:$slot.day:$slot.open|strtotime
+								end="next %s, %s:00"|args:$slot.day:$slot.close|strtotime
+							}}
+						{{/if}}
 					{{/if}}
 
 					{{#foreach count=$event.openings_slots key="i"}}
