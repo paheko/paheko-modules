@@ -1,4 +1,5 @@
 {{:assign now="now"|strtotime}}
+{{:assign today=$now|date:'Ymd'}}
 
 {{#foreach from=$config.closed item="slot"}}
 	{{:assign
@@ -41,7 +42,10 @@
 			<h3 class="open">Ouvert aujourd'hui jusqu'à {{$slot.close}}</h3>
 			{{:assign stop=1}}
 			{{:break}}
+		{{elseif $end < $now}}
+			{{:continue}}
 		{{/if}}
+
 		{{:assign diff="%d-%d"|math:$now:$start}}
 		{{if $diff > $closest}}
 			{{:assign closest=$diff closest_slot=$slot closest_date=$start}}
