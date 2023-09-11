@@ -101,6 +101,7 @@ $('fieldset.slots p.actions button')[0].onclick = () => {
 	}
 
 	var n = rows[rows.length - 1].cloneNode(true);
+	n.querySelector('button').onclick = removeRow;
 	rows[0].parentNode.appendChild(n);
 };
 
@@ -113,7 +114,9 @@ $('fieldset.closed p.actions button')[0].onclick = () => {
 	}
 
 	var n = rows[rows.length - 1].cloneNode(true);
+	n.querySelector('button').onclick = removeRow;
 	rows[0].parentNode.appendChild(n);
+
 }
 
 open_data.open.forEach((slot) => {
