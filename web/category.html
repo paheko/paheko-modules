@@ -12,15 +12,17 @@
 	{{/categories}}
 </section>
 
-<article class="single">
-	{{$page.html|raw}}
+{{if $page.html || $page.has_attachments}}
+	<article class="single">
+		{{$page.html|raw}}
 
-	{{:include file="./gallery.html" parent=$page.path}}
-	{{:include file="./documents.html" parent=$page.path}}
-</article>
+		{{:include file="./gallery.html" parent=$page.path}}
+		{{:include file="./documents.html" parent=$page.path}}
+	</article>
+{{/if}}
 
 <section class="articles">
-	{{#articles parent=$page.path order="published DESC" future=false}}
+	{{#articles parent=$page.path order="published DESC"}}
 	<article>
 		<h3><a href="{{$url}}">{{$title}}</a></h3>
 		<h5>{{$published|date_long}}</h5>
