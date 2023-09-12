@@ -62,9 +62,11 @@
 {{/if}}
 
 {{if !$stop && $closest}}
-	{{if $closest_date|date:'Ymd' == "tomorrow"|strtotime|date:'Ymd'}}
-		<h3 class="next">Prochaine ouverture demain à {{$closest_slot.open}}</h3>
+	{{if $closest_date|date:'Ymd' == $now|date:'Ymd'}}
+		<h3 class="next">Prochaine ouverture&nbsp;: aujourd'hui à {{$closest_slot.open}}</h3>
+	{{elseif $closest_date|date:'Ymd' == "tomorrow"|strtotime|date:'Ymd'}}
+		<h3 class="next">Prochaine ouverture&nbsp;: demain à {{$closest_slot.open}}</h3>
 	{{else}}
-		<h3 class="next">Prochaine ouverture le {{$closest_date|strftime:"%A %e %B"}} à {{$closest_slot.open}}</h3>
+		<h3 class="next">Prochaine ouverture&nbsp;: le {{$closest_date|strftime:"%A %e %B"}} à {{$closest_slot.open}}</h3>
 	{{/if}}
 {{/if}}
