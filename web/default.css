@@ -618,14 +618,21 @@ section.page article.opening-hours table {
     white-space: nowrap;
 }
 
-article.opening-hours div {
+article.opening-hours .list {
     background: hsl(var(--first-color), 50%, 92%);
     padding: .5rem;
     border-radius: .5em;
 }
 
+article.opening-hours em {
+    display: block;
+}
+
+article.opening-hours ul {
+    margin-left: 1.5rem;
+}
+
 article.opening-hours h4 {
-    text-align: center;
     color: #666;
 }
 

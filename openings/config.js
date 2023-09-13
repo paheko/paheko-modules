@@ -42,6 +42,9 @@ const close_row = `<tr>
 		</select>
 		inclus
 	</td>
+	<td>
+		<input type="text" name="closed[reason][]" size="30" />
+	</td>
 	<td class="actions">
 		<button data-icon="➖" type="button">Enlever cette ligne</button>
 	</td>
