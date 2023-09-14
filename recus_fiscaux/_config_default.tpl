@@ -20,8 +20,18 @@
 	}}
 {{/if}}
 
-{{:assign var="types_asso"
-	defaut="Organisme d'intérêt général ou reconnu d'utilité publique"
-	personnes="Association fournissant gratuitement une aide alimentaire ou des soins médicaux à des personnes en difficultés ou favorisant leur logement"
-	cultuelle="Association cultuelle ou de bienfaisance et établissement public reconnus d’Alsace-Moselle"
+{{:assign var="types_asso.defaut"
+	label="Organisme d'intérêt général ou reconnu d'utilité publique"
+	help="66 % du montant versé, dans la limite de 20 % du revenu imposable."
+	case="7UF"
+}}
+{{:assign var="types_asso.personnes"
+	label="Association fournissant gratuitement une aide alimentaire ou des soins médicaux à des personnes en difficultés ou favorisant leur logement"
+	help="75% du montant versé pour un don d'un montant inférieur ou égal à 1000 €.\nLa fraction au-delà de 1000 € ouvre droit à une réduction d'impôt de 66 % du montant donné."
+	case="7UD"
+}}
+{{:assign var="types_asso.cultuelle"
+	label="Association cultuelle ou de bienfaisance et établissement public reconnus d’Alsace-Moselle"
+	help="75 % du montant versé, dans la limite de 562 €. La fraction au-delà de 562 € ouvre droit à une réduction d'impôt de 66 %."
+	case="7UJ"
 }}

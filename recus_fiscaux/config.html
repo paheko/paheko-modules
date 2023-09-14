@@ -61,9 +61,11 @@
 	<legend>Configuration du modèle de reçu fiscal</legend>
 	<dl>
 		<dt><label for="f_type_asso_defaut">Type d'organisme</label> <b>(obligatoire)</b></dt>
-		{{:input type="radio-btn" required=true name="type_asso" value="defaut" label="Organisme d'intérêt général ou reconnu d'utilité publique" help="Réduction de 66 % du montant versé, dans la limite de 20 % du revenu imposable." source=$module.config}}
-		{{:input type="radio-btn" required=true name="type_asso" value="personnes" label="Association fournissant gratuitement une aide alimentaire ou des soins médicaux à des personnes en difficultés ou favorisant leur logement" help="Réduction de 75% pour un don d'un montant inférieur ou égal à 1000 €.\nLa fraction au-delà de 1000 € ouvre droit à une réduction d'impôt de 66 % du montant donné." source=$module.config}}
-		{{:input type="radio-btn" required=true name="type_asso" value="cultuelle" label="Association cultuelle ou de bienfaisance et établissement public reconnus d’Alsace-Moselle" help="Réduction de 75 % du montant versé, dans la limite de 562 €. La fraction au-delà de 562 € ouvre droit à une réduction d'impôt de 66 %." source=$module.config}}
+		{{#foreach from=$types_asso key="type"}}
+			{{:input type="radio-btn" required=true name="type_asso" value=$type label=$label help="Réduction de %s"|args:$help source=$module.config}}
+		{{/foreach}}
+
+		<dd class="help">Note : les réductions indiquées ne s'appliquent qu'à l'impôt sur le revenu des particuliers.<br />Merci de consulter les services des impôts pour les réductions liées <a href="https://www.economie.gouv.fr/cedef/reduction-impot-dons-associations" target="_blank">aux entreprises</a> ou à <a href="https://bofip.impots.gouv.fr/bofip/11334-PGP.html/identifiant%3DBOI-PAT-IFI-40-20-20-20180608" target="_blank">l'impôt sur la fortune immobilière</a>.</dd>
 
 		<dt><label for="f_art200_1">Réductions d'impôt éligibles</label> <b>(obligatoire)</b></dt>
 		{{:input type="checkbox" name="art200" value="1" source=$module.config label="Article 200" help="Réduction d'impôt pour les particuliers"}}
