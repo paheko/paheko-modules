@@ -31,8 +31,13 @@
 
 	<ul>
 	{{#foreach from=$config.closed item="slot"}}
-		<li>du {{$slot.close_day}} {{$slot.close_month|replace:$months}}
-			au {{$slot.reopen_day}} {{$slot.reopen_month|replace:$months}} inclus
+		<li>
+			{{if $slot.close_day === $slot.reopen_day && $slot.close_month === $slot.reopen_month}}
+				le {{$slot.close_day}} {{$slot.close_month|replace:$months}}
+			{{else}}
+				du {{$slot.close_day}} {{$slot.close_month|replace:$months}}
+				au {{$slot.reopen_day}} {{$slot.reopen_month|replace:$months}} inclus
+			{{/if}}
 			{{if $slot.reason|trim}}<em>({{$slot.reason}})</em>{{/if}}
 		</li>
 	{{/foreach}}
