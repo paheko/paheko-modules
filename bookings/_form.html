@@ -116,7 +116,7 @@
 			{{/load}}
 
 			{{* Vérification qu'il y a encore des places dispo *}}
-			{{#load event=$event.key where="datetime($$.date) = datetime(:date)" :date=$slot_data.1 type="booking" count=true debug=true}}
+			{{#load event=$event.key where="datetime($$.date) = datetime(:date)" :date=$slot_data.1 type="booking" count=true}}
 				{{if $count >= $slot.seats}}
 					{{:error message="Ce créneau est déjà plein, aucune place n'est disponible, désolé."}}
 				{{/if}}
@@ -370,8 +370,11 @@
 					{{:input type="checkbox" name="notify" value="1" label="Recevoir une confirmation d'inscription par e-mail" onchange="g.toggle('dl.email', this.checked);" help="facultatif"}}
 				{{/if}}
 			</dl>
-			<dl class="email{{if !$event.email && !$_POST.email}} hidden{{/if}}">
-				{{:input type="email" name="email" label="Adresse e-mail" required=true help="Une confirmation d'inscription vous sera envoyée à cette adresse" default=$logged_user._email onfocus="this.select()" onkeyup="g.toggle('.mycaptcha', this.value != '');"}}
+			{{if !$event.email && !$_POST.email}}
+				{{:assign email_hidden=true}}
+			{{/if}}
+			<dl class="email{{if $email_hidden}} hidden{{/if}}">
+				{{:input type="email" name="email" label="Adresse e-mail" required=true help="Une confirmation d'inscription vous sera envoyée à cette adresse" default=$logged_user._email onfocus="this.select()" onkeyup="g.toggle('.mycaptcha', this.value != '');" disabled=$email_hidden}}
 			</dl>
 			<dl>
 				{{#foreach from=$event.fields key="i" item="field"}}
