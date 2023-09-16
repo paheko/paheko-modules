@@ -27,9 +27,14 @@
 		at=$_POST.at|strval|trim|or:null
 		a3=$_POST.a3|strval|trim|or:null
 		ll=$_POST.ll|array_transpose
+		p=$_POST.p|intval|or:null
 	}}
 	{{:http redirect="./"}}
 {{/if}}
+
+{{#select id, CASE WHEN code IS NOT NULL THEN code || ' — ' || label ELSE label END AS label FROM acc_projects ORDER BY code, label}}
+	{{:assign var="projects.%d"|args:$id value=$label}}
+{{/select}}
 
 <form method="post" action="">
 <fieldset>
@@ -43,6 +48,7 @@
 	</dl>
 	<dl class="t1 t2 t3 t4 t5">
 		{{:input type="money" name="a00" label="Montant" source=$tpl}}
+		{{:input type="select" name="p" label="Projet" options=$projects source=$tpl default_empty="— Aucun —"}}
 	</dl>
 	<dl class="t1 t5">
 		{{:input type="text" name="ar" label="Code du compte de recette" source=$tpl}}
