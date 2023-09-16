@@ -12,10 +12,10 @@
 		--second-color: {{$color2.h}};
 	}
 	</style>
-	<link rel="stylesheet" type="text/css" href="{{$root_url}}default.css?h={{$version_hash}}" media="screen,projection,handheld" />
-	<link rel="stylesheet" type="text/css" href="{{$root_url}}content.css?h={{$version_hash}}" media="all" />
-	<link rel="stylesheet" type="text/css" href="{{$root_url}}print.css?h={{$version_hash}}" media="print" />
-	<link rel="alternate" type="application/atom+xml" title="{{$config.org_name}}" href="{{$root_url}}atom.xml" />
+	<link rel="stylesheet" type="text/css" href="{{$root_uri}}default.css?h={{$version_hash}}" media="screen,projection,handheld" />
+	<link rel="stylesheet" type="text/css" href="{{$root_uri}}content.css?h={{$version_hash}}" media="all" />
+	<link rel="stylesheet" type="text/css" href="{{$root_uri}}print.css?h={{$version_hash}}" media="print" />
+	<link rel="alternate" type="application/atom+xml" title="{{$config.org_name}}" href="{{$root_uri}}atom.xml" />
 	<link rel="icon" type="image/png" href="{{$config.files.favicon}}" />
 	<meta property="og:title" content="{{if $title}}{{$title}} — {{/if}}{{$config.org_name}}" />
 	<meta property="og:site_name" content="{{$config.org_name}}" />
@@ -30,7 +30,7 @@
 <header class="nav">
 	<nav>
 		<ul>
-			<li class="current"><a href="{{$root_url}}">{{$config.org_name}}</a></li>
+			<li class="current"><a href="{{$root_uri}}">{{$config.org_name}}</a></li>
 			<li><a href="{{$admin_url}}">Connexion</a></li>
 		</ul>
 	</nav>
@@ -40,7 +40,7 @@
 
 <header class="main{{if $home}} home{{/if}}">
 	<h1>
-		<a href="{{$root_url}}">
+		<a href="{{$root_uri}}">
 		{{if $config.files.logo}}
 			<img src="{{$config.files.logo}}" alt="{{$config.org_name}}" class="logo" />
 		{{else}}
@@ -71,11 +71,11 @@
 
 {{#module name="bookings"}}
 	<p class="booking-btn">
-		<a href="{{$url}}" target="_blank"><span></span><b>Réserver un créneau</b></a>
+		<a href="{{$public_url}}" target="_blank"><span></span><b>Réserver un créneau</b></a>
 	</p>
 {{/module}}
 
-	<form method="get" action="{{ $root_url }}search.html" class="search-widget">
+	<form method="get" action="{{ $root_uri }}search.html" class="search-widget">
 		<p>
 			<input type="search" name="search" placeholder="Rechercher…" value="{{ $_GET.search }}" />
 			<input type="submit" value="&rarr;" title="Lancer la recherche" />

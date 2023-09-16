@@ -29,8 +29,8 @@
 	<h4>Accès à la réservation</h4>
 	<p>Les membres connectés pourront réserver un créneau via le menu « Réservations » à gauche.</p>
 	<p>Les non-membres pourront réserver un créneau via l'adresse suivante :<br />
-		{{:input copy=true name="url" type="url" readonly=true default=$module.url size=$module.url|strlen}}
-		{{:linkbutton href=$module.url label="Ouvrir" target="_blank" shape="eye"}}
+		{{:input copy=true name="url" type="url" readonly=true default=$module.public_url size=$module.public_url|strlen}}
+		{{:linkbutton href=$module.public_url label="Ouvrir" target="_blank" shape="eye"}}
 	</p>
 	<p>Les gestionnaires pourront visionner les réservations et gérer les inscrit⋅e⋅s dans le menu « Réservations ».</p>
 </div>
