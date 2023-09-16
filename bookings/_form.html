@@ -99,7 +99,6 @@
 	</section>
 
 {{else}}
-
 	{{#form on="book"}}
 		{{:assign slot_data=$_POST.slot|explode:"="}}
 
@@ -116,7 +115,7 @@
 			{{/load}}
 
 			{{* Vérification qu'il y a encore des places dispo *}}
-			{{#load event=$event.key where="datetime($$.date) = datetime(:date)" :date=$slot_data.1 type="booking" count=true}}
+			{{#load event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$slot_data.1 type="booking" count=true}}
 				{{if $count >= $slot.seats}}
 					{{:error message="Ce créneau est déjà plein, aucune place n'est disponible, désolé."}}
 				{{/if}}
@@ -402,5 +401,3 @@
 
 	</form>
 {{/if}}
-
-
