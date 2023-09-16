@@ -1,5 +1,12 @@
 {{#restrict section="users" level="read" block=true}}{{/restrict}}
-{{:assign count=$_POST.users|count}}
+{{if $_POST.category}}
+	{{#select id FROM users WHERE id_category = :category; :category=$_POST.category|intval}}
+		{{:assign var="users." value=$id}}
+	{{/select}}
+{{else}}
+	{{:assign users=$_POST.users|keys}}
+{{/if}}
+{{:assign count=$users|count}}
 {{:assign title="%d cartes de membre"|args:$count}}
 {{if $_POST.pdf}}
 	{{:http type="pdf" inline="%s.pdf"|args:$title}}
@@ -21,7 +28,7 @@
 
 	<table>
 		{{:assign i=0}}
-		{{#users id=$_POST.users|keys}}
+		{{#users id=$users}}
 			{{if "%d %% 2"|math:$i == 0}}
 				<tr>
 			{{/if}}
