@@ -48,7 +48,9 @@
 	</dl>
 	<dl class="t1 t2 t3 t4 t5">
 		{{:input type="money" name="a00" label="Montant" source=$tpl}}
+		{{if $projects}}
 		{{:input type="select" name="p" label="Projet" options=$projects source=$tpl default_empty="— Aucun —"}}
+		{{/if}}
 	</dl>
 	<dl class="t1 t5">
 		{{:input type="text" name="ar" label="Code du compte de recette" source=$tpl}}
