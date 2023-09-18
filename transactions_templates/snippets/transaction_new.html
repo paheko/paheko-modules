@@ -1,0 +1,33 @@
+{{if !$_POST}}
+
+<div style="display: grid; grid-template-columns: auto 1fr auto; gap: 1em; margin: 1em; align-items: center">
+	<div>
+		Saisir à partir d'un modèle&nbsp;:
+	</div>
+	<nav class="dropdown">
+		<ul>
+			<li><a></a></li>
+			<li{{if null === $_GET.tplid}} class="selected"{{/if}}><a href="?">Sélectionner un modèle</a></li>
+	{{#load order="$$.name" assign="row"}}
+		{{#foreach from=$row item="value" key="key"}}
+			{{if $key === 'id'}}
+				{{:assign var="qs.tplid" value=$value}}
+			{{elseif $key !== 'name'}}
+				{{:assign var="qs.%s"|args:$key value=$value}}
+			{{/if}}
+		{{/foreach}}
+		{{:assign qs=$qs|http_build_query}}
+			<li{{if $_GET.tplid == $id}} class="selected"{{/if}}>
+				<a href="?{{$qs}}">
+					<strong>{{$name}}</strong>
+				</a>
+			</li>
+	{{/load}}
+		</ul>
+	</nav>
+	<div style="text-align: right">
+		{{:linkbutton shape="edit" href=$module.url label="Modifier les modèles"}}
+	</div>
+</div>
+
+{{/if}}
