@@ -11,7 +11,7 @@
 {{else}}
 	{{#restrict block=true section="accounting" level="read"}}
 	{{/restrict}}
-	{{:assign id=$_GET.id}}
+	{{:assign id=$_GET.id trusted=true}}
 {{/if}}
 
 {{if !$id}}
@@ -37,7 +37,13 @@
 
 {{else}}
 	{{#transactions id=$id}}
-		{{:include file="./_header.html" page_size="A5" title="Reçu de paiement %d - %s"|args:$id:$users_names}}
+		{{if $trusted}}
+			{{:assign var="name" value=$_GET.name|or:$users_names}}
+		{{else}}
+			{{:assign var="name" value=$users_names}}
+		{{/if}}
+
+		{{:include file="./_header.html" page_size="A5" title="Reçu de paiement %d - %s"|args:$id:$name}}
 
 			<h1>Reçu de paiement</h1>
 
@@ -45,7 +51,7 @@
 
 			<p>L'association «&nbsp;{{$config.nom_asso}}&nbsp;» atteste avoir reçu de la part de&nbsp;:</p>
 
-			<h3 class="placeholder">{{$users_names}}</h3>
+			<h3 class="placeholder">{{$name}}</h3>
 
 			<p>un paiement d'un montant de&nbsp;:</p>
 

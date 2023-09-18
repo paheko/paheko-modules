@@ -1,5 +1,3 @@
-{{#restrict block=true section="accounting" level="read"}}
-{{/restrict}}
 {{if !$_GET.id}}
 
 	{{:admin_header title="Reçu de don" current="acc"}}
@@ -23,7 +21,8 @@
 
 {{else}}
 	{{#transactions id=$_GET.id}}
-		{{:include file="/receipt/_header.html" page_size="A5" title="Reçu de don %d - %s"|args:$id:$users_names}}
+		{{:assign var="name" value=$_GET.name|or:$users_names}}
+		{{:include file="/receipt/_header.html" page_size="A5" title="Reçu de don %d - %s"|args:$id:$name}}
 
 			<h1>Reçu de don</h1>
 
@@ -31,7 +30,7 @@
 
 			<p>L'association «&nbsp;{{$config.nom_asso}}&nbsp;» atteste avoir reçu de la part de&nbsp;:</p>
 
-			<h3>{{$users_names}}</h3>
+			<h3 class="placeholder">{{$name}}</h3>
 
 			<p>un don d'un montant de&nbsp;:</p>
 

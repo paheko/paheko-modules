@@ -3,6 +3,8 @@
 {{if $_POST.save}}
 	{{:save key="config"
 		accounts=$_POST.accounts|trim
+		email_subject=$_POST.email_subject|trim
+		email_body=$_POST.email_body|trim
 	}}
 	{{:http redirect="?ok=1"}}
 {{/if}}
@@ -24,6 +26,15 @@
 		</dd>
 	</dl>
 </fieldset>
+
+<fieldset>
+	<legend>Message par défaut lors de l'envoi du reçu par e-mail</legend>
+	<dl>
+		{{:input name="email_subject" type="text" label="Sujet du message" required=true source=$module.config default="Votre reçu de don"}}
+		{{:input name="email_body" type="textarea" label="Corps du message" cols="70" rows="7" required=true source=$module.config default="Bonjour !\n\nVeuillez trouver ci-joint votre reçu de don au format PDF."}}
+	</dl>
+</fieldset>
+
 
 <p class="submit">
 	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
