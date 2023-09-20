@@ -189,6 +189,8 @@
 	<fieldset class="slots">
 	<legend>Créneaux disponibles</legend>
 
+	{{:assign repeat="%d-1"|math:$event.max_weeks}}
+
 	{{if $event.use_closings || $event.use_openings}}
 		{{#module name="openings"}}
 			{{* Prendre en compte les périodes de fermeture depuis le module "ouvertures" *}}
@@ -244,6 +246,14 @@
 						{{:assign var="slots.%d"|args:$start frequency=$slot.frequency day=$slot.day open=$start|date:'H:i' seats=$event.openings_seats}}
 						{{:assign start="%d+(%d*60)"|math:$start:$event.openings_delay}}
 					{{/foreach}}
+
+					{{if $slot.frequency === 'this' && $repeat > 0}}
+						{{#foreach count=$repeat}}
+							{{:assign date=$start|date:'Y-m-d'}}
+							{{:assign start="%s, next %s, %s"|args:$date:$slot.day:$slot.open|strtotime}}
+							{{:assign var="slots.%d"|args:$start frequency=$slot.frequency day=$slot.day open=$start|date:'H:i' seats=$event.openings_seats}}
+						{{/foreach}}
+					{{/if}}
 				{{/foreach}}
 			{{/if}}
 		{{/module}}
@@ -268,7 +278,7 @@
 			{{* Make sure slot is in the future, can't book for past dates *}}
 			{{if $frequency != 'only' && $timestamp < $now|date:'U'}}
 				{{if $frequency == 'this'}}
-					{{:assign timestamp="next %s %s, %s"|args:$frequency:$day:$open|strtotime}}
+					{{:assign timestamp="next %s, %s"|args:$day:$open|strtotime}}
 				{{else}}
 					{{:assign timestamp="%s %s of next month, %s"|args:$frequency:$day:$open|strtotime}}
 				{{/if}}
@@ -280,6 +290,14 @@
 			{{/if}}
 
 			{{:assign .="slots.%d"|args:$timestamp}}
+
+			{{if $frequency == 'this' && $repeat > 0}}
+				{{#foreach count=$repeat}}
+					{{:assign date=$timestamp|date:'Y-m-d'}}
+					{{:assign timestamp="%s, next %s, %s"|args:$date:$day:$open|strtotime}}
+					{{:assign ..="slots.%d"|args:$timestamp}}
+				{{/foreach}}
+			{{/if}}
 		{{/load}}
 	{{/if}}
 

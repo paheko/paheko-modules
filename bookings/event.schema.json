@@ -15,6 +15,9 @@
 		"use_openings": {
 			"type": "boolean"
 		},
+		"max_weeks": {
+			"type": "integer"
+		},
 		"openings_seats": {
 			"type": ["null", "integer"]
 		},
