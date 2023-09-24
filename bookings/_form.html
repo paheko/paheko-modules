@@ -53,7 +53,7 @@
 	{{/load}}
 {{/if}}
 {{* My bookings *}}
-{{if $logged_user}}
+{{if $logged_user.id}}
 	{{#load type="booking" id_user=$logged_user.id where="key != :booking" :booking=$_GET.b|or:''}}
 		{{#load type="event" key=$event assign="e"}}{{/load}}
 		<article>
@@ -389,9 +389,12 @@
 			</dl>
 			{{if !$event.email && !$_POST.email}}
 				{{:assign email_hidden=true}}
+				{{if $logged_user._email}}
+					{{:assign email_disabled=true}}
+				{{/if}}
 			{{/if}}
 			<dl class="email{{if $email_hidden}} hidden{{/if}}">
-				{{:input type="email" name="email" label="Adresse e-mail" required=true help="Une confirmation d'inscription vous sera envoyée à cette adresse" default=$logged_user._email onfocus="this.select()" onkeyup="g.toggle('.mycaptcha', this.value != '');" disabled=$email_hidden}}
+				{{:input type="email" name="email" label="Adresse e-mail" required=true help="Une confirmation d'inscription vous sera envoyée à cette adresse" default=$logged_user._email onfocus="this.select()" onkeyup="g.toggle('.mycaptcha', this.value != '');" disabled=$email_disabled}}
 			</dl>
 			<dl>
 				{{#foreach from=$event.fields key="i" item="field"}}
