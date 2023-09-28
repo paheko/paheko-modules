@@ -251,7 +251,10 @@
 						{{#foreach count=$repeat}}
 							{{:assign date=$start|date:'Y-m-d'}}
 							{{:assign start="%s, next %s, %s"|args:$date:$slot.day:$slot.open|strtotime}}
-							{{:assign var="slots.%d"|args:$start frequency=$slot.frequency day=$slot.day open=$start|date:'H:i' seats=$event.openings_seats}}
+							{{#foreach count=$event.openings_slots key="i"}}
+								{{:assign var="slots.%d"|args:$start frequency=$slot.frequency day=$slot.day open=$start|date:'H:i' seats=$event.openings_seats}}
+								{{:assign start="%d+(%d*60)"|math:$start:$event.openings_delay}}
+							{{/foreach}}
 						{{/foreach}}
 					{{/if}}
 				{{/foreach}}
