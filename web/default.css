@@ -179,6 +179,27 @@ header.main .contacts {
     flex-direction: column;
 }
 
+header.main .contacts .map {
+    color: inherit;
+    text-decoration: none;
+}
+
+header.main .contacts .map svg {
+    fill: hsl(var(--second-color), 60%, 40%);
+    background: hsl(var(--first-color), 50%, 90%);
+    padding: .25em;
+    width: 1.2em;
+    height: 1.2em;
+    border-radius: 50%;
+    float: right;
+    transition: fill .2s, background .2s;
+}
+
+header.main .contacts .map:hover svg {
+    fill: hsl(var(--second-color), 50%, 50%);
+    background: hsl(var(--first-color), 70%, 95%);
+}
+
 /* NAVIGATION EN HAUT DE LA PAGE (ACCUEIL/CONNEXION) */
 header.nav {
     background: #ddd;
