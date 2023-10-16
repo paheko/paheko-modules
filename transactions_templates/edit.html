@@ -15,19 +15,20 @@
 
 {{if $_POST.save}}
 	{{:save id=$tpl.id
+		validate_schema="./template.schema.json"
 		name=$_POST.name|strval|trim
 		t=$_POST.t|intval
 		l=$_POST.l|strval|trim|or:null
 		dt=$_POST.dt|strval|trim|or:null
 		r=$_POST.r|strval|trim|or:null
 		a00=$_POST.a00|money_int
+		p=$_POST.p|intval|or:null
 		ar=$_POST.ar|strval|trim|or:null
 		ae=$_POST.ae|strval|trim|or:null
 		ab=$_POST.ab|strval|trim|or:null
 		at=$_POST.at|strval|trim|or:null
 		a3=$_POST.a3|strval|trim|or:null
 		ll=$_POST.ll|array_transpose
-		p=$_POST.p|intval|or:null
 	}}
 	{{:http redirect="./"}}
 {{/if}}
