@@ -1,0 +1,39 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["claim"]
+		},
+		"number": {
+			"description": "Nombre unique",
+			"type": "integer"
+		},
+		"date": {
+			"description": "Date",
+			"type": "string",
+			"format": "date"
+		},
+		"user_id": {
+			"description": "ID membre",
+			"type": "integer"
+		},
+		"user_name": {
+			"description": "Nom membre",
+			"type": "string"
+		},
+		"status": {
+			"description": "Statut",
+			"type": "string",
+			"enum": ["draft", "waiting", "payable", "paid", "cancelled"]
+		},
+		"transactions": {
+			"type": "array",
+			"items": {
+				"type": "integer"
+			}
+		}
+	},
+	"required": ["type", "number", "date", "user_id", "user_name", "status"]
+}

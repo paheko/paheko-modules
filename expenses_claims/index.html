@@ -1,53 +1,41 @@
-{{if $_GET.new}}
-	{{#load select="COUNT(*) AS count" type="claim"}}
-		{{:assign count=$count}}
-	{{/load}}
-	{{:assign new_number="%d+1"|math:$count}}
-	{{:assign key=""|uuid}}
-	{{:save
-		key=$key
-		number=$new_number
-		type='claim'
-		date=$now
-		id_user=$logged_user.id
-		status="draft"
-	}}
-	{{:http redirect="./details.html?id=%s"|args:$key}}
-{{/if}}
-
 {{:admin_header title="Notes de frais"}}
 
 <nav class="tabs">
 	<aside>
-		{{:linkbutton href="?new=yes" label="Nouvelle note de frais" shape="plus"}}
+		{{:linkbutton href="new.html" label="Nouvelle note de frais" shape="plus" target="_dialog"}}
 	</aside>
 
 	{{#restrict section="accounting" level="write"}}
 	<ul>
-		<li{{if !$_GET.status}} class="current"{{/if}}><a href="./">Mes notes de frais</a></li>
+		<li{{if $_GET.status === 'all'}} class="current"{{/if}}><a href="./?status=all">Toutes les notes de frais</a></li>
 		<li{{if $_GET.status === 'waiting'}} class="current"{{/if}}><a href="./?status=waiting">À valider</a></li>
 		<li{{if $_GET.status === 'payable'}} class="current"{{/if}}><a href="./?status=payable">À payer</a></li>
 		<li{{if $_GET.status === 'paid'}} class="current"{{/if}}><a href="./?status=paid">Payées</a></li>
+		<li{{if $_GET.status === 'cancelled'}} class="current"{{/if}}><a href="./?status=cancelled">Annulées</a></li>
+		<li{{if $_GET.status === 'draft'}} class="current"{{/if}}><a href="./?status=draft">Brouillons</a></li>
+		<li{{if !$_GET.status}} class="current"{{/if}}><a href="./">Mes notes de frais</a></li>
 	</ul>
 	{{/restrict}}
 </nav>
 
-{{:assign where="$$.id_user = %d"|args:$logged_user.id}}
+{{:assign where="$$.user_id = %d"|args:$logged_user.id}}
 
 {{#restrict section="accounting" level="write"}}
-	{{if $_GET.status}}
+	{{if $_GET.status === 'all'}}
+		{{:assign where="1"}}
+	{{elseif $_GET.status}}
 		{{:assign status=$_GET.status|quote_sql}}
 		{{:assign where="$$.status = %s"|args:$status}}
 	{{/if}}
 {{/restrict}}
 
 {{#list
-	select="$$.number AS 'Numéro'; (SELECT %s FROM users WHERE id = $$.id_user) AS 'Membre'; $$.date AS 'Date'; CASE $$.status WHEN 'waiting' THEN 'À valider' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
+	select="$$.number AS 'Numéro'; $$.user_name AS 'Membre'; $$.date AS 'Date'; CASE $$.status WHEN 'waiting' THEN 'À valider' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
 	order=1
 	desc=true
 	where="$$.type = 'claim' AND %s"|args:$where
 }}
-	<tr>
+	<tr class="{{if $status === 'cancelled'}}disabled crossed{{/if}}">
 		<td class="num">{{:link href="details.html?id=%s"|args:$key label=$number}}</td>
 		<td>{{$col2}}</td>
 		<td>{{$date|date_short}}</td>
