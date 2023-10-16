@@ -1,0 +1,34 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["line"]
+		},
+		"claim": {
+			"type": "string"
+		},
+		"label": {
+			"description": "Libellé",
+			"type": ["string"]
+		},
+		"account": {
+			"description": "Code comptable",
+			"type": ["string", "null"]
+		},
+		"category": {
+			"description": "Catégorie",
+			"type": ["string", "null"]
+		},
+		"description": {
+			"description": "Description",
+			"type": ["string", "null"]
+		},
+		"amount": {
+			"description": "Montant",
+			"type": "integer"
+		}
+	},
+	"required": ["type", "claim", "label", "account", "category", "description", "amount"]
+}

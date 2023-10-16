@@ -1,0 +1,147 @@
+{{#load assign="claim" key=$_GET.claim}}
+{{else}}
+	{{:error message="Cette note de frais n'existe pas"}}
+{{/load}}
+
+{{if $claim.status !== 'draft'}}
+	{{:error message="Cette note de frais n'est pas un brouillon, il n'est pas possible de la modifier."}}
+{{/if}}
+
+{{:include file="./_config_default.tpl" keep="module.config,vehicles"}}
+
+{{#form on="save"}}
+	{{if $_POST.vehicule}}
+		{{:include file="./_calcul_bareme.tpl" vehicule=$_POST.vehicule distance=$_POST.distance keep="resultat,calcul,bonus"}}
+		{{if $bonus > 1}}
+			{{:assign bonus="+20% (véhicule électrique)"}}
+		{{else}}
+			{{:assign bonus="Non"}}
+		{{/if}}
+		{{:assign var="vehicle_name" from="vehicles.%s"|args:$_POST.vehicule}}
+		{{:assign
+			amount=$resultat
+			description="Départ : %s\nArrivée : %s\nVéhicule : %s\nDistance : %s km\nCalcul : %s\nBonus : %s\n\n%s"|args:$_POST.depart:$_POST.arrivee:$vehicle_name:$_POST.distance:$calcul:$bonus:$_POST.description|trim
+		}}
+	{{/if}}
+	{{:save
+		key="uuid"
+		type="line"
+		claim=$claim.key
+		label=$_POST.label|trim
+		category=$_POST.category
+		account=$_POST.account|trim|or:null
+		description=$description|or:$_POST.description|trim|or:null
+		amount=$amount|or:$_POST.amount|money_int
+	}}
+	{{:http redirect="details.html?id=%s"|args:$claim.key}}
+{{/form}}
+
+{{:admin_header title="Ajouter une ligne à la note de frais n°%d"|args:$claim.number}}
+
+{{:form_errors}}
+
+{{:assign var="categories.Autre" value="Autre"}}
+
+{{#foreach from=$module.config.categories item="cat"}}
+	{{:assign var="categories.%s"|args:$label value=$label}}
+{{/foreach}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Dépense</legend>
+		<dl>
+			{{:input type="text" name="label" label="Libellé" help="Inclure ici une description courte, par exemple 'Abonnement fibre atelier, mars 2023'." required=true}}
+			{{:input type="select" name="category" options=$categories label="Catégorie" required=true default_empty="— Sélectionner une catégorie —"}}
+		</dl>
+		<dl class="category">
+			{{:input type="text" name="account" label="Code comptable" help="Indiquer ici le code du compte à utiliser. Laisser vide en cas de doute."}}
+			{{:input type="textarea" name="description" label="Description"}}
+		</dl>
+		<dl class="vehicle">
+			{{:input type="select" name="vehicule" options=$vehicles label="Type de véhicule" required=true}}
+			<dd class="carbone">--
+			</dd>
+			{{:input type="text" name="depart" label="Lieu de départ" required=true}}
+			{{:input type="text" name="arrivee" label="Lieu d'arrivée" required=true}}
+			{{:input type="number" name="distance" options=$vehicles label="Distance parcourue" required=true min=1 step=1 size=5}}
+			<dd class="help">
+				Le barème sera calculé lors de l'enregistrement, en fonction de la distance et du type de véhicule.
+			</dd>
+		</dl>
+		<dl class="amount">
+			{{:input type="money" name="amount" label="Montant total" required=true}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
+	</p>
+</form>
+
+<script type="text/javascript">
+var categories = {{$module.config.categories|json_encode|raw}};
+categories.push({"label": "Autre", "account": ""});
+
+var s = $('#f_category');
+
+function selectCategory() {
+	var category = null;
+
+	Object.values(categories).forEach((c) => {
+		g.toggle('dl.category, p.submit', true);
+
+		if (c.label !== s.value) {
+			return;
+		}
+
+		g.toggle('dl.vehicle', !!c.vehicle);
+		g.toggle('dl.amount', !c.vehicle);
+		$('#f_account').value = c.account;
+	});
+}
+
+function selectVehicle() {
+	var g;
+	if (v.value == 'speedbike') {
+		g = 11;
+	}
+	else if (v.value.substr(0, 5) === 'emoto' || v.value === 'ecyclomoteur') {
+		g = 80;
+	}
+	else if (v.value === 'moto6cv') {
+		g = 476;
+	}
+	else if (v.value.match(/moto|cyclomoteur/)) {
+		g = 350;
+	}
+	else if (v.value === 'e3cv') {
+		g = 64;
+	}
+	else if (v.value === 'e4cv') {
+		g = 99;
+	}
+	else if (v.value.substr(0, 1) === 'e') {
+		g = 139;
+	}
+	else {
+		g = 300;
+	}
+
+	var msg = g >= 100 ? '<b class="error">Véhicule très polluant ☹</b>' : '<span class="confirm">Véhicule peu polluant 😊</span>';
+	msg += '<br />Émet <b>' + g + '</b> gCO2/km.';
+	$('.carbone')[0].innerHTML = msg;
+}
+
+g.toggle('dl.category, dl.vehicle, dl.amount, p.submit', false);
+s.onchange = selectCategory;
+
+selectCategory();
+
+var v = $('#f_vehicule');
+
+v.onchange = selectVehicle;
+selectVehicle();
+
+</script>
+
+{{:admin_footer}}
