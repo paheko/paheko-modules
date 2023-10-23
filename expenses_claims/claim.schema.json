@@ -28,7 +28,10 @@
 			"type": "string",
 			"enum": ["draft", "waiting", "payable", "paid", "cancelled"]
 		},
-		"transactions": {
+		"id_transaction": {
+			"type": "integer"
+		},
+		"payments": {
 			"type": "array",
 			"items": {
 				"type": "integer"

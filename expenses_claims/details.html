@@ -12,56 +12,76 @@
 	{{/if}}
 {{/restrict}}
 
+{{:assign var="upload_path" value=$claim.key}}
+
 {{#form on="delete"}}
 	{{:delete key=$_POST.delete}}
 	{{:http redirect="details.html?id=%s"|args:$claim.key}}
 {{/form}}
-
 {{if $claim.status === 'draft'}}
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
 		{{:http redirect="details.html?id=%s"|args:$claim.key}}
 	{{/form}}
-{{elseif $claim.status === 'waiting' || $claim.user_id !== $logged_user.id}}
-	{{#form on="cancel"}}
-		{{:save key=$claim.key status="cancelled"}}
-		{{:http redirect="details.html?id=%s"|args:$claim.key}}
-	{{/form}}
-{{elseif $claim.status === 'waiting' && $is_admin}}
-	{{#form on="validate"}}
-		{{:assign total=0}}
-		{{#load type="line" claim=$claim.key}}
-			{{:assign total="%d+%d"|args:$amount:$total}}
-			{{:assign var="lines." credit=$amount label=$label code=$account}}
-			{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
-		{{/load}}
-		{{:assign var="lines." debit=$total code="4110" label="Dette envers le membre"}}
-		{{:create_transaction
-			assign_new_id="id"
-			type="advanced"
-			label="Note de frais n°%d (%s)"|args:$claim.number:$claim.user_name
-			reference="NDF-%d"|args:$claim.number
-			linked_users=$claim.user_id
-			lines=$lines
-			notes=$notes|trim|or:null
-		}}
-		{{:save key=$claim.key status="payable"}}
-		{{:http redirect="details.html?id=%s"|args:$claim.key}}
-	{{/form}}
+{{elseif $claim.status === 'waiting'}}
+	{{if $claim.user_id !== $logged_user.id}}
+		{{#form on="cancel"}}
+			{{:save key=$claim.key status="cancelled"}}
+			{{:http redirect="details.html?id=%s"|args:$claim.key}}
+		{{/form}}
+	{{/if}}
+	{{if $is_admin}}
+		{{#form on="validate"}}
+			{{:assign total=0}}
+			{{#load type="line" claim=$claim.key}}
+				{{:assign var="lines." credit=$amount|money_raw label=$label account=$account}}
+				{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
+				{{:assign total="%d+%d"|math:$amount:$total}}
+			{{/load}}
+
+			{{if !$total}}
+				{{:error message="Cette note de frais ne comporte aucune ligne"}}
+			{{/if}}
+
+			{{:assign var="lines." debit=$total|money_raw account="4110" label="Dette envers le membre"}}
+			{{:create entity="transaction"
+				assign_new_id="id"
+				id_year="match"
+				type="advanced"
+				date=$now
+				label="Note de frais n°%d (%s)"|args:$claim.number:$claim.user_name
+				reference="NDF-%d"|args:$claim.number
+				linked_users=$claim.user_id
+				lines=$lines
+				notes=$notes|trim|or:null
+				move_attachments_from=$upload_path
+			}}
+			{{:save key=$claim.key status="payable" id_transaction=$id}}
+			{{:http redirect="details.html?id=%s"|args:$claim.key}}
+		{{/form}}
+	{{/if}}
 {{/if}}
 
 {{:admin_header title="Note de frais n°%d"|args:$claim.number}}
 
 <nav class="tabs">
+{{if $claim.status === 'draft'}}
 	<aside>
 		{{:linkbutton shape="plus" label="Ajouter une ligne à la note de frais" href="./line.html?claim=%s"|args:$claim.key target="_dialog"}}
 	</aside>
+{{/if}}
 	{{:linkbutton shape="left" label="Retour à la liste des notes de frais" href="./"}}
 </nav>
 
+{{:form_errors}}
+
+{{#load select="SUM($$.amount) AS total" where="$$.type = 'line' AND $$.claim = :claim" :claim=$claim.key}}
+	{{:assign total=$total}}
+{{/load}}
+
 <form method="post" action="">
 
-{{if $claim.status === 'draft'}}
+{{if $claim.status === 'draft' && $total}}
 	<div class="alert block">
 		<h3>Statut&nbsp;: brouillon</h3>
 		<p class="submit">{{:button shape="check" name="validate" label="Valider" type="submit" class="main"}}</p>
@@ -78,17 +98,15 @@
 
 {{if $is_admin}}
 	{{if $claim.status === 'waiting'}}
-	<fieldset>
-		<legend>Valider cette note de frais ?</legend>
-		<dl>
-			<dt>{{:button shape="check" name="validate" label="Valider cette note de frais" type="submit"}}</dt>
-			<dd class="help">La note de frais sera transformée en dette.</dd>
-			{{*
-			<dt>{{:button shape="delete" name="deny" label="Refuser cette note de frais" type="submit"}}</dt>
-			<dd class="help">Une notification sera envoyée au membre.</dd>
-			*}}
-		</dl>
-	</fieldset>
+		<fieldset>
+			<legend>Valider cette note de frais ?</legend>
+			<p class="submit">{{:button shape="check" name="validate" label="Valider cette note de frais" type="submit" class="main"}}</p>
+			<p class="help">La note de frais sera transformée en écriture comptable. Les fichiers joints seront déplacés dans l'écriture.</p>
+				{{*
+				<dt>{{:button shape="delete" name="deny" label="Refuser cette note de frais" type="submit"}}</dt>
+				<dd class="help">Une notification sera envoyée au membre.</dd>
+				*}}
+		</fieldset>
 	{{elseif $claim.status === 'payable'}}
 	{{/if}}
 {{/if}}
@@ -115,13 +133,17 @@
 	{{/if}}
 	</dd>
 
-{{#load select="SUM($$.amount) AS total" where="$$.type = 'line' AND $$.claim = :claim" :claim=$claim.key}}
 	<dt>Montant total</dt>
 	<dd><strong class="money">{{$total|money_currency:false:false}}</strong></dd>
-{{/load}}
+
+	{{if $claim.id_transaction}}
+	<dt>Écriture de note de frais</dt>
+	<dd>{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$claim.id_transaction label="#%d"|args:$claim.id_transaction}}</dd>
+	{{/if}}
+
 
 	{{#foreach from=$claim.transactions item="id"}}
-	<dt>Écriture liée</dt>
+	<dt>Écriture de paiement</dt>
 	<dd>{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$id label="#%d"|args:$id}}</dd>
 	{{/foreach}}
 </dl>
@@ -153,18 +175,47 @@
 {{/list}}
 </form>
 
-
-{{if $claim.status === 'cancelled'}}
-	{{:assign edit=true upload=false}}
-{{elseif $is_admin && $claim.status !== 'paid' && $claim.status !== 'payable'}}
-	{{:assign edit=true upload=true}}
-{{elseif $claim.user_id === $logged_user.id && $claim.status === 'draft'}}
-	{{:assign edit=true upload=true}}
+{{if $claim.status === 'payable' || $claim.status === 'paid'}}
+	<p class="help">Les fichiers joints ont été déplacés dans l'écriture de note de frais {{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$claim.id_transaction label="#%d"|args:$claim.id_transaction}}</p>
+	<h2 class="ruler">Paiements (remboursements)</h2>
 {{else}}
-	{{:assign edit=false upload=false}}
+	{{if $claim.status === 'cancelled'}}
+		{{:assign edit=true upload=false}}
+	{{elseif $claim.user_id === $logged_user.id && $claim.status === 'draft'}}
+		{{:assign edit=true upload=true}}
+	{{elseif !$is_admin}}
+		{{:assign edit=false upload=false}}
+	{{/if}}
+	{{:admin_files edit=$edit upload=$upload path=$upload_path}}
 {{/if}}
 
-{{:admin_files edit=$edit upload=$upload path=$claim.key}}
+{{if $claim.payments}}
+	<table class="list">
+		<thead>
+			<tr>
+				<td>Num.</td>
+				<td>Date</td>
+				<td>Libellé</td>
+				<td>Montant</td>
+			</tr>
+		</thead>
+		<tbody>
+		{{#transactions id=$claim.payments}}
+			<tr>
+				<td class="num">{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$id label="#%d"|args:$id}}</td>
+				<td>{{$date|date_short}}</td>
+				<td>{{$label}}</td>
+				<td class="money">{{$credit|money_currency}}</td>
+			</tr>
+		{{/transactions}}
+		</tbody>
+	</table>
+{{/if}}
 
+{{if $claim.status === 'payable'}}
+	<p class="actions-center">
+		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key}}
+	</p>
+{{/if}}
 
 {{:admin_footer}}
