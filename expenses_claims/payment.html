@@ -1,0 +1,70 @@
+{{#restrict section="accounting" level="write" block=true}}{{/restrict}}
+
+{{#load assign="claim" key=$_GET.claim}}
+{{else}}
+	{{:error message="Cette note de frais n'existe pas"}}
+{{/load}}
+
+{{if $claim.status !== 'payable'}}
+	{{:error message="Cette note de frais n'est pas en attente de paiement: %s"|args:$claim.status}}
+{{/if}}
+
+{{#form on="save"}}
+	{{:assign var="lines." credit=$_POST.amount account=$_POST.account_selector|keys|key:0}}
+	{{:assign var="lines." debit=$_POST.amount account="4110"}}
+	{{:create entity="transaction"
+		assign_new_id="id"
+		id_year="match"
+		type="advanced"
+		date=$_POST.date
+		label=$_POST.label
+		reference="Remboursement NDF-%d"|args:$claim.number
+		linked_users=$claim.user_id
+		lines=$lines
+	}}
+
+	{{if $_POST.paid}}
+		{{:assign new_status="paid"}}
+	{{else}}
+		{{:assign new_status=$claim.status}}
+	{{/if}}
+
+	{{:assign var="claim.payments." value=$id}}
+	{{:save
+		validate_schema="./claim.schema.json"
+		payments=$claim.payments
+		key=$claim.key
+		status=$new_status
+	}}
+	{{:redirect to="./details.html?key=%s"|args:$claim.key}}
+{{/form}}
+
+{{:admin_header title="Nouveau paiement"}}
+
+{{:form_errors}}
+
+{{#transactions id=$claim.id_transaction}}
+	{{:assign total=$debit}}
+{{/transactions}}
+
+{{#transactions id=$claim.payments}}
+	{{:assign total="%d-%d"|math:$total:$credit}}
+{{/transactions}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Nouveau paiement de remboursement</legend>
+		<dl>
+			{{:input type="date" default=$now name="date" label="Date" required=true}}
+			{{:input type="text" default="Remboursement note de frais n°%d"|args:$claim.number name="label" label="Libellé" required=true}}
+			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
+			{{:input type="list" name="account_selector" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code"}}
+			{{:input type="checkbox" name="paid" value=1 default=1 label="Marquer cette note de frais comme payée"}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

@@ -1,7 +1,12 @@
-{{#load assign="claim" key=$_GET.id}}
-{{else}}
+{{if $_GET.key}}
+	{{#load assign="claim" key=$_GET.key}}{{/load}}
+{{elseif $_GET.num}}
+	{{#load assign="claim" number=$_GET.num|intval}}{{/load}}
+{{/if}}
+
+{{if !$claim}}
 	{{:error message="Cette note de frais n'existe pas"}}
-{{/load}}
+{{/if}}
 
 {{#restrict section="accounting" level="write"}}
 	{{:assign is_admin=true}}
@@ -16,18 +21,18 @@
 
 {{#form on="delete"}}
 	{{:delete key=$_POST.delete}}
-	{{:http redirect="details.html?id=%s"|args:$claim.key}}
+	{{:http redirect="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 {{if $claim.status === 'draft'}}
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
-		{{:http redirect="details.html?id=%s"|args:$claim.key}}
+		{{:http redirect="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 {{elseif $claim.status === 'waiting'}}
 	{{if $claim.user_id !== $logged_user.id}}
 		{{#form on="cancel"}}
 			{{:save key=$claim.key status="cancelled"}}
-			{{:http redirect="details.html?id=%s"|args:$claim.key}}
+			{{:http redirect="details.html?key=%s"|args:$claim.key}}
 		{{/form}}
 	{{/if}}
 	{{if $is_admin}}
@@ -57,7 +62,7 @@
 				move_attachments_from=$upload_path
 			}}
 			{{:save key=$claim.key status="payable" id_transaction=$id}}
-			{{:http redirect="details.html?id=%s"|args:$claim.key}}
+			{{:http redirect="details.html?key=%s"|args:$claim.key}}
 		{{/form}}
 	{{/if}}
 {{/if}}
@@ -183,7 +188,9 @@
 		{{:assign edit=true upload=false}}
 	{{elseif $claim.user_id === $logged_user.id && $claim.status === 'draft'}}
 		{{:assign edit=true upload=true}}
-	{{elseif !$is_admin}}
+	{{elseif $is_admin}}
+		{{:assign edit=true upload=true}}
+	{{else}}
 		{{:assign edit=false upload=false}}
 	{{/if}}
 	{{:admin_files edit=$edit upload=$upload path=$upload_path}}
@@ -196,7 +203,7 @@
 				<td>Num.</td>
 				<td>Date</td>
 				<td>Libellé</td>
-				<td>Montant</td>
+				<td class="money">Montant</td>
 			</tr>
 		</thead>
 		<tbody>
@@ -214,7 +221,7 @@
 
 {{if $claim.status === 'payable'}}
 	<p class="actions-center">
-		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key}}
+		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key target="_dialog"}}
 	</p>
 {{/if}}
 

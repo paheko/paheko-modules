@@ -33,7 +33,7 @@
 		description=$description|or:$_POST.description|trim|or:null
 		amount=$amount|or:$_POST.amount|money_int
 	}}
-	{{:http redirect="details.html?id=%s"|args:$claim.key}}
+	{{:http redirect="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
 {{:admin_header title="Ajouter une ligne à la note de frais n°%d"|args:$claim.number}}
