@@ -10,6 +10,10 @@
 			"description": "Nombre unique",
 			"type": "integer"
 		},
+		"label": {
+			"description": "Libellé",
+			"type": "string"
+		},
 		"date": {
 			"description": "Date",
 			"type": "string",
@@ -38,5 +42,5 @@
 			}
 		}
 	},
-	"required": ["type", "number", "date", "user_id", "user_name", "status"]
+	"required": ["type", "number", "label", "date", "user_id", "user_name", "status"]
 }

@@ -21,11 +21,16 @@
 		{{:assign user_id=$logged_user.id user_name=$logged_user._name}}
 	{{/if}}
 
+	{{if !$_POST.label|trim}}
+		{{:error message="Le libellé est vide"}}
+	{{/if}}
+
 	{{:save
 		validate_schema="./claim.schema.json"
 		key=$key
 		number=$new_number
 		type="claim"
+		label=$_POST.label|trim|or:null
 		date=$now|date_format:"%Y-%m-%d"
 		user_id=$user_id
 		user_name=$user_name
@@ -47,6 +52,7 @@
 			<dt>Membre</dt>
 			<dd>{{$logged_user._name}}</dd>
 		{{/if}}
+			{{:input type="text" name="label" label="Objet de la note de frais" required=true help="Courte description de l'objet de la note de frais."}}
 		</dl>
 	</fieldset>
 	<p class="submit">

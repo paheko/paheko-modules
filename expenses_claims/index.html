@@ -30,7 +30,7 @@
 {{/restrict}}
 
 {{#list
-	select="$$.number AS 'Numéro'; $$.user_name AS 'Membre'; $$.date AS 'Date'; CASE $$.status WHEN 'waiting' THEN 'À accepter' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
+	select="$$.number AS 'Numéro'; $$.user_name AS 'Membre'; $$.date AS 'Date'; $$.label AS 'Libellé'; CASE $$.status WHEN 'waiting' THEN 'À accepter' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
 	order=1
 	desc=true
 	where="$$.type = 'claim' AND %s"|args:$where
