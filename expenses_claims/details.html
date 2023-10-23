@@ -39,7 +39,7 @@
 		{{#form on="accept"}}
 			{{:assign total=0}}
 			{{#load type="line" claim=$claim.key}}
-				{{:assign var="lines." credit=$amount|money_raw label=$label account=$account}}
+				{{:assign var="lines." debit=$amount|money_raw label=$label account=$account}}
 				{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
 				{{:assign total="%d+%d"|math:$amount:$total}}
 			{{/load}}
@@ -48,7 +48,7 @@
 				{{:error message="Cette note de frais ne comporte aucune ligne"}}
 			{{/if}}
 
-			{{:assign var="lines." debit=$total|money_raw account="4110" label="Dette envers le membre"}}
+			{{:assign var="lines." credit=$total|money_raw account="4110" label="Dette envers le membre"}}
 			{{:create entity="transaction"
 				assign_new_id="id"
 				id_year="match"
