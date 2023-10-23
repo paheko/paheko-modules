@@ -1,4 +1,15 @@
-{{#restrict section="users" level="write"}}
+{{if !$module.config.access}}
+	{{:assign var="module.config.access" value="write"}}
+{{/if}}
+
+{{#restrict section="config" level="admin"}}
+	{{:assign var="access_config" value=true}}
+{{/restrict}}
+{{#restrict section="users" level=$module.config.access}}
+	{{:assign var="access_bookings" value=true}}
+{{/restrict}}
+
+{{if $access_config || $access_bookings}}
 <nav class="tabs">
 	{{if $current == 'config'}}
 		<aside>
@@ -11,17 +22,24 @@
 	{{/if}}
 
 	<ul>
+	{{if $access_bookings}}
 		<li{{if $current == 'index'}} class="current"{{/if}}><a href="./">Inscription</a></li>
 		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="bookings.html">Voir les inscrits</a></li>
-		{{#restrict section="config" level="admin"}}
-			<li{{if $current == 'config'}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
-		{{/restrict}}
+	{{/if}}
+	{{if $access_config}}
+		<li{{if $current == 'config'}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
+	{{/if}}
 	</ul>
 
 	{{if $event}}
 		<ul class="sub">
 			<li class="title">{{$event.label}}</li>
 		</ul>
+	{{elseif $current === 'config'}}
+		<ul class="sub">
+			<li{{if !$subcurrent}} class="current"{{/if}}><a href="config.html">Événements</a></li>
+			<li{{if $subcurrent === 'access'}} class="current"{{/if}}><a href="config_access.html">Accès</a></li>
+		</ul>
 	{{/if}}
 </nav>
-{{/restrict}}
+{{/if}}

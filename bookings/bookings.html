@@ -1,4 +1,8 @@
-{{#restrict section="users" level="write" block=true}}{{/restrict}}
+{{if !$module.config.access}}
+	{{:assign var="module.config.access" value="write"}}
+{{/if}}
+
+{{#restrict section="users" level=$module.config.access block=true}}{{/restrict}}
 
 {{if $_GET.event}}
 	{{#load type="event" key=$_GET.event assign="event"}}
