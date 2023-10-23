@@ -29,7 +29,7 @@
 		{{:http redirect="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 {{elseif $claim.status === 'waiting'}}
-	{{if $claim.user_id !== $logged_user.id}}
+	{{if $claim.user_id === $logged_user.id}}
 		{{#form on="cancel"}}
 			{{:save key=$claim.key status="cancelled"}}
 			{{:http redirect="details.html?key=%s"|args:$claim.key}}
