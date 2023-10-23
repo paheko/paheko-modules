@@ -36,7 +36,7 @@
 		{{/form}}
 	{{/if}}
 	{{if $is_admin}}
-		{{#form on="validate"}}
+		{{#form on="accept"}}
 			{{:assign total=0}}
 			{{#load type="line" claim=$claim.key}}
 				{{:assign var="lines." credit=$amount|money_raw label=$label account=$account}}
@@ -104,8 +104,8 @@
 {{if $is_admin}}
 	{{if $claim.status === 'waiting'}}
 		<fieldset>
-			<legend>Valider cette note de frais ?</legend>
-			<p class="submit">{{:button shape="check" name="validate" label="Valider cette note de frais" type="submit" class="main"}}</p>
+			<legend>Accepter cette note de frais ?</legend>
+			<p class="submit">{{:button shape="check" name="accept" label="Accepter cette note de frais" type="submit" class="main"}}</p>
 			<p class="help">La note de frais sera transformée en écriture comptable. Les fichiers joints seront déplacés dans l'écriture.</p>
 				{{*
 				<dt>{{:button shape="delete" name="deny" label="Refuser cette note de frais" type="submit"}}</dt>
@@ -128,9 +128,9 @@
 	{{if $claim.status === 'draft'}}
 		Brouillon
 	{{elseif $claim.status === 'waiting'}}
-		En attente de validation
+		En attente d'acceptation
 	{{elseif $claim.status === 'payable'}}
-		Validée, en attente de paiement
+		Acceptée, en attente de paiement
 	{{elseif $claim.status === 'paid'}}
 		Payée
 	{{elseif $claim.status === 'cancelled'}}

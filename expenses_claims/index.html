@@ -8,7 +8,7 @@
 	{{#restrict section="accounting" level="write"}}
 	<ul>
 		<li{{if $_GET.status === 'all'}} class="current"{{/if}}><a href="./?status=all">Toutes les notes de frais</a></li>
-		<li{{if $_GET.status === 'waiting'}} class="current"{{/if}}><a href="./?status=waiting">À valider</a></li>
+		<li{{if $_GET.status === 'waiting'}} class="current"{{/if}}><a href="./?status=waiting">À accepter</a></li>
 		<li{{if $_GET.status === 'payable'}} class="current"{{/if}}><a href="./?status=payable">À payer</a></li>
 		<li{{if $_GET.status === 'paid'}} class="current"{{/if}}><a href="./?status=paid">Payées</a></li>
 		<li{{if $_GET.status === 'cancelled'}} class="current"{{/if}}><a href="./?status=cancelled">Annulées</a></li>
@@ -30,7 +30,7 @@
 {{/restrict}}
 
 {{#list
-	select="$$.number AS 'Numéro'; $$.user_name AS 'Membre'; $$.date AS 'Date'; CASE $$.status WHEN 'waiting' THEN 'À valider' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
+	select="$$.number AS 'Numéro'; $$.user_name AS 'Membre'; $$.date AS 'Date'; CASE $$.status WHEN 'waiting' THEN 'À accepter' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
 	order=1
 	desc=true
 	where="$$.type = 'claim' AND %s"|args:$where
