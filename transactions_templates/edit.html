@@ -14,6 +14,9 @@
 {{/if}}
 
 {{if $_POST.save}}
+	{{if $_POST.t == 0}}
+		{{:assign var="lines" value=$_POST.ll|array_transpose}}
+	{{/if}}
 	{{:save id=$tpl.id
 		validate_schema="./template.schema.json"
 		name=$_POST.name|strval|trim
@@ -22,13 +25,14 @@
 		dt=$_POST.dt|strval|trim|or:null
 		r=$_POST.r|strval|trim|or:null
 		a00=$_POST.a00|money_int
+		pr=$_POST.pr|strval|or:null
 		p=$_POST.p|intval|or:null
 		ar=$_POST.ar|strval|trim|or:null
 		ae=$_POST.ae|strval|trim|or:null
 		ab=$_POST.ab|strval|trim|or:null
 		at=$_POST.at|strval|trim|or:null
 		a3=$_POST.a3|strval|trim|or:null
-		ll=$_POST.ll|array_transpose
+		ll=$lines|or:null
 	}}
 	{{:http redirect="./"}}
 {{/if}}
@@ -49,6 +53,7 @@
 	</dl>
 	<dl class="t1 t2 t3 t4 t5">
 		{{:input type="money" name="a00" label="Montant" source=$tpl}}
+		{{:input type="text" name="pr" label="Référence de paiement" source=$tpl}}
 		{{if $projects}}
 		{{:input type="select" name="p" label="Projet" options=$projects source=$tpl default_empty="— Aucun —"}}
 		{{/if}}

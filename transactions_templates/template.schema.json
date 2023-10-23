@@ -26,6 +26,10 @@
 			"description": "Montant de l'écriture (simplifiée)",
 			"type": ["null", "integer"]
 		},
+		"pr": {
+			"description": "Référence de paiement",
+			"type": ["string", "null"]
+		},
 		"p": {
 			"description": "ID du projet analytique",
 			"type": ["integer", "null"]
@@ -52,7 +56,7 @@
 		},
 		"ll": {
 			"description": "Lignes de l'écriture avancée",
-			"type": ["array"],
+			"type": ["array", "null"],
 			"items": {
 				"type": "object",
 				"properties": {
