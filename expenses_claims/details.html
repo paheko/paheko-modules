@@ -19,15 +19,22 @@
 
 {{:assign var="upload_path" value=$claim.key}}
 
-{{#form on="delete"}}
-	{{:delete key=$_POST.delete}}
-	{{:http redirect="details.html?key=%s"|args:$claim.key}}
-{{/form}}
 {{if $claim.status === 'draft'}}
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
 		{{:http redirect="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
+
+	{{#form on="delete"}}
+		{{:delete key=$claim.key}}
+		{{:http redirect="./"}}
+	{{/form}}
+
+	{{#form on="delete_line"}}
+		{{:delete key=$_POST.delete_line}}
+		{{:http redirect="details.html?key=%s"|args:$claim.key}}
+	{{/form}}
+
 {{elseif $claim.status === 'waiting'}}
 	{{if $claim.user_id === $logged_user.id}}
 		{{#form on="cancel"}}
@@ -35,48 +42,23 @@
 			{{:http redirect="details.html?key=%s"|args:$claim.key}}
 		{{/form}}
 	{{/if}}
-	{{if $is_admin}}
-		{{#form on="accept"}}
-			{{:assign total=0}}
-			{{#load type="line" claim=$claim.key}}
-				{{:assign var="lines." debit=$amount|money_raw label=$label account=$account}}
-				{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
-				{{:assign total="%d+%d"|math:$amount:$total}}
-			{{/load}}
-
-			{{if !$total}}
-				{{:error message="Cette note de frais ne comporte aucune ligne"}}
-			{{/if}}
-
-			{{:assign var="lines." credit=$total|money_raw account="4110" label="Dette envers le membre"}}
-			{{:create entity="transaction"
-				assign_new_id="id"
-				id_year="match"
-				type="advanced"
-				date=$now
-				label="Note de frais n°%d (%s)"|args:$claim.number:$claim.user_name
-				reference="NDF-%d"|args:$claim.number
-				linked_users=$claim.user_id
-				lines=$lines
-				notes=$notes|trim|or:null
-				move_attachments_from=$upload_path
-			}}
-			{{:save key=$claim.key status="payable" id_transaction=$id}}
-			{{:http redirect="details.html?key=%s"|args:$claim.key}}
-		{{/form}}
-	{{/if}}
 {{/if}}
 
 {{:admin_header title="Note de frais n°%d"|args:$claim.number}}
 
+<form method="post" action="">
+
 <nav class="tabs">
 {{if $claim.status === 'draft'}}
 	<aside>
+		{{:button type="submit" name="delete" value=1 shape="delete" label="Supprimer"}}
 		{{:linkbutton shape="plus" label="Ajouter une ligne à la note de frais" href="./line.html?claim=%s"|args:$claim.key target="_dialog"}}
 	</aside>
 {{/if}}
 	{{:linkbutton shape="left" label="Retour à la liste des notes de frais" href="./"}}
 </nav>
+
+</form>
 
 {{:form_errors}}
 
@@ -105,12 +87,8 @@
 	{{if $claim.status === 'waiting'}}
 		<fieldset>
 			<legend>Accepter cette note de frais ?</legend>
-			<p class="submit">{{:button shape="check" name="accept" label="Accepter cette note de frais" type="submit" class="main"}}</p>
-			<p class="help">La note de frais sera transformée en écriture comptable. Les fichiers joints seront déplacés dans l'écriture.</p>
-				{{*
-				<dt>{{:button shape="delete" name="deny" label="Refuser cette note de frais" type="submit"}}</dt>
-				<dd class="help">Une notification sera envoyée au membre.</dd>
-				*}}
+			<p class="submit">{{:linkbutton href="accept.html?claim=%s"|args:$claim.key shape="check" name="accept" label="Accepter cette note de frais" type="submit"}}</p>
+			<p class="help">Une confirmation sera demandée.</p>
 		</fieldset>
 	{{elseif $claim.status === 'payable'}}
 	{{/if}}
@@ -168,7 +146,7 @@
 		<td class="money">{{$amount|money_currency}}</td>
 		<td class="actions">
 			{{if $.claim.status === 'draft'}}
-				{{:button name="delete" type="submit" value=$key label="Supprimer" shape="delete"}}
+				{{:button name="delete_line" type="submit" value=$key label="Supprimer" shape="delete"}}
 			{{/if}}
 		</td>
 	</tr>

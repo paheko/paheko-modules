@@ -88,12 +88,11 @@ function selectCategory() {
 	var category = null;
 
 	Object.values(categories).forEach((c) => {
-		g.toggle('dl.category, p.submit', true);
-
 		if (c.label !== s.value) {
 			return;
 		}
 
+		g.toggle('dl.category, p.submit', true);
 		g.toggle('dl.vehicle', !!c.vehicle);
 		g.toggle('dl.amount', !c.vehicle);
 		$('#f_account').value = c.account;
