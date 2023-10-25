@@ -108,12 +108,13 @@
 				</tr>
 			</thead>
 			<tbody>
+			{{:assign var="select" 0="Facultatif" 1="Obligatoire"}}
 			{{#foreach from=$event.fields item="field"}}
 				<tr>
 					<td>{{:input type="select" name="fields[type][]" default=$field.type options=$types}}</td>
 					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
-					<td><label>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required}}Obligatoire</label></td>
+					<td>{{:input type="select" name="fields[required][]" default=$field.required options=$select required=true}}</td>
 					<td class="actions">{{:button shape="minus" label="Enlever cette ligne" onclick="this.parentNode.parentNode.remove();"}}</td>
 				</tr>
 			{{else}}
@@ -121,7 +122,7 @@
 					<td>{{:input type="select" name="fields[type][]" options=$types default="text"}}</td>
 					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
-					<td><label>{{:input type="checkbox" name="fields[required][]" value=1 default=$field.required}} Obligatoire</label></td>
+					<td>{{:input type="select" name="fields[required][]" default=$field.required options=$select required=true}}</td>
 					<td class="actions">{{:button shape="minus" label="Enlever ce champ" onclick="this.parentNode.parentNode.remove();"}}</td>
 				</tr>
 			{{/foreach}}
