@@ -47,9 +47,11 @@
 	{{:assign total=$debit}}
 {{/transactions}}
 
-{{#transactions id=$claim.payments}}
-	{{:assign total="%d-%d"|math:$total:$credit}}
-{{/transactions}}
+{{if $claim.payments|count}}
+	{{#transactions id=$claim.payments}}
+		{{:assign total="%d-%d"|math:$total:$credit}}
+	{{/transactions}}
+{{/if}}
 
 <form method="post" action="">
 	<fieldset>
@@ -57,7 +59,7 @@
 		<dl>
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default="Remboursement note de frais n°%d"|args:$claim.number name="label" label="Libellé" required=true}}
-			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
+			{{:input type="money" name="amount" label="Montant" required=true default=$total|money_int}}
 			{{:input type="list" name="account_selector" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code"}}
 			{{:input type="checkbox" name="paid" value=1 default=1 label="Marquer cette note de frais comme payée"}}
 		</dl>
