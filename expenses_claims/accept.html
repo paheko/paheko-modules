@@ -11,8 +11,11 @@
 
 {{#form on="save"}}
 	{{:assign total=0}}
+	{{:assign var="upload_path" value=$claim.key}}
+
 	{{#foreach from=$_POST.lines|array_transpose}}
-		{{:assign var="lines." debit=$amount|money_raw label=$label account=$account|keys|key:0}}
+		{{:assign var="lines." debit=$amount label=$label account=$account|keys|key:0}}
+		{{:assign amount=$amount|money_int}}
 		{{:assign total="%d+%d"|math:$amount:$total}}
 	{{/foreach}}
 
@@ -38,6 +41,7 @@
 {{/form}}
 
 {{:admin_header title="Accepter la note de frais n°%d"|args:$claim.number}}
+	{{:debug l=$lines}}
 
 {{:form_errors}}
 
