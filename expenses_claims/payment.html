@@ -56,10 +56,18 @@
 
 {{:assign default_label="Remboursement note de frais n°%d"|args:$claim.number}}
 
+{{#years closed=false}}
+	{{:assign var="open_years.%d"|args:$id value=$label}}
+	{{if $start_date <= $now && $end_date >= $now}}
+		{{:assign best_year=$id}}
+	{{/if}}
+{{/years}}
+
 <form method="post" action="">
 	<fieldset>
 		<legend>Nouveau paiement de remboursement</legend>
 		<dl>
+			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default=$claim.label|or:$default_label name="label" label="Libellé" required=true}}
 			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
