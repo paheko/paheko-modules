@@ -57,10 +57,11 @@
 				{{:assign best_year=$id}}
 			{{/if}}
 		{{/years}}
+		{{:assign default_label="Note de frais n°%d"|args:$claim.number}}
 		<dl>
 			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
-			{{:input type="text" default="Note de frais n°%d"|args:$claim.number name="label" label="Libellé" required=true}}
+			{{:input type="text" default=$claim.label|or:$default_label name="label" label="Libellé" required=true}}
 			{{:input type="list" name="account_selector" label="Compte de tiers" required=true target="!acc/charts/accounts/selector.php?targets=4&key=code" default=$default_account}}
 			{{:input type="textarea" name="notes" label="Remarques" default=$notes|trim cols=50 rows=10}}
 		</dl>
