@@ -81,10 +81,10 @@
 {{:assign var="champs_adresse" value=$module.config.champs_adresse|quote_sql_identifier:"u"|implode:" || ' — ' || "}}
 {{:assign var="champs_nom" value=$config.user_fields.name|quote_sql_identifier:"u"|implode:" || ' ' || "}}
 
-{{:assign var="codes_don" value=$module.config.comptes_don|keys}}
-{{:assign var="codes_don_nature" value=$module.config.comptes_don_nature|keys}}
-{{:assign var="codes_especes" value=$module.config.comptes_especes|keys}}
-{{:assign var="codes_cheques" value=$module.config.comptes_cheques|keys}}
+{{:assign var="codes_don" value=$module.config.comptes_don|keys|map:strval}}
+{{:assign var="codes_don_nature" value=$module.config.comptes_don_nature|keys|map:strval}}
+{{:assign var="codes_especes" value=$module.config.comptes_especes|keys|map:strval}}
+{{:assign var="codes_cheques" value=$module.config.comptes_cheques|keys|map:strval}}
 
 {{if $id_user}}
 	{{#select !champs_adresse AS adresse, !champs_nom AS nom FROM users u WHERE id = {$id_user|intval};
@@ -116,19 +116,19 @@
 			-- Paiements en espèces?
 			(SELECT 1 FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
-				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS especes,
+				WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
 			-- Paiements en chèques?
-			(SELECT 1 FROM acc_transactions_lines l2
+			(SELECT l2.id_transaction FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
-				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS cheques,
+				WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
 			-- Dons en nature ?
 			(SELECT 1 FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
-				WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS nature,
+				WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS nature,
 			-- Dons en numeraire ?
 			(SELECT 1 FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
-				WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS numeraire
+				WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS numeraire
 			FROM acc_transactions t
 			INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id AND tu.id_user = {$id_user}
 			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.debit = 0
