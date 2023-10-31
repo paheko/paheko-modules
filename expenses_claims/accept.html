@@ -23,13 +23,17 @@
 		{{:error message="Cette note de frais ne comporte aucune ligne"}}
 	{{/if}}
 
+	{{if !$_POST.label|trim}}
+		{{:error message="Le libellé doit être renseigné."}}
+	{{/if}}
+
 	{{:assign var="lines." credit=$total|money_raw account=$_POST.account_selector|keys|key:0 label="Dette envers le membre"}}
 	{{:create entity="transaction"
 		assign_new_id="id"
 		id_year=$_POST.id_year|intval
 		type="advanced"
 		date=$_POST.date
-		label="Note de frais n°%d (%s)"|args:$claim.number:$claim.user_name
+		label=$_POST.label|trim
 		reference="NDF-%d"|args:$claim.number
 		linked_users=$claim.user_id
 		lines=$lines

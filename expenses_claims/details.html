@@ -44,7 +44,7 @@
 	{{/if}}
 {{/if}}
 
-{{:admin_header title="Note de frais n°%d"|args:$claim.number}}
+{{:admin_header title="Note de frais n°%d — %s"|args:$claim.number:$claim.label}}
 
 <form method="post" action="">
 
@@ -97,6 +97,8 @@
 <dl class="describe">
 	<dt>Numéro de note de frais</dt>
 	<dd>{{$claim.number}}</dd>
+	<dt>Objet</dt>
+	<dd>{{$claim.label|or:"— Non spécifié —"}}</dd>
 	<dt>Date</dt>
 	<dd>{{$claim.date|date_short}}</dd>
 	<dt>Membre</dt>
