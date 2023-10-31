@@ -17,6 +17,12 @@
 
 {{:assign var="default.date" value=$now}}
 
+{{#load limit=1}}
+	{{:assign id_choice=false}}
+{{else}}
+	{{:assign id_choice=true}}
+{{/load}}
+
 {{#form on="create"}}
 	{{if !$_POST.date|trim|parse_date}}
 		{{:error message="Date d'émission invalide ou vide."}}
@@ -42,9 +48,16 @@
 		{{/load}}
 	{{/if}}
 
+	{{if $id_choice && $_POST.number|intval > 0}}
+		{{:assign number=$_POST.number|intval}}
+	{{else}}
+		{{:assign number=null}}
+	{{/if}}
+
 	{{:include file="./_recu.html" capture="recu"}}
 	{{:save
 		validate_schema="./recu.schema.json"
+		id=$number
 		assign_new_id="new_id"
 		nom=$_POST.nom|trim
 		date=$_POST.date|parse_date
@@ -245,6 +258,9 @@
 		<fieldset>
 			<legend>Nouveau reçu</legend>
 			<dl>
+				{{if $id_choice}}
+					{{:input type="number" step=1 name="number" label="Numéro du reçu" required=true default=1}}
+				{{/if}}
 				{{:input type="text" name="nom" label="Nom du bénéficiaire" required=true default=$default.name}}
 				{{:input type="textarea" cols="50" rows="3" name="adresse" label="Adresse du bénéficiaire" required=true default=$default.address}}
 				{{if $user_select}}
