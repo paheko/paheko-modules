@@ -8,6 +8,7 @@
 {{if null === $r}}
 	{{:assign var="r" value=$_POST}}
 	{{:assign var="r.montant" value=$r.montant|money_int}}
+	{{:assign var="r.date" value=$r.date|parse_date}}
 {{/if}}
 
 
