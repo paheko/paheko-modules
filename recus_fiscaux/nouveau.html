@@ -78,7 +78,11 @@
 
 {{:admin_header title="Créer un nouveau reçu fiscal" current="acc"}}
 
-{{:assign var="champs_adresse" value=$module.config.champs_adresse|quote_sql_identifier:"u"|implode:" || ' — ' || "}}
+{{:assign var="champs_adresse" value=$module.config.champs_adresse|quote_sql_identifier:"u"}}
+{{#foreach from=$champs_adresse item="champ" key="key"}}
+	{{:assign var="champs_adresse.%s"|args:$key value="IFNULL(%s, '')"|args:$champ}}
+{{/foreach}}
+{{:assign var="champs_adresse" value=$champs_adresse|implode:" || ' — ' || "}}
 {{:assign var="champs_nom" value=$config.user_fields.name|quote_sql_identifier:"u"|implode:" || ' ' || "}}
 
 {{:assign var="codes_don" value=$module.config.comptes_don|keys|map:strval}}
@@ -91,7 +95,7 @@
 		!champs_adresse=$champs_adresse
 		!champs_nom=$champs_nom
 	}}
-		{{:assign var="default.address" value=$adresse}}
+		{{:assign var="default.address" value=$adresse|trim:" —"}}
 		{{:assign var="default.name" value=$nom}}
 	{{else}}
 		{{:error message="Ce membre n'existe pas."}}
