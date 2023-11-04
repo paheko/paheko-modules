@@ -3,6 +3,11 @@
 	{{:delete type="booking" where="date($$.date) < date('now', '-1 month')"}}
 {{/if}}
 
+{{if !$module.config.access}}
+	{{:assign var="module.config.access" value="write"}}
+{{/if}}
+
+
 {{if $_GET.event}}
 	{{#load type="event" key=$_GET.event assign="event" archived=false}}
 		{{:assign event_selected=true}}
@@ -392,9 +397,13 @@
 			</dl>
 			{{if !$event.email && !$_POST.email}}
 				{{:assign email_hidden=true}}
-				{{if $logged_user._email}}
-					{{:assign email_disabled=true}}
-				{{/if}}
+				{{#restrict section="users" level=$module.config.access}}
+					{{:assign email_disabled=false}}
+				{{else}}
+					{{if $logged_user._email}}
+						{{:assign email_disabled=true}}
+					{{/if}}
+				{{/restrict}}
 			{{/if}}
 			<dl class="email{{if $email_hidden}} hidden{{/if}}">
 				{{:input type="email" name="email" label="Adresse e-mail" required=true help="Une confirmation d'inscription vous sera envoyée à cette adresse" default=$logged_user._email onfocus="this.select()" onkeyup="g.toggle('.mycaptcha', this.value != '');" disabled=$email_disabled}}
