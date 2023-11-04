@@ -84,7 +84,11 @@
 	{{:assign var="codes_don_nature" value=$module.config.comptes_don_nature|keys}}
 	{{:assign var="codes_especes" value=$module.config.comptes_especes|keys}}
 	{{:assign var="codes_cheques" value=$module.config.comptes_cheques|keys}}
-	{{:assign var="champs_adresse" value=$module.config.champs_adresse|quote_sql_identifier:"u"|implode:" || ' — ' || "}}
+	{{:assign var="champs_adresse" value=$module.config.champs_adresse|quote_sql_identifier:"u"}}
+	{{#foreach from=$champs_adresse item="champ" key="key"}}
+		{{:assign var="champs_adresse.%s"|args:$key value="IFNULL(%s, '')"|args:$champ}}
+	{{/foreach}}
+	{{:assign var="champs_adresse" value=$champs_adresse|implode:" || ' — ' || "}}
 	{{:assign var="champs_nom" value=$config.user_fields.name|quote_sql_identifier:"u"|implode:" || ' ' || "}}
 	{{:assign var="champs_numero" value=$config.user_fields.number|quote_sql_identifier:"u"}}
 	{{:assign var="total" value=0}}
