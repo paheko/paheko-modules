@@ -1,7 +1,8 @@
 {{#restrict section="users" level="read" block=true}}{{/restrict}}
 {{if $_POST.category}}
-	{{#select id FROM users WHERE id_category = :category; :category=$_POST.category|intval}}
+	{{#select id FROM users WHERE id_category = :category ORDER BY !name; :category=$_POST.category|intval !name=$config.user_fields.name_sql}}
 		{{:assign var="users." value=$id}}
+		{{$_name}}
 	{{/select}}
 {{else}}
 	{{:assign users=$_POST.users|keys}}
@@ -28,7 +29,7 @@
 
 	<table>
 		{{:assign i=0}}
-		{{#users id=$users}}
+		{{#users id=$users order=$config.user_fields.name_sql}}
 			{{if "%d %% 2"|math:$i == 0}}
 				<tr>
 			{{/if}}
