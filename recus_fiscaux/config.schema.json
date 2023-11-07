@@ -18,9 +18,6 @@
 		"art200": {
 			"type": "boolean"
 		},
-		"art238bis": {
-			"type": "boolean"
-		},
 		"art978": {
 			"type": "boolean"
 		},
@@ -46,7 +43,7 @@
 			"type": "string"
 		}
 	},
-	"required": [ "numero_asso", "objet_asso", "type_asso", "art200", "art238bis", "art978", "comptes_don",
+	"required": [ "numero_asso", "objet_asso", "type_asso", "art200", "art978", "comptes_don",
 		"comptes_don_nature", "comptes_especes", "comptes_cheques", "champs_adresse",
 		"email_subject", "email_body" ]
 }
