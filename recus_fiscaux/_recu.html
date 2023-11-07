@@ -43,6 +43,10 @@
 		<td>{{$config.org_name}}</td>
 	</tr>
 	<tr>
+		<th>Numéro SIREN ou RNA&nbsp;:</th>
+		<td>{{$module.config.numero_asso}}</td>
+	</tr>
+	<tr>
 		<th>Adresse&nbsp;:</th>
 		<td>{{$config.org_address|escape|replace:"\n":" — "}}</td>
 	</tr>
@@ -74,7 +78,7 @@
 	{{$r.montant|money_raw|spell_out_number:'fr_FR':'euros'}}
 	(***<strong>{{$r.montant|raw|money_currency:true}}</strong>***).</p>
 
-<p>Date du versement ou du don&nbsp;: {{$r.date|date_short}}</p>
+<p>Date du versement ou du don&nbsp;: {{if $r.periode_annee}}cumul {{$r.periode_annee}}{{else}}{{$r.periode_date|date_short}}{{/if}}</p>
 
 <p>Le bénéficiaire certifie sur l’honneur que les dons et versements qu’il reçoit ouvrent droit à la réduction d’impôt prévue à l’article&nbsp;:<br />
 	{{if $module.config.art200}}[X] 200 du CGI{{/if}}
@@ -112,5 +116,7 @@
 	</tr>
 	{{/if}}
 </table>
+
+<p>Date du reçu : {{$r.date|date_short}}</p>
 
 {{* La signature n'est pas stockée dans le reçu *}}

@@ -3,6 +3,8 @@
 
 {{if !$module.config.objet_asso}}
 	{{:redirect to="config.html?msg=MISSING"}}
+{{elseif !$module.config.numero_asso}}
+	{{:redirect to="config.html?msg=MISSING_NUMBER"}}
 {{/if}}
 
 {{:include file="./_config_default.tpl" keep="module.config"}}
@@ -61,6 +63,8 @@
 		assign_new_id="new_id"
 		nom=$_POST.nom|trim
 		date=$_POST.date|parse_date
+		periode_annee=$_POST.periode_annee|intval|or:null
+		periode_date=$_POST.periode_date|parse_date
 		montant=$_POST.montant|money_int
 		linked_user=$_POST.id_user|intval|or:null
 		linked_transactions=$id_transaction
@@ -101,39 +105,46 @@
 
 	{{* Récupération des comptes et soldes *}}
 	{{#select
+		COUNT(DISTINCT id) AS nombre,
 		GROUP_CONCAT(DISTINCT id) AS id_transaction,
 		SUM(total) AS total,
 		year,
+		strftime('%d/%m/%Y', date) AS date,
 		MAX(especes) AS especes,
 		MAX(cheques) AS cheques,
 		MAX(nature) AS nature,
 		MAX(numeraire) AS numeraire
 		FROM (
-			SELECT
-			t.id AS id,
-			SUM(l1.credit) AS total,
-			strftime('%Y', t.date) AS year,
-			-- Paiements en espèces?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
-				WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
-			-- Paiements en chèques?
-			(SELECT l2.id_transaction FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
-				WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
-			-- Dons en nature ?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
-				WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS nature,
-			-- Dons en numeraire ?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
-				WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS numeraire
-			FROM acc_transactions t
-			INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id AND tu.id_user = {$id_user}
-			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.debit = 0
-			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
-			GROUP BY t.id
+			SELECT *,
+			especes IS NULL AND cheques IS NULL AS autres
+			FROM (
+				SELECT
+				t.id AS id,
+				t.date,
+				SUM(l1.credit) AS total,
+				strftime('%Y', t.date) AS year,
+				-- Paiements en espèces?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
+					WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
+				-- Paiements en chèques?
+				(SELECT l2.id_transaction FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
+					WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
+				-- Dons en nature ?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
+					WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS nature,
+				-- Dons en numeraire ?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
+					WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS numeraire
+				FROM acc_transactions t
+				INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id AND tu.id_user = {$id_user}
+				INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.debit = 0
+				INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
+				GROUP BY t.id
+			)
 		) GROUP BY year ORDER BY year;
 		!code_don_nature="code"|sql_where:"IN":$codes_don_nature
 		!code_don="code"|sql_where:"IN":$codes_don
@@ -153,38 +164,40 @@
 	</script>
 {{elseif $_GET.id_transaction}}
 	{{#select
-		u.id AS id_user,
-		t.id AS id_transactions,
-		SUM(l1.credit) AS total,
-		date() AS date,
-		!champs_nom AS name,
-		!champs_adresse AS address,
-		-- Paiements en espèces?
-		(SELECT 1 FROM acc_transactions_lines l2
-			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
-			WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS especes,
-		-- Paiements en chèques?
-		(SELECT 1 FROM acc_transactions_lines l2
-			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
-			WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS cheques,
+		*,
 		-- Paiements en autres moyens?
-		(SELECT 1 FROM acc_transactions_lines l2
-			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND NOT a2.!code_cheques AND NOT a2.!code_especes
-			WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS autres,
-		-- Dons en nature ?
-		(SELECT 1 FROM acc_transactions_lines l2
-			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
-			WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS nature,
-		-- Dons en numeraire ?
-		(SELECT 1 FROM acc_transactions_lines l2
-			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
-			WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS numeraire
-		FROM acc_transactions t
-		INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
-		INNER JOIN users u ON u.id = tu.id_user
-		INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.debit = 0
-		INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
-		WHERE t.id = {$_GET.id_transaction|intval};
+		especes IS NULL AND cheques IS NULL AS autres
+		FROM
+		(SELECT
+			u.id AS id_user,
+			t.id AS id_transactions,
+			SUM(l1.credit) AS total,
+			t.date AS date,
+			!champs_nom AS name,
+			!champs_adresse AS address,
+			-- Paiements en espèces?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
+				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS especes,
+			-- Paiements en chèques?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
+				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS cheques,
+			-- Dons en nature ?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
+				WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS nature,
+			-- Dons en numeraire ?
+			(SELECT 1 FROM acc_transactions_lines l2
+				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
+				WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS numeraire
+			FROM acc_transactions t
+			INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
+			INNER JOIN users u ON u.id = tu.id_user
+			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.debit = 0
+			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
+			WHERE t.id = {$_GET.id_transaction|intval}
+		);
 		!champs_nom=$champs_nom
 		!champs_adresse=$champs_adresse
 		!code_don_nature="code"|sql_where:"IN":$codes_don_nature
@@ -259,7 +272,7 @@
 			<legend>Nouveau reçu</legend>
 			<dl>
 				{{if $id_choice}}
-					{{:input type="number" step=1 name="number" label="Numéro du reçu" required=true default=1}}
+					{{:input type="number" step=1 name="number" label="Numéro du reçu" required=true default=1 help="Si vous avez déjà créé des reçus pour cette année, modifiez ce numéro pour avoir une numérotation qui se suit. Le numéro des reçus suivants ne pourra pas être modifié."}}
 				{{/if}}
 				{{:input type="text" name="nom" label="Nom du bénéficiaire" required=true default=$default.name}}
 				{{:input type="textarea" cols="50" rows="3" name="adresse" label="Adresse du bénéficiaire" required=true default=$default.address}}
@@ -269,7 +282,17 @@
 
 				{{:input type="date" name="date" required=true label="Date du reçu" default=$default.date}}
 				{{:input type="money" name="montant" required=true label="Montant des dons" default=$default.total}}
+			</dl>
 
+			<dl class="periode-date">
+				{{:input type="date" name="periode_date" required=true label="Date de versement du don" default=$default.date}}
+			</dl>
+
+			<dl class="periode-annee">
+				{{:input type="year" name="periode_annee" required=true label="Année de versement des dons"}}
+			</dl>
+
+			<dl>
 				<dt>Type de don</dt>
 				{{:input type="checkbox" name="numeraire" value="1" label="Don en numéraire (en euros)" default=$default.numeraire}}
 				{{:input type="checkbox" name="nature" value="1" label="Don en nature" help="Par exemple abandon de frais par les bénévoles" default=$defaut.nature}}
@@ -320,6 +343,19 @@
 			let d = user_years[year];
 			$('#f_montant').value = g.formatMoney(d.total);
 
+			if (d.nombre <= 1) {
+				g.toggle('.periode-date', true);
+				g.toggle('.periode-annee', false);
+				$('#f_periode_date').value = d.date;
+				$('#f_periode_annee').value = '';
+			}
+			else {
+				g.toggle('.periode-date', false);
+				g.toggle('.periode-annee', true);
+				$('#f_periode_date').value = '';
+				$('#f_periode_annee').value = year;
+			}
+
 			$('#f_nature_1').checked = d.nature > 0;
 			$('#f_numeraire_1').checked = d.numeraire > 0;
 			$('#f_moyensespeces_1').checked = d.especes > 0;
@@ -332,6 +368,12 @@
 
 		y.onchange = selectYear;
 		selectYear();
+	}
+	else if ($('#f_periode_date').value == '') {
+		g.toggle('.periode-date', false);
+	}
+	else {
+		g.toggle('.periode-annee', false);
 	}
 
 	let p = $('[name=preview]')[0];

@@ -19,6 +19,7 @@
 
 	{{:save key="config"
 		validate_schema="./config.schema.json"
+		numero_asso=$_POST.numero_asso|strval|trim
 		objet_asso=$_POST.objet_asso|strval|trim
 		type_asso=$_POST.type_asso|strval|trim
 		comptes_don=$_POST.comptes_don|arrayval
@@ -43,7 +44,11 @@
 
 {{if $_GET.msg == 'MISSING'}}
 <p class="error block">
-	Pour pouvoir générer des reçus, il faut renseigner l'objet de l'association et cocher un des articles de loi ouvrant l'éligibilité à la réduction d'impôt.
+	Pour pouvoir générer des reçus, il faut renseigner le numéro SIREN ou RNA, l'objet de l'association et cocher un des articles de loi ouvrant l'éligibilité à la réduction d'impôt.
+</p>
+{{elseif $_GET.msg == 'MISSING_NUMBER'}}
+<p class="error block">
+	Merci de bien vouloir renseigner le numéro SIREN ou RNA de l'association.
 </p>
 {{/if}}
 
@@ -72,6 +77,7 @@
 		{{:input type="checkbox" name="art238" value="1" source=$module.config label="Article 238 bis" help="Pour les entreprises"}}
 		{{:input type="checkbox" name="art978" value="1" source=$module.config label="Article 978" help="Pour les personnes soumises à l'impôt sur la fortune immobilière"}}
 
+		{{:input required=true name="numero_asso" type="text" label="Numéro SIREN ou RNA de l'association" source=$module.config}}
 
 		{{:input required=true name="objet_asso" type="textarea" label="Objet de l'association" source=$module.config cols="70" rows="4" help="Inscrire ici l'objet de l'association, conformément aux statuts."}}
 {{*

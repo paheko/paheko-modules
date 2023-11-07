@@ -2,6 +2,10 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"properties": {
+		"numero_asso": {
+			"description": "Numéro SIREN ou RNA de l'association",
+			"type": "string"
+		},
 		"objet_asso": {
 			"description": "Objet de l'association",
 			"type": "string"
@@ -42,7 +46,7 @@
 			"type": "string"
 		}
 	},
-	"required": [ "objet_asso", "type_asso", "art200", "art238bis", "art978", "comptes_don",
+	"required": [ "numero_asso", "objet_asso", "type_asso", "art200", "art238bis", "art978", "comptes_don",
 		"comptes_don_nature", "comptes_especes", "comptes_cheques", "champs_adresse",
 		"email_subject", "email_body" ]
 }

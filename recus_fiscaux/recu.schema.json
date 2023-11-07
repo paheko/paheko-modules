@@ -6,6 +6,15 @@
 			"description": "Annulé",
 			"type": "boolean"
 		},
+		"periode_annee": {
+			"description": "Année de versement",
+			"type": ["integer", "null"]
+		},
+		"periode_date": {
+			"description": "Date de versement",
+			"type": ["string", "null"],
+			"format": "date"
+		},
 		"date": {
 			"description": "Date d'émission",
 			"type": "string",
