@@ -100,44 +100,44 @@
 		SUM(cheques) AS cheques,
 		SUM(autres) AS autres
 		FROM (
-			SELECT
-			u.id AS id_user,
-			!champs_numero AS numero,
-			t.id AS tid,
-			SUM(l1.credit) AS montant,
-			a1.code AS account,
-			!champs_nom AS nom,
-			!champs_adresse AS adresse,
-			-- Paiements en espèces?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
-				WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
-			-- Paiements en chèques?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
-				WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
-			-- Paiements en autres moyens?
-			(SELECT GROUP_CONCAT(DISTINCT a2.code) FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND NOT a2.!code_cheques AND NOT a2.!code_especes
-				WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS autres,
-			-- Dons en nature ?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
-				WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS nature,
-			-- Dons en numeraire ?
-			(SELECT 1 FROM acc_transactions_lines l2
-				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
-				WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS numeraire
+			SELECT *,
+			cheques IS NULL AND especes IS NULL AS autres
+			FROM (
+				SELECT
+				u.id AS id_user,
+				!champs_numero AS numero,
+				t.id AS tid,
+				SUM(l1.credit) AS montant,
+				a1.code AS account,
+				!champs_nom AS nom,
+				!champs_adresse AS adresse,
+				-- Paiements en espèces?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
+					WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS especes,
+				-- Paiements en chèques?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
+					WHERE l2.debit != 0 AND l2.id_transaction = t.id LIMIT 1) AS cheques,
+				-- Dons en nature ?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
+					WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS nature,
+				-- Dons en numeraire ?
+				(SELECT 1 FROM acc_transactions_lines l2
+					INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don
+					WHERE l2.credit != 0 AND l2.id_transaction = t.id) AS numeraire
 
-			FROM acc_transactions t
-			INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
-			INNER JOIN users u ON tu.id_user = u.id
-			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
-			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
+				FROM acc_transactions t
+				INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
+				INNER JOIN users u ON tu.id_user = u.id
+				INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
+				INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!code_don_nature OR a1.!code_don)
 
-			WHERE t.id_year = {$_GET.id_year|intval}
+				WHERE t.id_year = {$_GET.id_year|intval}
 
-			GROUP BY tu.id_user
+				GROUP BY tu.id_user
+			)
 		)
 		GROUP BY id_user
 		ORDER BY nom COLLATE U_NOCASE;

@@ -63,8 +63,6 @@
 		assign_new_id="new_id"
 		nom=$_POST.nom|trim
 		date=$_POST.date|parse_date
-		periode_annee=$_POST.periode_annee|intval|or:null
-		periode_date=$_POST.periode_date|parse_date
 		montant=$_POST.montant|money_int
 		linked_user=$_POST.id_user|intval|or:null
 		linked_transactions=$id_transaction
