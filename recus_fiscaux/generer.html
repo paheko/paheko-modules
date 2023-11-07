@@ -27,6 +27,8 @@
 			{{:continue}}
 		{{/if}}
 
+		{{:assign var="row.date" value=$now}}
+
 		{{:include file="./_recu.html" capture="recu" r=$row}}
 		{{:save
 			validate_schema="./recu.schema.json"
@@ -92,18 +94,20 @@
 	{{:assign var="total" value=0}}
 	{{:assign var="count" value=0}}
 
-	{{#select *,
+	{{#select
+		*,
 		GROUP_CONCAT(tid, ',') AS id_transaction,
 		SUM(numeraire) AS numeraire,
 		SUM(nature) AS nature,
-		SUM(especes) AS especes,
-		SUM(cheques) AS cheques,
-		SUM(autres) AS autres
+		SUM(especes) AS moyens_especes,
+		SUM(cheques) AS moyens_cheques,
+		SUM(autres) AS moyens_autres
 		FROM (
 			SELECT *,
-			cheques IS NULL AND especes IS NULL AS autres
+			COALESCE(cheques IS NULL AND especes IS NULL, 0) AS autres
 			FROM (
 				SELECT
+				strftime('%Y', t.date) AS periode_annee,
 				u.id AS id_user,
 				!champs_numero AS numero,
 				t.id AS tid,
@@ -169,7 +173,7 @@
 					<td>Chèque</td>
 					<td>Autres</td>
 					<td>En nature</td>
-					<td>Montant des dons</td>
+					<td class="money">Montant des dons</td>
 					<td></td>
 				</tr>
 			</thead>

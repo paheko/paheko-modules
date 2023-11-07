@@ -34,7 +34,7 @@
 		{{:error message="L'adresse du donateur ne peut être laissée vide."}}
 	{{elseif !$_POST.numeraire && !$_POST.nature}}
 		{{:error message="Le type de don n'a pas été sélectionné."}}
-	{{elseif $_POST.numeraire && !$_POST.moyens|count}}
+	{{elseif $_POST.numeraire && !$_POST.moyens_especes && !$_POST.moyens_cheques && !$_POST.moyens_autres}}
 		{{:error message="Aucun moyen de paiement n'a été coché."}}
 	{{elseif !$_POST.montant|trim || $_POST.montant < 0}}
 		{{:error message="Le montant du don ne peut être laissé vide."}}
@@ -164,7 +164,7 @@
 	{{#select
 		*,
 		-- Paiements en autres moyens?
-		especes IS NULL AND cheques IS NULL AS autres
+		moyens_especes IS NULL AND moyens_cheques IS NULL AS moyens_autres
 		FROM
 		(SELECT
 			u.id AS id_user,
@@ -176,11 +176,11 @@
 			-- Paiements en espèces?
 			(SELECT 1 FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_especes
-				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS especes,
+				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS moyens_especes,
 			-- Paiements en chèques?
 			(SELECT 1 FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_cheques
-				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS cheques,
+				WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS moyens_cheques,
 			-- Dons en nature ?
 			(SELECT 1 FROM acc_transactions_lines l2
 				INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!code_don_nature
@@ -297,9 +297,9 @@
 			</dl>
 			<dl class="hidden type-numeraire">
 				<dt>Moyens de paiement</dt>
-				{{:input type="checkbox" name="moyens[especes]" value=1 label="Paiement en espèces" default=$default.especes}}
-				{{:input type="checkbox" name="moyens[cheques]" value=1 label="Paiement en chèques" default=$default.cheques}}
-				{{:input type="checkbox" name="moyens[autres]" value=1 label="Paiement par virement, prélèvement, carte bancaire, ou autre" default=$default.autres}}
+				{{:input type="checkbox" name="moyens_especes" value=1 label="Paiement en espèces" default=$default.especes}}
+				{{:input type="checkbox" name="moyens_cheques" value=1 label="Paiement en chèques" default=$default.cheques}}
+				{{:input type="checkbox" name="moyens_autres" value=1 label="Paiement par virement, prélèvement, carte bancaire, ou autre" default=$default.autres}}
 			</dl>
 		</fieldset>
 
@@ -333,9 +333,9 @@
 	if (y) {
 		function selectYear() {
 			$('#f_nature_1').checked = $('#f_numeraire_1').checked
-				= $('#f_moyensespeces_1').checked
-				= $('#f_moyenscheques_1').checked
-				= $('#f_moyensautres_1').checked = false;
+				= $('#f_moyens_especes_1').checked
+				= $('#f_moyens_cheques_1').checked
+				= $('#f_moyens_autres_1').checked = false;
 
 			let year = y.value;
 			let d = user_years[year];
@@ -356,9 +356,9 @@
 
 			$('#f_nature_1').checked = d.nature > 0;
 			$('#f_numeraire_1').checked = d.numeraire > 0;
-			$('#f_moyensespeces_1').checked = d.especes > 0;
-			$('#f_moyenscheques_1').checked = d.cheques > 0;
-			$('#f_moyensautres_1').checked = d.autres > 0;
+			$('#f_moyens_especes_1').checked = d.especes > 0;
+			$('#f_moyens_cheques_1').checked = d.cheques > 0;
+			$('#f_moyens_autres_1').checked = d.autres > 0;
 			$('#f_montant').form.id_transaction.value = d.id_transaction;
 
 			selectType();
