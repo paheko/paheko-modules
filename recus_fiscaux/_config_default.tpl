@@ -1,3 +1,14 @@
+{{* Mise à jour depuis version 2022 vers 2023 *}}
+{{if $module.config.comptes_don_nature && !$module.config.comptes_don_abandon_frais}}
+	{{:save key="config"
+		validate_schema="./config.schema.json"
+		comptes_don_abandon_frais=$module.config.comptes_don_nature
+		comptes_don_nature=null
+	}}
+	{{:assign var="module.config.comptes_don_abandon_frais" value=$module.config.comptes_don_nature}}
+	{{:assign var="module.config.comptes_don_nature" value=null}}
+{{/if}}
+
 {{if !$module.config}}
 	{{* Valeurs par défaut *}}
 	{{:assign var="module.config"
@@ -10,7 +21,7 @@
 		email_body="Bonjour !\n\nVeuillez trouver ci-joint votre reçu de don au format PDF."
 	}}
 	{{:assign var="module.config.comptes_don.754" value="754 — Ressources liées à la générosité du public"}}
-	{{:assign var="module.config.comptes_don_nature.75412" value="75412 — Abandons de frais par les bénévoles"}}
+	{{:assign var="module.config.comptes_don_abandon_frais.75412" value="75412 — Abandons de frais par les bénévoles"}}
 	{{:assign var="module.config.comptes_especes.530" value="530 — Caisse"}}
 	{{:assign var="module.config.comptes_cheques.5112" value="5112 — Chèques à encaisser"}}
 	{{:assign var="module.config.champs_adresse"

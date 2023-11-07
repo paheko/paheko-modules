@@ -6,6 +6,10 @@
 			"description": "Annulé",
 			"type": "boolean"
 		},
+		"entreprise": {
+			"description": "Entreprise",
+			"type": "boolean"
+		},
 		"date": {
 			"description": "Date d'émission",
 			"type": "string",

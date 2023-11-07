@@ -18,6 +18,9 @@
 		"art200": {
 			"type": "boolean"
 		},
+		"art238bis": {
+			"type": "boolean"
+		},
 		"art978": {
 			"type": "boolean"
 		},
@@ -25,6 +28,9 @@
 			"type": "object"
 		},
 		"comptes_don_nature": {
+			"type": ["object", "null"]
+		},
+		"comptes_don_abandon_frais": {
 			"type": "object"
 		},
 		"comptes_especes": {
@@ -36,6 +42,12 @@
 		"champs_adresse": {
 			"type": "object"
 		},
+		"champ_entreprise_numero": {
+			"type": ["string", "null"]
+		},
+		"champ_entreprise_forme": {
+			"type": ["string", "null"]
+		},
 		"email_subject": {
 			"type": "string"
 		},
@@ -43,7 +55,8 @@
 			"type": "string"
 		}
 	},
-	"required": [ "numero_asso", "objet_asso", "type_asso", "art200", "art978", "comptes_don",
-		"comptes_don_nature", "comptes_especes", "comptes_cheques", "champs_adresse",
+	"required": [ "numero_asso", "objet_asso", "type_asso", "art200", "art238bis", "art978", "comptes_don",
+		"comptes_don_abandon_frais", "comptes_don_nature", "comptes_especes", "comptes_cheques", "champs_adresse",
+		"champ_entreprise_numero", "champ_entreprise_forme",
 		"email_subject", "email_body" ]
 }
