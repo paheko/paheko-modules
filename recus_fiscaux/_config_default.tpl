@@ -5,6 +5,8 @@
 		comptes_don_abandon_frais=$module.config.comptes_don_nature
 		comptes_don_nature=null
 		numero_asso=$module.config.numero_asso
+		champ_entreprise_numero=$module.config.champ_entreprise_numero
+		champ_entreprise_forme=$module.config.champ_entreprise_forme
 	}}
 	{{:assign var="module.config.comptes_don_abandon_frais" value=$module.config.comptes_don_nature}}
 	{{:assign var="module.config.comptes_don_nature" value=null}}
