@@ -1,10 +1,12 @@
 {{#restrict block=true section="accounting" level="write"}}
 {{/restrict}}
 
-{{if !$module.config.objet_asso}}
-	{{:redirect to="config.html?msg=MISSING"}}
-{{elseif !$module.config.numero_asso}}
-	{{:redirect to="config.html?msg=MISSING_NUMBER"}}
+{{if $module.config.type_asso !== 'syndicat'}}
+	{{if !$module.config.objet_asso}}
+		{{:redirect to="config.html?msg=MISSING"}}
+	{{elseif !$module.config.numero_asso}}
+		{{:redirect to="config.html?msg=MISSING_NUMBER"}}
+	{{/if}}
 {{/if}}
 
 {{:include file="./_config_default.tpl" keep="module.config"}}

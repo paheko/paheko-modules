@@ -46,3 +46,8 @@
 	help="75 % du montant versé, dans la limite de 562 €. La fraction au-delà de 562 € ouvre droit à une réduction d'impôt de 66 %."
 	case="7UJ"
 }}
+{{:assign var="types_asso.syndicat"
+	label="Syndicat"
+	help="66% des cotisations versées, dans la limite de 1% du revenu brut imposable."
+	case="7AC"
+}}

@@ -24,8 +24,14 @@
 
 {{if !$r.entreprise}}
 	<div class="info block">
+	{{if $module.config.type_asso === 'syndicat'}}
+		<h2>Merci pour votre cotisation&nbsp;!</h2>
+		<p>Elle vous permet de déduire de votre impôt sur le revenu {{$type.help}} Sauf si vous êtes aux frais réels, dans ce cas, déclarez-la dans vos frais.</p>
+		<p>Le crédit d'impôt vous sera remboursé en cas de non-imposition ou d'imposition inférieure au montant du crédit.</p>
+	{{else}}
 		<h2>Merci pour votre soutien&nbsp;!</h2>
 		<p>Il vous permet de déduire de votre impôt sur le revenu {{$type.help}}</p>
+	{{/if}}
 
 		<h3>Comment déclarer&nbsp;?</h3>
 
@@ -38,7 +44,9 @@
 {{/if}}
 
 <h3>
-	{{if $r.entreprise}}
+	{{if $module.config.type_asso === 'syndicat'}}
+		Reçu des cotisations syndicales versées au titre de l'article 199 quater C du code général des impôts
+	{{elseif $r.entreprise}}
 		Reçu des dons et versements effectués par les entreprises au titre de l’article 238 bis du code général des impôts
 	{{else}}
 		Reçu des dons et versements effectués par les particuliers au titre des articles 200 et 978 du code général des impôts
@@ -55,10 +63,6 @@
 		<td>{{$config.org_name}}</td>
 	</tr>
 	<tr>
-		<th>Numéro SIREN ou RNA&nbsp;:</th>
-		<td>{{$module.config.numero_asso}}</td>
-	</tr>
-	<tr>
 		<th>Adresse&nbsp;:</th>
 		<td>{{$config.org_address|escape|replace:"\n":" — "}}</td>
 	</tr>
@@ -66,11 +70,17 @@
 		<th>Type&nbsp;:</th>
 		<td>{{$type.label}}</td>
 	</tr>
-	<tr>
-		<th>Objet&nbsp;:</th>
-		<td>{{$module.config.objet_asso|escape|replace:"\n":" — "}}
-		</td>
-	</tr>
+	{{if $module.config.type_asso !== 'syndicat'}}
+		<tr>
+			<th>Numéro SIREN ou RNA&nbsp;:</th>
+			<td>{{$module.config.numero_asso}}</td>
+		</tr>
+		<tr>
+			<th>Objet&nbsp;:</th>
+			<td>{{$module.config.objet_asso|escape|replace:"\n":" — "}}
+			</td>
+		</tr>
+	{{/if}}
 </table>
 
 <h3>Donateur</h3>
@@ -140,25 +150,36 @@
 
 {{else}}
 
-	<p>Le bénéficiaire reconnaît avoir reçu des dons et versements ouvrant droit à réduction d’impôt d’un montant de&nbsp;:
-		{{$r.montant|money_raw|spell_out_number:'fr_FR':'euros'}}
-		(***<strong>{{$r.montant|raw|money_currency:false}}</strong>***).
-	</p>
+	{{if $module.config.type_asso === 'syndicat'}}
+		<p>Le bénéficiaire reconnaît avoir reçu des cotisations ouvrant droit à réduction d’impôt d’un montant de&nbsp;:
+			{{$r.montant|money_raw|spell_out_number:'fr_FR':'euros'}}
+			(***<strong>{{$r.montant|raw|money_currency:false}}</strong>***).
+		</p>
 
-	<p>Date du versement ou du don&nbsp;: {{if $r.periode_annee}}cumul {{$r.periode_annee}}{{else}}{{$r.periode_date|date_short}}{{/if}}</p>
+		<p>Date du versement&nbsp;: {{if $r.periode_annee}}cumul {{$r.periode_annee}}{{else}}{{$r.periode_date|date_short}}{{/if}}</p>
+	{{else}}
+		<p>Le bénéficiaire reconnaît avoir reçu des dons et versements ouvrant droit à réduction d’impôt d’un montant de&nbsp;:
+			{{$r.montant|money_raw|spell_out_number:'fr_FR':'euros'}}
+			(***<strong>{{$r.montant|raw|money_currency:false}}</strong>***).
+		</p>
 
-	<p>Le bénéficiaire certifie sur l’honneur que les dons et versements qu’il reçoit ouvrent droit à la réduction d’impôt prévue à l’article&nbsp;:<br />
-		{{if $module.config.art200}}[X] 200 du CGI{{/if}}
-		{{if $module.config.art978}}[X] 978 du CGI{{/if}}
-	</p>
+		<p>Date du versement ou du don&nbsp;: {{if $r.periode_annee}}cumul {{$r.periode_annee}}{{else}}{{$r.periode_date|date_short}}{{/if}}</p>
+
+		<p>Le bénéficiaire certifie sur l’honneur que les dons et versements qu’il reçoit ouvrent droit à la réduction d’impôt prévue à l’article&nbsp;:<br />
+			{{if $module.config.art200}}[X] 200 du CGI{{/if}}
+			{{if $module.config.art978}}[X] 978 du CGI{{/if}}
+		</p>
+	{{/if}}
 
 	<table>
+		{{if $module.config.type_asso !== 'syndicat'}}
+			<tr>
+				<th style="width: 20%">Forme du don&nbsp;:</th>
+				<td><ul class="checkboxes"><li>Don manuel</li></ul></td>
+			</tr>
+		{{/if}}
 		<tr>
-			<th style="width: 20%">Forme du don&nbsp;:</th>
-			<td><ul class="checkboxes"><li>Don manuel</li></ul></td>
-		</tr>
-		<tr>
-			<th>Nature du don&nbsp;:</th>
+			<th>Nature&nbsp;:</th>
 			<td>
 				<ul class="checkboxes">
 					{{if $r.numeraire}}<li>Numéraire</li>{{/if}}

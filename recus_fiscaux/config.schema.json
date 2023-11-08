@@ -11,9 +11,9 @@
 			"type": "string"
 		},
 		"type_asso": {
-			"description": "Type de l'association",
+			"description": "Type d'organisme",
 			"type": "string",
-			"enum": ["defaut", "personnes" , "cultuelle"]
+			"enum": ["defaut", "personnes" , "cultuelle", "syndicat"]
 		},
 		"art200": {
 			"type": "boolean"

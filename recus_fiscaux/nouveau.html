@@ -1,10 +1,12 @@
 {{#restrict block=true section="accounting" level="write"}}
 {{/restrict}}
 
-{{if !$module.config.objet_asso}}
-	{{:redirect to="config.html?msg=MISSING"}}
-{{elseif !$module.config.numero_asso}}
-	{{:redirect to="config.html?msg=MISSING_NUMBER"}}
+{{if $module.config.type_asso !== 'syndicat'}}
+	{{if !$module.config.objet_asso}}
+		{{:redirect to="config.html?msg=MISSING"}}
+	{{elseif !$module.config.numero_asso}}
+		{{:redirect to="config.html?msg=MISSING_NUMBER"}}
+	{{/if}}
 {{/if}}
 
 {{:include file="./_config_default.tpl" keep="module.config"}}
@@ -315,17 +317,19 @@
 			<dl>
 				{{:input type="text" name="nom" label="Nom du bénéficiaire" required=true default=$default.name}}
 				{{:input type="textarea" cols="50" rows="3" name="adresse" label="Adresse du bénéficiaire" required=true default=$default.address}}
-				{{if $module.config.art238bis}}
+				{{if $module.config.art238bis && $module.config.type_asso !== 'syndicat'}}
 					{{if $default.entreprise_forme && $default.entreprise_numero}}
 						{{:assign is_entreprise=1}}
 					{{/if}}
 					{{:input type="checkbox" name="entreprise" value=1 label="Le bénéficiaire est une entreprise" default=$is_entreprise}}
 				{{/if}}
 			</dl>
+			{{if $module.config.type_asso !== 'syndicat'}}
 			<dl class="entreprise">
 				{{:input type="text" required=true name="entreprise_forme" label="Forme juridique" source=$default}}
 				{{:input type="text" required=true name="entreprise_numero" label="Numéro SIREN" source=$default}}
 			</dl>
+			{{/if}}
 		</fieldset>
 
 		<fieldset>
@@ -343,17 +347,21 @@
 		</fieldset>
 
 		<fieldset class="particulier">
-			<legend>Dons par un particulier</legend>
+			<legend>Versements</legend>
 			<dl>
-				{{:input type="money" name="montant" required=true label="Montant des dons" default=$default.total}}
+				{{:input type="money" name="montant" required=true label="Montant des versements" default=$default.total}}
 			</dl>
 
-			<dl>
-				<dt>Type de don</dt>
-				{{:input type="checkbox" name="numeraire" value="1" label="Don en numéraire (en euros)" default=$default.numeraire}}
-				{{:input type="checkbox" name="abandon_frais" value="1" label="Frais engagés par les bénévoles, dont ils renoncent expressément au remboursement" default=$default.abandon_frais}}
-				{{:input type="checkbox" name="nature" value="1" label="Don en nature" help="Par exemple don de matériel, prêt de local, prestation de service…" default=$defaut.nature}}
-			</dl>
+			{{if $module.config.type_asso === 'syndicat'}}
+				<input type="hidden" name="numeraire" value="1" id="f_numeraire_1" />
+			{{else}}
+				<dl>
+					<dt>Type de don</dt>
+					{{:input type="checkbox" name="numeraire" value="1" label="Don en numéraire (en euros)" default=1}}
+					{{:input type="checkbox" name="abandon_frais" value="1" label="Frais engagés par les bénévoles, dont ils renoncent expressément au remboursement" default=$default.abandon_frais}}
+					{{:input type="checkbox" name="nature" value="1" label="Don en nature" help="Par exemple don de matériel, prêt de local, prestation de service…" default=$defaut.nature}}
+				</dl>
+			{{/if}}
 		</fieldset>
 
 		<fieldset class="entreprise">
@@ -367,9 +375,11 @@
 
 		<fieldset class="hidden type-numeraire">
 			<legend>Moyens de paiement</legend>
+			{{if $module.config.type_asso !== 'syndicat'}}
 			<p class="help">
 				Pour les dons en numéraire (en euros).
 			</p>
+			{{/if}}
 			<dl>
 				{{:input type="checkbox" name="moyens_especes" value=1 label="Espèces" default=$default.especes}}
 				{{:input type="checkbox" name="moyens_cheques" value=1 label="Chèques" default=$default.cheques}}
