@@ -4,7 +4,7 @@
 	"properties": {
 		"numero_asso": {
 			"description": "Numéro SIREN ou RNA de l'association",
-			"type": "string"
+			"type": ["string", "null"]
 		},
 		"objet_asso": {
 			"description": "Objet de l'association",
@@ -31,7 +31,7 @@
 			"type": ["object", "null"]
 		},
 		"comptes_don_abandon_frais": {
-			"type": "object"
+			"type": ["object", "null"]
 		},
 		"comptes_especes": {
 			"type": "object"

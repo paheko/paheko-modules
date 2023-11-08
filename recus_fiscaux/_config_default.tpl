@@ -4,6 +4,7 @@
 		validate_schema="./config.schema.json"
 		comptes_don_abandon_frais=$module.config.comptes_don_nature
 		comptes_don_nature=null
+		numero_asso=$module.config.numero_asso
 	}}
 	{{:assign var="module.config.comptes_don_abandon_frais" value=$module.config.comptes_don_nature}}
 	{{:assign var="module.config.comptes_don_nature" value=null}}
