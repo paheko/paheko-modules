@@ -2,8 +2,11 @@
 {{/restrict}}
 {{if !$_GET.id}}
 
-	{{:error message="Aucun numéro d'écriture n'a été fourni"}}
+	{{:admin_header title="Remise de chèques" current="acc"}}
 
+	<p class="alert block">Le bordereau de remise de chèque s'affichera en dessous des écritures de remise en banque.</p>
+
+	{{:admin_footer}}
 {{else}}
 	{{#transactions id=$_GET.id}}
 		{{:assign date_short=$date|date_format:"%d-%m-%Y"}}
@@ -23,7 +26,7 @@
 			{{/accounts}}
 
 			<table>
-				{{:assign i=0}}
+				{{:assign i=1}}
 				{{#transaction_lines transaction=$id where="credit > 0"}}
 				<tr>
 					<th width="5%">{{$i}}.</th>
@@ -35,7 +38,7 @@
 				{{/transaction_lines}}
 			</table>
 
-			<h3>Nombre de chèques : {{$i}}</h3>
+			<h3>Nombre de chèques : {{"%d-1"|math:$i}}</h3>
 
 			<h3>Total : {{$credit|raw|money_currency}}</h3>
 
