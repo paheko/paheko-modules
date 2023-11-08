@@ -55,7 +55,9 @@
 			{{#subscriptions user=$id id_service=$module.config.id_service active=true}}
 				<h3>Jusqu'au <strong>{{$expiry_date|date_short}}</strong></h3>
 			{{else}}
-				<h3>Expiré</h3>
+				{{#subscriptions user=$id id_service=$module.config.id_service active=false}}
+					<h3>Expiré</h3>
+				{{/subscriptions}}
 			{{/subscriptions}}
 		{{/if}}
 
