@@ -40,10 +40,6 @@
 	{{:redirect to="./details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
-{{:admin_header title="Nouveau paiement"}}
-
-{{:form_errors}}
-
 {{#transactions id=$claim.id_transaction}}
 	{{:assign total=$debit}}
 {{/transactions}}
@@ -66,6 +62,14 @@
 		{{:assign best_year=$id}}
 	{{/if}}
 {{/years}}
+
+{{if !$open_years|count}}
+	{{:error message="Aucun exercice n'est ouvert, il n'est pas possible de créer une écriture et donc d'accepter cette note de frais."}}
+{{/if}}
+
+{{:admin_header title="Nouveau paiement"}}
+
+{{:form_errors}}
 
 <form method="post" action="">
 	<fieldset>
