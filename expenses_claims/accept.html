@@ -44,6 +44,22 @@
 	{{:http redirect="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
+{{#load type="line" claim=$claim.key}}
+	{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
+{{/load}}
+{{:assign var="default_account.4110" value="4110 — Autres usagers"}}
+{{#years closed=false}}
+	{{:assign var="open_years.%d"|args:$id value=$label}}
+	{{if $start_date <= $now && $end_date >= $now}}
+		{{:assign best_year=$id}}
+	{{/if}}
+{{/years}}
+{{:assign default_label="Note de frais n°%d"|args:$claim.number}}
+
+{{if !$open_years|count}}
+	{{:error message="Aucun exercice n'est ouvert, il n'est pas possible de créer une écriture et donc d'accepter cette note de frais."}}
+{{/if}}
+
 {{:admin_header title="Accepter la note de frais n°%d"|args:$claim.number}}
 
 {{:form_errors}}
@@ -51,17 +67,6 @@
 <form method="post" action="">
 	<fieldset>
 		<legend>Écriture de note de frais</legend>
-		{{#load type="line" claim=$claim.key}}
-			{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
-		{{/load}}
-		{{:assign var="default_account.4110" value="4110 — Autres usagers"}}
-		{{#years closed=false}}
-			{{:assign var="open_years.%d"|args:$id value=$label}}
-			{{if $start_date <= $now && $end_date >= $now}}
-				{{:assign best_year=$id}}
-			{{/if}}
-		{{/years}}
-		{{:assign default_label="Note de frais n°%d"|args:$claim.number}}
 		<dl>
 			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
