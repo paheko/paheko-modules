@@ -31,6 +31,8 @@
 {{if $claim.status === 'draft'}}
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
+		{{:include file="./messages/validate.txt" claim=$claim capture="message"}}
+		{{:mail to=$config.org_email subject="Une nouvelle note de frais a été soumise" body=$message|raw}}
 		{{:http redirect="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 

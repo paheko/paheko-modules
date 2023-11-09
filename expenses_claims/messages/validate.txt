@@ -1,0 +1,11 @@
+{{**keep_whitespaces**}}
+Bonjour,
+
+Une nouvelle note de frais a été soumise par un membre.
+
+Cliquez sur ce lien pour la consulter, puis l'accepter ou la refuser :
+
+{{$module.url|raw}}details.html?key={{$claim.key}}
+
+
+Cordialement.
