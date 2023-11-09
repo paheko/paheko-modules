@@ -52,6 +52,7 @@
 {{if $claim.status === 'draft'}}
 	<aside>
 		{{:button type="submit" name="delete" value=1 shape="delete" label="Supprimer"}}
+		{{:linkbutton shape="edit" label="Modifier" href="./edit.html?claim=%s"|args:$claim.key target="_dialog"}}
 		{{:linkbutton shape="plus" label="Ajouter une ligne à la note de frais" href="./line.html?claim=%s"|args:$claim.key target="_dialog"}}
 	</aside>
 {{/if}}
