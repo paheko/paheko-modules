@@ -210,6 +210,7 @@
 {{if $claim.status === 'payable'}}
 	<p class="actions-center">
 		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key target="_dialog"}}
+		{{:linkbutton shape="reload" label="Transformer en abandon de frais" href="abandon.html?claim=%s"|args:$claim.key target="_dialog"}}
 	</p>
 {{/if}}
 
