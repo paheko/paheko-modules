@@ -1,0 +1,24 @@
+{{#restrict block=true section="config" level="admin"}}{{/restrict}}
+{{:include file="./_config_default.tpl" keep="vehicles"}}
+
+{{:admin_header title="Configuration des notes de frais"}}
+
+<nav class="tabs">
+	<aside>
+		{{:linkbutton shape="plus" href="./cat_edit.html?key=new" label="Ajouter une catégorie"}}
+	</aside>
+	{{:linkbutton shape="left" href="./" label="Liste des notes de frais"}}
+</nav>
+
+
+{{#list type="category" schema="./category.schema.json" columns="label" order="label" disable_user_ordering=true}}
+	<tr>
+		<th>{{$label}}</th>
+		<td class="actions">
+			{{:linkbutton shape="edit" href="./cat_edit.html?key=%s"|args:$key label="Modifier"}}
+			{{:linkbutton shape="delete" href="./cat_delete.html?key=%s"|args:$key label="Supprimer" target="_dialog"}}
+		</td>
+	</tr>
+{{/list}}
+
+{{:admin_footer}}

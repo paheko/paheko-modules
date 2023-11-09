@@ -28,7 +28,11 @@
 		"amount": {
 			"description": "Montant",
 			"type": "integer"
+		},
+		"reference": {
+			"description": "Réf.",
+			"type": ["string", "null"]
 		}
 	},
-	"required": ["type", "claim", "label", "account", "category", "description", "amount"]
+	"required": ["type", "claim", "label", "account", "category", "description", "amount", "reference"]
 }

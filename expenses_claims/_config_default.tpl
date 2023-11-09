@@ -1,27 +1,60 @@
-{{if !$module.config.categories}}
-	{{:assign var="module.config.categories."
+{{#load type="category" limit=1}}
+{{else}}
+	{{:assign var="account" value=null}}
+	{{:assign var="account.6251" value="6251 — Frais de déplacement"}}
+	{{:save type="category" schema="./category.schema.json"
+		key=""|uuid
 		label="Déplacement (forfaitaire)"
-		account="6251"
-		price=50
+		account=$account
+		expense_type="flat_rate"
+		price=5000
 	}}
-	{{:assign var="module.config.categories."
+
+	{{:assign var="account" value=null}}
+	{{:assign var="account.6251" value="6251 — Frais de déplacement"}}
+	{{:save type="category" schema="./category.schema.json"
+		key=""|uuid
 		label="Déplacement (au kilomètre)"
-		account="6251"
-		vehicle=true
+		account=$account
+		expense_type="km_vehicle"
 	}}
-	{{:assign var="module.config.categories."
+
+	{{:assign var="account" value=null}}
+	{{:assign var="account.626" value="626 — Frais postaux ou télécommunication"}}
+	{{:save type="category" schema="./category.schema.json"
+		key=""|uuid
 		label="Frais postaux ou télécommunication"
-		account="626"
+		account=$account
+		expense_type="other"
 	}}
-	{{:assign var="module.config.categories."
+
+	{{:assign var="account" value=null}}
+	{{:assign var="account.6063" value="6063 — Fournitures d'entretien et petit équipement"}}
+	{{:save type="category" schema="./category.schema.json"
+		key=""|uuid
 		label="Fournitures d'entretien et petit équipement"
-		account="6063"
+		account=$account
+		expense_type="other"
 	}}
-	{{:assign var="module.config.categories."
+
+	{{:assign var="account" value=null}}
+	{{:assign var="account.6065" value="6065 — Petits logiciels"}}
+	{{:save type="category" schema="./category.schema.json"
+		key=""|uuid
 		label="Logiciels à faible valeur (< 500 €)"
-		account="6065"
+		account=$account
+		expense_type="other"
 	}}
-{{/if}}
+
+	{{:assign var="account" value=null}}
+	{{:assign var="account.625" value="625 — Frais de réception"}}
+	{{:save type="category" schema="./category.schema.json"
+		key=""|uuid
+		label="Nourriture et autres frais de réception"
+		account=$account
+		expense_type="other"
+	}}
+{{/load}}
 
 {{:assign var="vehicles"
 	speedbike="Vélo électrique rapide (speed bike, > 25 km/h)"

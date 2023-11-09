@@ -10,7 +10,7 @@
 {{/if}}
 
 {{#form on="save"}}
-	{{:assign var="lines." credit=$_POST.amount account=$_POST.account_selector|keys|key:0}}
+	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|key:0}}
 	{{:assign var="lines." debit=$_POST.amount account="4110"}}
 	{{:create entity="transaction"
 		assign_new_id="id"
@@ -79,7 +79,7 @@
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default=$claim.label name="label" label="Libellé" required=true}}
 			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
-			{{:input type="list" name="account_selector" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code"}}
+			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code&year=%d"|args:$best_year}}
 			{{:input type="checkbox" name="paid" value=1 default=1 label="Marquer cette note de frais comme payée"}}
 		</dl>
 	</fieldset>
@@ -87,5 +87,19 @@
 		{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
 	</p>
 </form>
+
+
+<script type="text/javascript">
+function toggleYearForSelector()
+{
+	$('.input-list button').forEach((e) => {
+		e.value = e.value.replace(/year=\d+/, 'year=' + y.value);
+	});
+}
+
+var y = $('#f_id_year')
+
+y.onchange = toggleYearForSelector;
+</script>
 
 {{:admin_footer}}

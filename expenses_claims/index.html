@@ -2,6 +2,9 @@
 
 <nav class="tabs">
 	<aside>
+		{{#restrict section="config" level="admin"}}
+			{{:linkbutton href="config.html" label="Configuration" shape="settings"}}
+		{{/restrict}}
 		{{:linkbutton href="new.html" label="Nouvelle note de frais" shape="plus"}}
 	</aside>
 
