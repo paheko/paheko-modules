@@ -12,7 +12,7 @@
 		},
 		"label": {
 			"description": "Libellé",
-			"type": "string"
+			"type": ["string", "null"]
 		},
 		"date": {
 			"description": "Date",

@@ -21,10 +21,6 @@
 		{{:assign user_id=$logged_user.id user_name=$logged_user._name}}
 	{{/if}}
 
-	{{if !$_POST.label|trim}}
-		{{:error message="Le libellé est vide"}}
-	{{/if}}
-
 	{{:save
 		validate_schema="./claim.schema.json"
 		key=$key
@@ -40,6 +36,8 @@
 {{/form}}
 
 {{:admin_header title="Nouvelle note de frais"}}
+
+{{:form_errors}}
 
 <form method="post" action="">
 	<fieldset>
