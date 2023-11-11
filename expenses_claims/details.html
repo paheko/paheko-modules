@@ -184,7 +184,7 @@
 	{{else}}
 		{{:assign edit=false upload=false}}
 	{{/if}}
-	{{:admin_files edit=$edit upload=$upload path=$upload_path}}
+	{{:admin_files edit=$edit upload=$upload path=$upload_path use_trash=false}}
 {{/if}}
 
 {{if $claim.payments}}
