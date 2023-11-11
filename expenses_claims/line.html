@@ -58,12 +58,13 @@
 	{{/if}}
 
 	{{:save
+		validate_schema="./line.schema.json"
 		key="uuid"
 		type="line"
 		claim=$claim.key
 		label=$_POST.label|trim
 		category=$cat.label|or:'Autre'
-		account=$cat.account|keys|key:0|or:null
+		account=$cat.account|keys|key:0|strval|or:null
 		description=$description|or:$_POST.description|trim|or:null
 		amount=$amount|or:$_POST.amount|money_int
 		reference=$_POST.reference|trim|or:null

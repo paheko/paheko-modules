@@ -55,12 +55,13 @@
 <form method="post" action="">
 
 <nav class="tabs">
-{{if $claim.status === 'draft' || $claim.status === 'cancelled'}}
 	<aside>
+		{{:linkbutton shape="plus" label="Dupliquer" href="./duplicate.html?claim=%s"|args:$claim.key}}
+{{if $claim.status === 'draft' || $claim.status === 'cancelled'}}
 		{{:button type="submit" name="delete" value=1 shape="delete" label="Supprimer"}}
 		{{:linkbutton shape="edit" label="Modifier" href="./edit.html?claim=%s"|args:$claim.key target="_dialog"}}
-	</aside>
 {{/if}}
+	</aside>
 	{{:linkbutton shape="left" label="Retour à la liste des notes de frais" href="./"}}
 </nav>
 

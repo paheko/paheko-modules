@@ -94,8 +94,8 @@
 				{{:assign var="default_account.%s"|args:$account value=$account}}
 				<tr>
 					<td class="account">{{:input type="list" name="lines[account][]" required=true target="!acc/charts/accounts/selector.php?targets=5&key=code&year=%d"|args:$best_year default=$default_account}}</td>
-					<td>{{:input type="text" name="lines[label][]" default=$label required=true}}</td>
-					<td>{{:input type="text" name="lines[reference][]" default=$reference required=true size=10}}</td>
+					<td>{{:input type="text" name="lines[label][]" default=$label required=false}}</td>
+					<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
 					<td class="money">{{:input type="money" name="lines[amount][]" default=$amount required=true}}</td>
 				</tr>
 				{{/load}}

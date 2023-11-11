@@ -77,7 +77,7 @@
 		<dl>
 			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
-			{{:input type="text" default=$claim.label name="label" label="Libellé" required=true}}
+			{{:input type="text" default=$default_label name="label" label="Libellé" required=true}}
 			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
 			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code&year=%d"|args:$best_year}}
 			{{:input type="checkbox" name="paid" value=1 default=1 label="Marquer cette note de frais comme payée"}}
