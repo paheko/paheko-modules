@@ -367,9 +367,9 @@
 		<fieldset class="entreprise">
 			<legend>Dons et versements effectués par l’entreprise</legend>
 			<dl>
-				{{:input type="money" name="montant_nature" required=true label="Montant des dons en nature" default=$default.total_nature}}
+				{{:input type="money" name="montant_nature" required=true label="Montant des dons en nature" default=$default.total_nature|or:0 help="Inscrire ici le chiffre zéro si aucun don en nature n'a été effectué."}}
 				{{:input type="textarea" rows=5 cols=70 name="description_nature" required=true label="Description exhaustive des dons en nature" help="Décrire ici la nature et quantité des biens et prestations reçus et acceptés, et le détail des salariés mis à disposition"}}
-				{{:input type="money" name="montant_numeraire" required=true label="Montant des dons en numéraire" default=$default.total_numeraire}}
+				{{:input type="money" name="montant_numeraire" required=true label="Montant des dons en numéraire" default=$default.total_numeraire|or:0 help="Inscrire ici le chiffre zéro si aucun don numéraire n'a été effectué."}}
 			</dl>
 		</fieldset>
 
