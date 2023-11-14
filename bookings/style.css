@@ -2,12 +2,12 @@
 	max-width: 50rem;
 }
 
-.booking_event > article > h1 {
+.booking_event > .event > h1 {
 	margin-bottom: 1rem;
 	text-align: center;
 }
 
-.booking_event > article .web-content {
+.booking_event > .event .web-content {
 	padding-top: .8rem;
 	border-top: .2rem solid #999;
 }
@@ -29,6 +29,7 @@
 
 .booking_event fieldset.info {
 	text-align: center;
+	border-radius: 0;
 }
 
 .booking_event fieldset.info .help {
@@ -45,32 +46,75 @@
 	margin-bottom: .5rem;
 }
 
-form .radio-btn div {
-	background-color: #dfd;
+.booking_event .slots {
+	text-align: center;
+}
+
+.booking_event .slots article {
 	border: 1px solid #ccc;
+	margin: 1em;
+	border-radius: .5rem;
+	overflow: hidden;
 }
 
-form .radio-btn.available_1 div {
-	background-color: #fcc;
+.booking_event .slots article h3 {
+	background: #eee;
+	padding: .5rem;
 }
 
-form .radio-btn.available_2 div {
-	background-color: #ffc;
+.booking_event .slots ul {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
-form .radio-btn.available_0 div {
-	background-color: #ccc;
+.booking_event .slots li a {
+	display: block;
+	background: #dfd;
+	box-shadow: 0px 0px 5px #ccc;
+	padding: .5rem;
+	text-decoration: none;
+	margin: .5rem 2rem;
+	color: unset;
+	border-radius: .5rem;
+	text-align: center;
+	transition: background-color .2s, box-shadow .2s;
 }
 
-form .radio-btn input:checked + label div {
-	background-color: #FFD580;
-	border-color: #999;
+.booking_event .slots li a:hover {
 	box-shadow: 0px 0px 5px orange;
+	background: #FFD580;
 }
 
-input[type=radio] + label::before {
+.booking_event .slots li a strong {
+	display: block;
 	font-size: 1.5em;
+	text-decoration: underline;
+}
+
+.booking_event .slots li a em {
 	color: #666;
+	font-style: normal;
+}
+
+.booking_event .slots li .available_1 {
+	background: #fcc;
+}
+
+.booking_event .slots li .available_2 {
+	background: #ffc;
+}
+
+.booking_event .slots li .available_0, .booking_event .slots li a.available_0:hover {
+	background: #ddd;
+	cursor: not-allowed;
+	color: #999;
+	box-shadow: 0px 0px 5px #ccc;
+}
+
+.booking_event .slots li .available_0 strong {
+	text-decoration: line-through;
 }
 
 .mycaptcha {
