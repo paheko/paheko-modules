@@ -1,3 +1,7 @@
+{{if $event === null}}
+	{{:error admin="Missing mandatory variable"}}
+{{/if}}
+
 {{:form_errors}}
 
 {{:assign date=$_GET.slot_time|parse_datetime}}
@@ -15,6 +19,7 @@
 				<h5>Vous allez réserver pour&nbsp;:</h5>
 				<h2>{{$event.label}}</h2>
 				<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+				<p>{{:linkbutton shape="left" label="Annuler" href="?event=%s"|args:$event.key}}
 			</article>
 		</section>
 	</fieldset>

@@ -32,61 +32,63 @@
 </p>
 {{/if}}
 
-<section class="my_bookings">
-{{* New booking *}}
-{{if $_GET.b}}
-	{{if $_GET.booked}}
-	<p class="confirm block">
-		Votre réservation a bien été enregistrée.
-	</p>
+{{if !$_GET.slot_time}}
+	<section class="my_bookings">
+	{{* New booking *}}
+	{{if $_GET.b}}
+		{{if $_GET.booked}}
+		<p class="confirm block">
+			Votre réservation a bien été enregistrée.
+		</p>
+		{{/if}}
+
+		{{#load type="booking" key=$_GET.b}}
+			{{#load type="event" key=$event assign="e"}}{{/load}}
+			{{:assign var="booking" label=$e.label name=$name event=$e.key key=$key date_str=$date|date_long date=$date|strtotime time_str=$date|date_hour}}
+			<article data-new-booking="{{$booking|json_encode}}">
+				<h5>Vous avez réservé&nbsp;:</h5>
+				<h2>{{$e.label}}</h2>
+				<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+				<h5>(Au nom de&nbsp;: {{$name}})</h5>
+				<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
+					{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" class="main"}}
+				</form>
+			</article>
+		{{else}}
+			<p class="error block">La réservation indiquée est introuvable, elle a peut-être déjà été annulée.</p>
+		{{/load}}
 	{{/if}}
+	{{* My bookings *}}
+	{{if $logged_user.id}}
+		{{#load type="booking" id_user=$logged_user.id where="key != :booking" :booking=$_GET.b|or:''}}
+			{{#load type="event" key=$event assign="e"}}{{/load}}
+			<article>
+				<h5>Vous avez réservé&nbsp;:</h5>
+				<h2>{{$e.label}}</h2>
+				<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+				<h5>(Au nom de&nbsp;: {{$name}})</h5>
+				<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
+					{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
+				</form>
+			</article>
+		{{/load}}
+	{{/if}}
+		<template id="booking">
+			<article>
+				<h5>Vous avez réservé&nbsp;:</h5>
+				<h2>#label#</h2>
+				<h3>#date_str# à <span>#time_str#</span></h3>
+				<h5>(Au nom de&nbsp;: #name#)</h5>
+				<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
+					{{:button type="submit" name="cancel" value="#key#" label="Annuler cette réservation" shape="delete" }}
+				</form>
+			</article>
+		</template>
+	</section>
 
-	{{#load type="booking" key=$_GET.b}}
-		{{#load type="event" key=$event assign="e"}}{{/load}}
-		{{:assign var="booking" label=$e.label name=$name event=$e.key key=$key date_str=$date|date_long date=$date|strtotime time_str=$date|date_hour}}
-		<article data-new-booking="{{$booking|json_encode}}">
-			<h5>Vous avez réservé&nbsp;:</h5>
-			<h2>{{$e.label}}</h2>
-			<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
-			<h5>(Au nom de&nbsp;: {{$name}})</h5>
-			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
-				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" class="main"}}
-			</form>
-		</article>
-	{{else}}
-		<p class="error block">La réservation indiquée est introuvable, elle a peut-être déjà été annulée.</p>
-	{{/load}}
-{{/if}}
-{{* My bookings *}}
-{{if $logged_user.id}}
-	{{#load type="booking" id_user=$logged_user.id where="key != :booking" :booking=$_GET.b|or:''}}
-		{{#load type="event" key=$event assign="e"}}{{/load}}
-		<article>
-			<h5>Vous avez réservé&nbsp;:</h5>
-			<h2>{{$e.label}}</h2>
-			<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
-			<h5>(Au nom de&nbsp;: {{$name}})</h5>
-			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
-				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
-			</form>
-		</article>
-	{{/load}}
-{{/if}}
-	<template id="booking">
-		<article>
-			<h5>Vous avez réservé&nbsp;:</h5>
-			<h2>#label#</h2>
-			<h3>#date_str# à <span>#time_str#</span></h3>
-			<h5>(Au nom de&nbsp;: #name#)</h5>
-			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
-				{{:button type="submit" name="cancel" value="#key#" label="Annuler cette réservation" shape="delete" }}
-			</form>
-		</article>
-	</template>
-</section>
-
-{{if !$logged_user}}
-<script type="text/javascript" src="local_bookings.js" defer="defer"></script>
+	{{if !$logged_user}}
+	<script type="text/javascript" src="local_bookings.js" defer="defer"></script>
+	{{/if}}
 {{/if}}
 
 {{if !$event}}
