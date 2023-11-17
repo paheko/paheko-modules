@@ -1,13 +1,19 @@
-{{:admin_header title="Configuration du reçu de don"}}
+{{if $module.config.accounts|gettype === 'string'}}
+	{{:include file="./_upgrade.tpl" keep="module.config.accounts"}}
+{{/if}}
 
-{{if $_POST.save}}
+{{#form on="save"}}
 	{{:save key="config"
-		accounts=$_POST.accounts|trim
+		accounts=$_POST.accounts|arrayval
 		email_subject=$_POST.email_subject|trim
 		email_body=$_POST.email_body|trim
 	}}
-	{{:http redirect="?ok=1"}}
-{{/if}}
+	{{:redirect to="?ok=1"}}
+{{/form}}
+
+{{:admin_header title="Configuration du reçu de don"}}
+
+{{:form_errors}}
 
 {{if $_GET.ok}}
 	<p class="block confirm">Configuration enregistrée.</p>
@@ -18,10 +24,10 @@
 <fieldset>
 	<legend>Configuration du modèle de reçu</legend>
 	<dl>
-		{{:input required=false name="accounts" type="text" label="Numéros de comptes éligibles aux reçus" source=$module.config default="756"}}
+		{{:assign var="default_account.754" value="754 — Ressources liées à la générosité du public"}}
+		{{:input required=false name="accounts" multiple=true target="!acc/charts/accounts/selector.php?targets=6&key=code" type="list" label="Comptes éligibles aux reçus de don" source=$module.config default=$default_account}}
 		<dd class="help">
-			Pour chaque numéro de compte indiqué dans ce champ, le reçu de don sera proposé (en dessous de la fiche de l'écriture).<br />
-			Séparer les numéros de compte avec des virgules, par exemple : <tt>754, 756</tt>.<br />
+			Le reçu de don sera proposé, <strong>en dessous de la fiche de l'écriture</strong>, pour chaque compte sélectionné et ses sous-compts.<br />
 			Laisser vide pour que le reçu de don soit proposé quel que soit le compte.
 		</dd>
 	</dl>
@@ -34,7 +40,6 @@
 		{{:input name="email_body" type="textarea" label="Corps du message" cols="70" rows="7" required=true source=$module.config default="Bonjour !\n\nVeuillez trouver ci-joint votre reçu de don au format PDF."}}
 	</dl>
 </fieldset>
-
 
 <p class="submit">
 	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}

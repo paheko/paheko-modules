@@ -1,16 +1,26 @@
 {{if $module.config.accounts === null}}
 	{{:assign var="module.config.accounts.5112" value='5112'}}
 {{elseif $module.config.accounts|gettype === 'string'}}
-	{{:include file="./_upgrade.tpl" keep="module.config.accounts"}}
+	{{:include file="/receipt_donation/_upgrade.tpl" keep="module.config.accounts"}}
 {{/if}}
 
-{{:assign accounts=$module.config.accounts|keys}}
-
 {{#foreach from=$transaction_lines item="line"}}
-	{{if $accounts|has:$line.account_code && $line.debit == 0}}
-		{{:assign show=true}}
+	{{if !$line.credit}}
+		{{:continue}}
+	{{/if}}
+
+	{{#foreach from=$module.config.accounts key="code"}}
+		{{if $line.account_code|strpos:$code === 0}}
+			{{:assign show=true}}
+			{{:break}}
+		{{/if}}
+	{{/foreach}}
+
+	{{if $show}}
+		{{:break}}
 	{{/if}}
 {{/foreach}}
+
 
 {{if $show}}
 	{{:include file="/receipt/snippets/transaction_details.html" show=true}}

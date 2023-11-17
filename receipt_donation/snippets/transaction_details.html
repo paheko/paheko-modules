@@ -1,20 +1,25 @@
 {{if $module.config.accounts === null}}
-	{{:assign var="module.config.accounts" value='756'}}
+	{{:assign var="module.config.accounts.756" value="756"}}
+{{elseif $module.config.accounts|gettype === 'string'}}
+	{{:include file="../_upgrade.tpl" keep="module.config.accounts"}}
 {{/if}}
 
-{{if $module.config.accounts}}
-	{{:assign show=false}}
-	{{:assign accounts=$module.config.accounts|regexp_replace:"/\s*,\s*/":"|"}}
-	{{:assign accounts="/%s/"|args:$accounts}}
-	{{#foreach from=$transaction_lines item="line"}}
-		{{if $line.account_code|regexp_match:$accounts}}
+{{#foreach from=$transaction_lines item="line"}}
+	{{if !$line.credit}}
+		{{:continue}}
+	{{/if}}
+
+	{{#foreach from=$module.config.accounts key="code"}}
+		{{if $line.account_code|strpos:$code === 0}}
 			{{:assign show=true}}
+			{{:break}}
 		{{/if}}
-		{{:break}}
 	{{/foreach}}
-{{else}}
-	{{:assign show=true}}
-{{/if}}
+
+	{{if $show}}
+		{{:break}}
+	{{/if}}
+{{/foreach}}
 
 {{if $show}}
 	<h2 class="ruler">{{$module.label}}</h2>
