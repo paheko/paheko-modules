@@ -1,5 +1,4 @@
 {{#restrict section="config" level="admin" block=true}}{{/restrict}}
-{{:admin_header title="Supprimer un créneau" current="module_bookings"}}
 
 {{#load key=$_GET.id type="slot" assign="slot"}}
 {{else}}
@@ -10,6 +9,8 @@
 	{{:delete where="key = :key OR $$.slot = :key" :key=$slot.key}}
 	{{:redirect to="./config_event_slots.html?id=%s"|args:$slot.event}}
 {{/form}}
+
+{{:admin_header title="Supprimer un créneau" current="module_bookings"}}
 
 {{:delete_form legend="Supprimer ce créneau ?" warning="Supprimer le créneau ?" info="Les réservations liées à ce créneau seront perdues."}}
 
