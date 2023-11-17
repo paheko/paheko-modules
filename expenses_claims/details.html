@@ -19,15 +19,6 @@
 
 {{:assign var="upload_path" value=$claim.key}}
 
-{{if $claim.status === 'draft' || $claim.status === 'cancelled'}}
-	{{#form on="delete"}}
-		{{:delete_file path=$upload_path}}
-		{{:delete type="line" claim=$claim.key}}
-		{{:delete type="claim" key=$claim.key}}
-		{{:http redirect="./"}}
-	{{/form}}
-{{/if}}
-
 {{if $claim.status === 'draft'}}
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
@@ -57,8 +48,10 @@
 <nav class="tabs">
 	<aside>
 		{{:linkbutton shape="plus" label="Dupliquer" href="./duplicate.html?claim=%s"|args:$claim.key}}
+{{if $is_admin || $claim.status === 'draft' || $claim.status === 'cancelled'}}
+		{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?claim=%s"|args:$claim.key}}
+{{/if}}
 {{if $claim.status === 'draft' || $claim.status === 'cancelled'}}
-		{{:button type="submit" name="delete" value=1 shape="delete" label="Supprimer"}}
 		{{:linkbutton shape="edit" label="Modifier" href="./edit.html?claim=%s"|args:$claim.key target="_dialog"}}
 {{/if}}
 	</aside>
