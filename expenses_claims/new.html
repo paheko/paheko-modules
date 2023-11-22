@@ -5,10 +5,9 @@
 {{/restrict}}
 
 {{#form on="save"}}
-	{{#load select="COUNT(*) AS count" type="claim"}}
-		{{:assign count=$count}}
+	{{#load select="MAX($$.number) AS number" type="claim" assign="max"}}
 	{{/load}}
-	{{:assign new_number="%d+1"|math:$count}}
+	{{:assign new_number="%d+1"|math:$max.number}}
 	{{:assign key=""|uuid}}
 
 	{{if $is_admin}}
