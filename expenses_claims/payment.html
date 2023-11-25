@@ -12,8 +12,11 @@
 {{#form on="save"}}
 	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|key:0}}
 	{{:assign var="lines." debit=$_POST.amount account="4110"}}
-	{{:create entity="transaction"
-		assign_new_id="id"
+	{{:api
+		method="POST"
+		path="accounting/transaction"
+		assign="result"
+
 		id_year="match"
 		type="advanced"
 		date=$_POST.date
@@ -30,7 +33,7 @@
 		{{:assign new_status=$claim.status}}
 	{{/if}}
 
-	{{:assign var="claim.payments." value=$id}}
+	{{:assign var="claim.payments." value=$result.id}}
 	{{:save
 		validate_schema="./claim.schema.json"
 		payments=$claim.payments
@@ -51,7 +54,7 @@
 {{/if}}
 
 {{if $claim.label}}
-	{{:assign default_label="Remboursement note de frais n°%d : "|args:$claim.label}}
+	{{:assign default_label="Remboursement note de frais n°%d : %s"|args:$claim.number:$claim.label}}
 {{else}}
 	{{:assign default_label="Remboursement note de frais n°%d"|args:$claim.number}}
 {{/if}}

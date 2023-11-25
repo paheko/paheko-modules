@@ -29,21 +29,23 @@
 	{{/if}}
 
 	{{:assign var="lines." debit=$total|money_raw account=$_POST.account|keys|key:0}}
-	{{:create entity="transaction"
-		assign_new_id="id"
+	{{:api
+		method="POST"
+		path="accounting/transaction"
+		assign="result"
+
 		id_year=$_POST.id_year|intval
 		type="revenue"
 		date=$_POST.date
 		label=$_POST.label|trim
 		reference="NDF-%d"|args:$claim.number
-		linked_users=$claim.user_id
-		lines=$lines
 		notes=$_POST.notes|trim|or:null
 		amount=$total|money_raw
 		debit=$_POST.account|keys|key:0
 		credit=$_POST.abandon_account|keys|key:0
+		linked_users=$claim.user_id
 	}}
-	{{:assign var="claim.payments." value=$id}}
+	{{:assign var="claim.payments." value=$result.id}}
 
 	{{:save key=$claim.key status="paid" payments=$claim.payments}}
 	{{:http redirect="details.html?key=%s"|args:$claim.key}}
