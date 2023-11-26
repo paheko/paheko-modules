@@ -52,7 +52,7 @@
 	{{if $back_link && !$dialog}}
 		{{:linkbutton href=$back_link label="Retour" shape="left"}}
 	{{/if}}
-	{{:linkbutton href="%s&print=yes"|args:$request_url label="Imprimer" shape="print"}}
+	{{:linkbutton href="%s&print=yes"|args:$request_url label="Imprimer" target="_blank" shape="print"}}
 	{{if $pdf_enabled}}
 	{{:linkbutton href="%s&print=pdf"|args:$request_url label="Télécharger en PDF" shape="download"}}
 	{{/if}}
