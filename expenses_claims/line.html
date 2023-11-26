@@ -85,6 +85,7 @@
 		</dl>
 		<dl class="category">
 			{{:input type="textarea" name="description" label="Description"}}
+			<dd class="alert block" id="notes"></dd>
 			{{:input type="text" name="reference" label="Référence du justificatif" help="Par exemple : numéro de facture, nom du magasin, etc."}}
 		</dl>
 		<dl class="vehicle">
@@ -128,6 +129,12 @@ function selectCategory() {
 		g.toggle('dl.vehicle', c.expense_type === 'km_vehicle');
 		g.toggle('dl.amount', c.expense_type !== 'km_vehicle' && c.expense_type !== 'km_free');
 		g.toggle('dl.km', c.expense_type === 'km_vehicle' || c.expense_type === 'km_free');
+
+		var notes = $('#notes');
+
+		g.toggle(notes, !!c.notes);
+		notes.innerText = c.notes || '';
+		notes.innerHTML = notes.innerHTML.replace(/\r?\n|\r/, "<br>");
 
 		if (c.price) {
 			$('#f_amount').value = g.formatMoney(c.price);

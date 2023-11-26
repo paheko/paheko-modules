@@ -10,6 +10,10 @@
 			"type": "string",
 			"description": "Nom de la catégorie"
 		},
+		"notes": {
+			"type": ["string", "null"],
+			"description": "Instructions"
+		},
 		"account": {
 			"type": ["string", "null"],
 			"description": "Code comptable"
@@ -24,5 +28,5 @@
 			"enum": ["other", "km_free", "km_vehicle"]
 		}
 	},
-	"required": ["type", "label", "account", "expense_type"]
+	"required": ["type", "label", "notes", "account", "expense_type"]
 }
