@@ -16,7 +16,7 @@
 	{{:assign can_delete=true}}
 {{/if}}
 
-{{if !$is_admin && $can_delete}}
+{{if !$is_admin && !$can_delete}}
 	{{:error message="Vous n'avez pas le droit de supprimer cette note de frais"}}
 {{/if}}
 
