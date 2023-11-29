@@ -23,7 +23,15 @@
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
 		{{:include file="./messages/validate.txt" claim=$claim capture="message"}}
-		{{:mail to=$config.org_email subject="Une nouvelle note de frais a été soumise" body=$message|raw}}
+
+		{{if $module.config.notify_users|count}}
+			{{#users id=$module.config.notify_users|keys}}
+				{{:assign var="notify_emails." value=$_email}}
+			{{/users}}
+		{{else}}
+			{{:assign var="notify_emails." value=$config.org_email}}
+		{{/if}}
+		{{:mail to=$notify_emails subject="Une nouvelle note de frais a été soumise" body=$message|raw}}
 		{{:http redirect="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 

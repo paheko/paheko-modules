@@ -1,0 +1,6 @@
+{{**keep_whitespaces**}}
+Bonjour,
+
+votre note de frais n°{{$claim.number}} a été acceptée.
+
+Cordialement.

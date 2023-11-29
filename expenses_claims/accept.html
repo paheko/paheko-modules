@@ -45,6 +45,15 @@
 		move_attachments_from=$upload_path
 	}}
 	{{:save key=$claim.key status="payable" id_transaction=$result.id}}
+
+	{{#users id=$claim.user_id}}
+		{{if !$_email}}
+			{{:break}}
+		{{/if}}
+		{{:include file="./messages/accept.txt" capture="message" message=$_POST.message|trim claim=$claim}}
+		{{:mail to=$_email subject="Votre note de frais a été acceptée" body=$message|raw}}
+	{{/users}}
+
 	{{:http redirect="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
