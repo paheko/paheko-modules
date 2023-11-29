@@ -110,7 +110,13 @@
 	<dt>Date</dt>
 	<dd>{{$claim.date|date_short}}</dd>
 	<dt>Membre</dt>
-	<dd>{{$claim.user_name}}</dd>
+	<dd>
+		{{if $claim.user_name && $claim.user_id && $is_admin}}
+			{{:link href="!users/details.php?id=%d"|args:$claim.user_id label=$claim.user_name}}
+		{{else}}
+			{{$claim.user_name}}
+		{{/if}}
+	</dd>
 	<dt>Statut</dt>
 	<dd>
 	{{if $claim.status === 'draft'}}
