@@ -16,6 +16,14 @@ h6  { font-size: 0.8em; }
 ul, ol { list-style-type: none; }
 article, aside, figure, footer, header, hgroup, menu, nav, section { display: block; }
 
+:root {
+    --bg-color: #fff;
+    --text-color: #000;
+    --link-color: #009;
+    --visited-link-color: #669;
+    --hover-link-color: darkred;
+    --gray-text-color: #666;
+}
 
 /* Modifications du style pour les grands écrans */
 @media screen and (min-width: 981px) {
@@ -63,13 +71,13 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
     }
 
     .layout-wide section.page {
-        background: #fff;
+        background: var(--bg-color);
         border-radius: 0 0 .5em .5em;
         padding: 1em;
     }
 
     .layout-1col section.page {
-        background: #fff;
+        background: var(--bg-color);
         border-radius: .5em;
         padding: 1em;
     }
@@ -89,7 +97,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
     section.page { grid-area: content; }
 
     header.main h1, header.main .contacts, nav.main {
-        background: #fff;
+        background: var(--bg-color);
         padding: 1em;
         border-radius: .5em
     }
@@ -112,7 +120,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
     .layout-2col section.page article {
         margin-bottom: 1em;
         padding: 1em;
-        background: #fff;
+        background: var(--bg-color);
         clear: both;
         border-radius: .5em;
     }
@@ -125,7 +133,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
     .layout-wide section.articles article, .layout-1col section.articles article {
         margin: 1em 0;
         padding-bottom: 1em;
-        border-bottom: 2px solid #ccc;
+        border-bottom: 2px solid var(--gray-text-color);
     }
 
     .layout-wide section.page > h1 {
@@ -172,7 +180,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
     }
 
     .layout-1col nav.main .subcategories li a:hover {
-        background: #fff;
+        background: var(--bg-color);
     }
 
     .layout-1col nav.main .opening-hours {
@@ -184,12 +192,56 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
 /* CORPS */
 body {
     font-size: 100.01%;
-    color: #000;
     font-family: "Trebuchet MS", Helvetica, Sans-serif;
     background: #eee;
     background: hsl(var(--first-color), 50%, 90%);
-    background: linear-gradient(200deg, hsl(var(--first-color), 50%, 90%) 20%, hsl(var(--second-color), 30%, 90%) 70%);
+    background: linear-gradient(200deg, hsl(var(--first-color), 50%, 90%) 5%, hsl(var(--second-color), 30%, 90%) 30%);
     min-height: 100vh;
+    color: var(--text-color);
+}
+
+body.bg-white {
+    background: #fff;
+    --bg-color: hsl(var(--first-color), 50%, 95%);
+}
+
+body.bg-dark {
+    background: linear-gradient(-200deg, #333 10%, #000 30%, #333 70%);
+    --bg-color: hsl(var(--first-color), 50%, 10%);
+    --text-color: #fff;
+    --link-color: #99f;
+    --visited-link-color: #c9c;
+    --hover-link-color: #c99;
+    --gray-text-color: #999;
+}
+
+body.bg-dark header.main h1 a span {
+    color: var(--text-color);
+}
+
+body.bg-dark header.main h1 a:hover span {
+    color: var(--hover-link-color);
+}
+
+body.bg-white_gradient {
+    background: linear-gradient(-200deg, hsl(var(--first-color), 50%, 90%) 5%, #fff 30%);
+}
+
+body.bg-gray {
+    background: #fff;
+    --bg-color: #eee;
+}
+
+a {
+    color: var(--link-color);
+}
+
+a:visited {
+    color: var(--visited-link-color);
+}
+
+a:hover {
+    color: var(--hover-link-color);
 }
 
 /* ENTÊTE AVEC LOGO ET CONTACTS */
@@ -202,7 +254,7 @@ header.main h1 {
 header.main h1 a {
     display: flex;
     padding: 1rem;
-    background: #fff;
+    background: var(--bg-color);
     border-bottom-left-radius: .5rem;
     border-bottom-right-radius: .5rem;
     text-decoration: none;
@@ -265,7 +317,7 @@ header.main .contacts .map:hover svg {
 /* NAVIGATION EN HAUT DE LA PAGE (ACCUEIL/CONNEXION) */
 header.nav {
     background: #ddd;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--gray-text-color);
 }
 
 header.nav ul {
@@ -283,12 +335,12 @@ header.nav li a {
 }
 
 header.nav li.current a {
-    background: #fff;
+    background: var(--bg-color);
     border-radius: .3em .3em 0 0;
 }
 
 header.nav li a:hover {
-    color: #000;
+    color: var(--text-color);
 }
 
 /* LISTE DES CATÉGORIES RACINES */
@@ -306,7 +358,7 @@ section.page .subcategories {
 .subcategories li a {
     margin: 0;
     padding: .2em .5em;
-    color: #006;
+    color: var(--link-color);
     text-decoration: underline;
     background: #ddd;
     background: hsl(var(--first-color), 60%, 80%);
@@ -336,11 +388,11 @@ nav.main .subcategories li:first-child a {
 }
 
 section.page .subcategories li a {
-    background: #fff;
+    background: var(--bg-color);
 }
 
 section.page .subcategories li a:hover, nav.main .subcategories li a:hover {
-    color: darkred;
+    color: var(--hover-link-color);
     background-color: #eee;
     background-color: hsl(var(--second-color), 50%, 90%);
 }
@@ -385,7 +437,7 @@ section.page .subcategories li a:hover, nav.main .subcategories li a:hover {
 
 /* PIED DE PAGE */
 footer.main {
-    color: #666;
+    color: var(--grey-text-color);
     margin: 1em;
     text-align: center;
 }
@@ -393,11 +445,9 @@ footer.main {
 footer.main a {
     text-decoration: none;
     font-weight: bold;
-    color: #333;
 }
 
 footer.main a:hover {
-    color: #006;
     text-decoration: underline;
 }
 
@@ -424,7 +474,7 @@ footer.main a#paheko {
 
 .breadcrumbs ul li::before {
     content: "»";
-    color: #999;
+    color: var(--gray-text-color);
     margin: .5em;
 }
 
@@ -433,7 +483,7 @@ footer.main a#paheko {
 }
 
 .breadcrumbs a {
-    color: #666;
+    color: var(--gray-text-color);
 }
 
 
@@ -471,18 +521,18 @@ section.articles article::after, article.single::after {
 }
 
 section.articles article h1 a {
-    color: #000;
+    color: var(--text-color);
     text-decoration: none;
     font-weight: normal;
 }
 
 section.articles article h3 a {
-    color: #009;
+    color: var(--link-color);
     font-weight: normal;
 }
 
 section.articles article h3 a:visited {
-    color: #669;
+    color: var(--visited-link-color);
 }
 
 section.articles article h5 {
@@ -500,7 +550,7 @@ section.page > h1 {
 /* CONTENU DE L'ARTICLE */
 article > h4 {
     margin-bottom: 1em;
-    color: #666;
+    color: var(--gray-text-color);
     font-weight: normal;
 }
 
@@ -612,7 +662,7 @@ section.documents figcaption span {
 
 /* FORMULAIRES */
 fieldset {
-    border: 2px solid #ccc;
+    border: 2px solid var(--gray-text-color);
     border-radius: .5em;
     padding: 1em;
     margin: 1em;
@@ -688,7 +738,7 @@ fieldset dl dd {
 }
 
 section.page article.opening-next {
-    background: #fff;
+    background: var(--bg-color);
     background: hsl(var(--second-color), 30%, 35%);
     border-radius: .3em;
     color: #fff;
@@ -722,6 +772,7 @@ article.opening-hours .list {
     background: hsl(var(--first-color), 50%, 92%);
     padding: .5rem;
     border-radius: .5em;
+    color: #000;
 }
 
 article.opening-hours em {
@@ -777,7 +828,7 @@ nav.main article.opening-hours table tr {
     }
 
     header.main {
-        background: #fff;
+        background: var(--bg-color);
         padding: 1em;
     }
 
@@ -811,7 +862,7 @@ nav.main article.opening-hours table tr {
         margin: .3em;
     }
     nav.main ul li a, .subcategories li a {
-        background: #fff;
+        background: var(--bg-color);
     }
 
     .breadcrumbs {
@@ -880,7 +931,7 @@ nav.main article.opening-hours table tr {
 
     .articles article, article.single {
         margin: .5rem 0;
-        background: #fff;
+        background: var(--bg-color);
         padding: .5em;
     }
 }

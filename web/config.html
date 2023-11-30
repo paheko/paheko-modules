@@ -5,6 +5,7 @@
 		color1=$_POST.color1|trim|or:null
 		color2=$_POST.color2|trim|or:null
 		layout=$_POST.layout|trim|or:null
+		background=$_POST.background|trim|or:null
 	}}
 	{{:redirect to="?ok=1"}}
 {{/form}}
@@ -18,9 +19,18 @@
 <form method="post" action="">
 
 {{:assign var="layouts"
-	1col="Classique — 1 colonne"
 	2col="Classique — 2 colonnes"
-	wide="Large — 2 colonnes"}}
+	1col="Classique — 1 colonne"
+	wide="Large — 2 colonnes"
+}}
+
+{{:assign var="backgrounds"
+	gradient="Dégradé entre les deux couleurs"
+	white_gradient="Dégradé couleur primaire — blanc"
+	white="Blanc"
+	gray="Blanc et gris"
+	dark="Sombre"
+}}
 
 <style type="text/css">
 #preview {
@@ -58,6 +68,7 @@ iframe {
 		{{:input type="select" name="layout" label="Disposition sur grand écran" required=true default="2col" options=$layouts help="Sur petit écran (mobile), la disposition reste sur une colonne" source=$module.config}}
 		{{:input type="color" name="color1" default=$config.color1 label="Couleur primaire" required=false source=$module.config}}
 		{{:input type="color" name="color2" default=$config.color2 label="Couleur secondaire" required=false source=$module.config}}
+		{{:input type="select" name="background" options=$backgrounds label="Couleur de fond" required=true source=$module.config}}
 	</dl>
 </fieldset>
 
@@ -109,7 +120,13 @@ function updateColors() {
 $('#f_layout').onchange = (e) => {
 	var layout = e.target.value;
 	var doc = $('#preview iframe')[0].contentWindow.document;
-	doc.body.className = 'layout-' + layout;
+	doc.body.className = doc.body.className.replace(/\s*layout-\w+|$/, ' layout-' + layout);
+}
+
+$('#f_background').onchange = (e) => {
+	var bg = e.target.value;
+	var doc = $('#preview iframe')[0].contentWindow.document;
+	doc.body.className = doc.body.className.replace(/\s*bg-\w+|$/, ' bg-' + bg);
 }
 
 $('#f_color1').oninput = updateColors;
