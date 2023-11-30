@@ -26,6 +26,15 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
         display: grid;
     }
 
+    .layout-1col main {
+        grid-gap: 1em;
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "nav"
+            "content"
+    }
+
     .layout-2col main {
         grid-gap: 1em;
         grid-template-columns: 1.4fr 0.6fr;
@@ -59,11 +68,17 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
         padding: 1em;
     }
 
+    .layout-1col section.page {
+        background: #fff;
+        border-radius: .5em;
+        padding: 1em;
+    }
+
     header.main h1 a img {
         max-height: 300px;
     }
 
-    .layout-2col header.main {
+    .layout-2col header.main, .layout-1col header.main {
         grid-area: header;
         display: grid;
         grid-gap: 1em;
@@ -90,7 +105,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
         padding: 0;
     }
 
-    .layout-wide header.main h1 {
+    .layout-wide header.main h1, .layout-1col header.main h1 {
         font-size: 1.2em;
     }
 
@@ -107,7 +122,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
         text-align: left;
     }
 
-    .layout-wide section.articles article {
+    .layout-wide section.articles article, .layout-1col section.articles article {
         margin: 1em 0;
         padding-bottom: 1em;
         border-bottom: 2px solid #ccc;
@@ -115,6 +130,53 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
 
     .layout-wide section.page > h1 {
         text-align: left;
+    }
+
+    .layout-1col nav.main {
+        padding: 0;
+        background: none;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .layout-1col nav.main .booking-btn {
+        margin: 0;
+    }
+
+    .layout-1col .search-widget p {
+        max-width: 20em;
+        margin: .5rem;
+    }
+
+    .layout-1col nav.main .booking-btn a {
+        border-radius: .5em;
+        padding: .2rem .5rem;
+    }
+
+    .layout-1col nav.main .subcategories {
+        margin: .5rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: .5rem;
+    }
+
+    .layout-1col nav.main .subcategories li a, .layout-1col nav.main .subcategories li:first-child a {
+        border: none;
+    }
+
+    .layout-1col nav.main .subcategories li a {
+        background: hsl(var(--first-color), 50%, 95%);
+        border-radius: .5rem;
+    }
+
+    .layout-1col nav.main .subcategories li a:hover {
+        background: #fff;
+    }
+
+    .layout-1col nav.main .opening-hours {
+        display: none;
     }
 }
 
@@ -277,10 +339,10 @@ section.page .subcategories li a {
     background: #fff;
 }
 
-.subcategories li a:hover {
+section.page .subcategories li a:hover, nav.main .subcategories li a:hover {
     color: darkred;
-    background: #eee;
-    background: hsl(var(--second-color), 50%, 90%) !important;
+    background-color: #eee;
+    background-color: hsl(var(--second-color), 50%, 90%);
 }
 
 /* Formulaire de recherche */
