@@ -11,7 +11,7 @@
 
 {{:assign var="categories_select.other" value="Autre"}}
 
-{{#load type="category" assign="categories."}}
+{{#load type="category" assign="categories." order="$$.label COLLATE U_NOCASE"}}
 	{{:assign var="categories_select[%s]"|args:$key value=$label}}
 {{/load}}
 
