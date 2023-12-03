@@ -694,6 +694,45 @@ fieldset dl dd {
     margin: .5em 1em;
 }
 
+aside.admin {
+    float: right;
+    text-align: right;
+    position: fixed;
+    right: 1rem;
+    top: .5rem;
+}
+
+aside.admin a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: #700;
+    color: white;
+    border-radius: 1rem;
+    padding: .2rem .8rem;
+    position: relative;
+    border: 2px solid #eee;
+}
+
+aside.admin a[data-icon] span {
+    font-size: 1rem;
+    margin-left: .5rem;
+}
+
+aside.admin a[data-icon]::before {
+    content: attr(data-icon);
+    font-size: 2rem;
+    line-height: .5em;
+    display: inline-block;
+    text-align: center;
+}
+
+aside.admin a[data-icon]:hover span {
+    text-decoration: underline;
+}
+
+
 /** Encart module réservations */
 .booking-btn {
     padding: 0;
