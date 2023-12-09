@@ -132,7 +132,7 @@
 	<legend>Configuration des champs</legend>
 	<dl>
 		<dt>Champs à utiliser pour l'adresse du reçu&nbsp;:</dt>
-		{{#select name, label FROM config_users_fields WHERE type IN ('text', 'country', 'textarea', 'datalist') ORDER BY sort_order}}
+		{{#select name, label FROM config_users_fields WHERE type NOT IN ('file', 'password', 'virtual', 'multiple', 'checkbox', 'date', 'datetime')) ORDER BY sort_order}}
 			{{:assign var="fields.%s"|args:$name value=$label}}
 			{{:assign var="checked" from="module.config.champs_adresse.%s"|args:$name}}
 			<dd>{{:input type="checkbox" name="champs_adresse[%s]"|args:$name value=$name label=$label source=$module.config default=$checked}}</dd>
