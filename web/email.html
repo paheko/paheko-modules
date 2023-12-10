@@ -9,7 +9,7 @@
 		color: #000;
 		font-family: sans-serif;
 	}
-	main {
+	#main {
 		background: rgba({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}200, 200, 200{{/if}}, 0.2);
 		padding: 10px;
 		padding-bottom: 50px;
@@ -38,7 +38,7 @@
 </head>
 <body>
 
-<main>
+<div id="main">
 
 {{* Le contenu du mail est dans la variable $html, ne pas supprimer sinon le message sera vide ! *}}
 {{$html|raw}}
@@ -60,7 +60,7 @@
 	{{/if}}
 </div>
 
-</main>
+</div>
 
 {{* Le lien de désinscription sera ajouté automatiquement en bas du message, il n'est pas possible de le modifier ou le supprimer. *}}
 </body>
