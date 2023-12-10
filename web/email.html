@@ -1,18 +1,20 @@
-{{* Ce squelette est utilisé pour l'envoi d'un e-mail au format Skriv ou Markdown *}}
+{{* Ce squelette est utilisé pour l'envoi d'un e-mail au format HTML *}}
 <!DOCTYPE html>
 <html>
 <head>
 <style type="text/css">
+{{#capture assign="css"}}
 	* { margin: 0; padding: 0; }
 	body {
 		background: #fff;
 		color: #000;
 		font-family: sans-serif;
+		margin: 10px;
 	}
 	#main {
 		background: rgba({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}200, 200, 200{{/if}}, 0.2);
 		padding: 10px;
-		padding-bottom: 50px;
+		border-radius: 10px;
 	}
 	a {
 		color: #009;
@@ -26,6 +28,7 @@
 		border-radius: 5px;
 	}
 	.footer {
+		margin-top: 30px;
 		background: rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
 	}
 	.footer h3, .footer h4, .footer h5 {
@@ -34,6 +37,8 @@
 	}
 	{{* Inclure le contenu de content.css pour s'assurer que le style du texte Markdown/Skriv est correct *}}
 	{{:include file="./content.css"}}
+{{/capture}}
+{{$css|raw|minify:'css'}}
 </style>
 </head>
 <body>
