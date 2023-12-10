@@ -12,6 +12,10 @@
 		margin: 10px;
 	}
 	#main {
+		{{if $_GET.preview !== null}}
+		max-width: 700px;
+		margin: 0 auto;
+		{{/if}}
 		background: rgba({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}200, 200, 200{{/if}}, 0.2);
 		padding: 10px;
 		border-radius: 10px;
