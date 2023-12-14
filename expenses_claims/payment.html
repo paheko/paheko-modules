@@ -24,7 +24,7 @@
 		reference="Remboursement NDF-%d"|args:$claim.number
 		linked_users=$claim.user_id
 		lines=$lines
-		id_related=$claim.id_transaction|intval
+		linked_transactions=$claim.id_transaction|intval
 	}}
 
 	{{if $_POST.paid}}

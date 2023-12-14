@@ -44,6 +44,7 @@
 		debit=$_POST.account|keys|key:0
 		credit=$_POST.abandon_account|keys|key:0
 		linked_users=$claim.user_id
+		linked_transactions=$claim.id_transaction|intval
 	}}
 	{{:assign var="claim.payments." value=$result.id}}
 
