@@ -10,6 +10,37 @@
     font-style: normal;
 }
 
+@media print {
+	@page {
+		margin: 1cm;
+		size: A4;
+		@bottom {
+			content: "Page " counter(page) " / " counter(pages);
+			font-size: 8pt;
+			margin-bottom: 10mm;
+			text-align: center;
+		}
+	}
+
+	#buttons {
+		display: none;
+	}
+}
+
+@media screen {
+	html, body {
+		background: #666;
+	}
+	#page {
+		position: relative;
+		margin: 0 auto;
+		padding: 1cm;
+		background: #fff;
+		width: 210mm;
+		height: 297mm;
+	}
+}
+
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, 
 pre, form, fieldset, input, textarea, p, blockquote, th, td,
 figure, article, aside, section, header, footer { 
