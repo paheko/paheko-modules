@@ -53,7 +53,7 @@
 			montant_numeraire=$_POST.montant_numeraire|money_int}}
 		{{:assign total="%d+%d"|math:$montant_numeraire:$montant_nature}}
 	{{else}}
-		{{if !$_POST.numeraire && !$_POST.nature}}
+		{{if !$_POST.numeraire && !$_POST.nature && !$_POST.abandon_frais}}
 			{{:error message="Le type de don n'a pas été sélectionné."}}
 		{{elseif $_POST.numeraire && !$_POST.moyens_especes && !$_POST.moyens_cheques && !$_POST.moyens_autres}}
 			{{:error message="Aucun moyen de paiement n'a été coché."}}
