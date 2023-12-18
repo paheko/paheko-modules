@@ -46,7 +46,7 @@
 
 		{{:input type="checkbox" name="fields[]" value="_category" label="Catégorie" default=$checked}}
 
-		{{#select * FROM config_users_fields WHERE type NOT IN ('file', 'password', 'virtual', 'multiple', 'checkbox', 'date', 'datetime') AND system & (1 << 4) = 0 ORDER BY sort_order}}
+		{{#select * FROM config_users_fields WHERE type NOT IN ('file', 'password') AND system & (1 << 4) = 0 ORDER BY sort_order}}
 			{{if $module.config.fields|has:$name}}
 				{{:assign var="checked" value=$name}}
 			{{else}}
