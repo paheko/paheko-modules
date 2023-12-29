@@ -11,6 +11,18 @@
 
 {{:include file="./_config_default.tpl" keep="module.config"}}
 
+{{#years order="end_date ASC"}}
+	{{:assign var="year" value=$end_date|date:'Y'}}
+	{{:assign var="years.%d.%d"|args:$year:$id id=$id start_date=$start_date end_date=$end_date label=$label}}
+	{{:assign var="years_select.%d"|args:$year value=$year}}
+	{{:assign var="year" value=$start_date|date:'Y'}}
+	{{:assign var="years.%d.%d"|args:$year:$id id=$id start_date=$start_date end_date=$end_date label=$label}}
+	{{:assign var="years_select.%d"|args:$year value=$year}}
+{{else}}
+	{{:error message="Aucun exercice comptable n'est disponible."}}
+{{/years}}
+{{:assign var="last_year" value=$years_select|max}}
+
 {{#form on="create"}}
 	{{#foreach from=$_POST.new key="line" item="row"}}
 		{{:assign row=$row|json_decode}}
@@ -65,26 +77,62 @@
 
 {{:form_errors}}
 
-{{if !$_GET.id_year}}
-	{{#years order="end_date DESC"}}
-		{{:assign var="years.%d"|args:$id value=$label}}
-	{{else}}
-		{{:error message="Aucun exercice comptable n'est disponible."}}
-	{{/years}}
-
-	<form method="get" action="">
+{{if !$_POST.year}}
+	<form method="post" action="">
 		<fieldset>
-			<legend>Générer tous les reçus d'un exercice</legend>
+			<legend>Générer tous les reçus d'une année</legend>
 			<dl>
-				{{:input type="select" name="id_year" label="Exercice" required=true label="Exercice" options=$years}}
+				{{:input type="select" name="year" label="Année" required=true options=$years_select default=$last_year}}
 			</dl>
+			{{#foreach from=$years key="year" item="list"}}
+				<dl class="y{{$year}} hidden">
+					<dt><strong>Exercices à utiliser pour {{$year}}</strong></dt>
+					{{#foreach from=$list}}
+						{{:assign start=$start_date|date_short end=$end_date|date_short}}
+						{{:input type="checkbox" name="years[%d][]"|args:$year value=$id default=null label="%s — du %s au %s"|args:$label:$start:$end}}
+					{{/foreach}}
+				</dl>
+			{{/foreach}}
 		</fieldset>
 
 		<p class="submit">
 			{{:button type="submit" shape="right" label="Prévisualiser" class="main"}}
 		</p>
 	</form>
+
+	<script type="text/javascript">
+	var s = $('#f_year');
+	function selectYear() {
+		for (var i = 0; i < s.options.length; i++) {
+			g.toggle('.y' + s.options[i].value, false);
+		}
+		g.toggle('.y' + s.value, true);
+		$('.y' + s.value + ' input').forEach((e) => e.checked = true);
+	}
+	s.onchange = selectYear;
+	selectYear();
+	</script>
 {{else}}
+	{{if !$_POST.year|intval|in:$years_select}}
+		{{:error message="Année inconnue"}}
+	{{/if}}
+
+	{{:assign year=$_POST.year|intval}}
+	{{:assign var="selected_years" from="_POST.years.%d"|args:$year}}
+
+	{{if !$selected_years|count}}
+		{{:error message="Aucun exercice n'est coché"}}
+	{{/if}}
+
+	{{:assign var="years" from="years.%d"|args:$_POST.year}}
+
+	{{#foreach from=$selected_years item="sy"}}
+		{{if !$sy|key_in:$years}}
+			{{:error message="L'exercice sélectionné %d ne correspond pas à l'année %d"|args:$sy:$year}}
+		{{/if}}
+		{{:assign var="selected_years_ids." value=$sy|intval}}
+	{{/foreach}}
+
 	{{* Récupération des comptes et soldes *}}
 	{{:assign var="codes_don" value=$module.config.comptes_don|keys|map:strval}}
 	{{:assign var="codes_don_abandon_frais" value=$module.config.comptes_don_abandon_frais|keys|map:strval}}
@@ -148,7 +196,9 @@
 			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
 			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!codes_don_nature OR a1.!codes_don OR a1.!codes_don_abandon_frais)
 
-			WHERE t.id_year = {$_GET.id_year|intval}
+			WHERE t.!years
+				AND t.date >= :start_date
+				AND t.date <= :end_date
 
 			GROUP BY tu.id_user
 		)
@@ -165,6 +215,9 @@
 		!codes_don="code"|sql_where:"IN":$codes_don
 		!codes_especes="code"|sql_where:"IN":$codes_especes
 		!codes_cheques="code"|sql_where:"IN":$codes_cheques
+		!years="id_year"|sql_where:"IN":$selected_years_ids
+		:start_date="%d-01-01"|args:$year
+		:end_date="%d-12-31"|args:$year
 		assign="rows."
 	}}
 	{{/select}}
