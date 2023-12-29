@@ -38,6 +38,11 @@
 		},
 		"id_year": {
 			"type": ["null", "integer"]
+		},
+		"envoi": {
+			"description": "Date d'envoi",
+			"type": ["null", "string"],
+			"format": "timestamp"
 		}
 	},
 	"required": [ "annule", "date", "nom", "montant", "recu", "linked_user", "linked_transactions", "id_year"]

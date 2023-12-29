@@ -63,8 +63,12 @@
 {{/if}}
 
 {{#list
-	select="id AS 'Numéro'; $$.nom AS 'Nom du bénéficiaire'; $$.date AS 'Date d''émission'; $$.montant AS 'Montant';
-		CASE WHEN $$.annule = 1 THEN 'Annulé' ELSE '' END AS 'Annulé ?'"
+	select="id AS 'Numéro';
+		$$.nom AS 'Nom du bénéficiaire';
+		$$.date AS 'Date d''émission';
+		$$.montant AS 'Montant';
+		CASE WHEN $$.annule = 1 THEN 'Annulé' ELSE '' END AS 'Annulé ?';
+		$$.envoi AS 'Envoyé le'"
 	where=$where
 	order=1 desc=true
 	:year=$_GET.year
@@ -92,12 +96,15 @@
 		<td>
 			{{if $annule}}<span class="alert">Annulé</span>{{/if}}
 		</td>
+		<td>
+			{{if $envoi}}{{$envoi|date_short}}{{:assign send_label="Renvoyer"}}{{else}}{{:assign send_label="Envoyer"}}{{/if}}
+		</td>
 		<td class="actions">
 			{{if !$annule}}
 				{{:linkbutton shape="delete" label="Annuler" href="annuler.html?id=%d"|args:$id target="_dialog"}}
 			{{/if}}
+			{{:linkbutton shape="mail" label=$send_label href="envoyer.html?id=%d"|args:$id target="_dialog"}}
 			{{:linkbutton shape="eye" label="Ouvrir" href="recu.html?id=%d"|args:$id target="_dialog"}}
-			{{:linkbutton shape="mail" label="Envoyer" href="envoyer.html?id=%d"|args:$id target="_dialog"}}
 		</td>
 	</tr>
 {{else}}

@@ -22,6 +22,11 @@
 		body=$_POST.email_body|trim
 		attach_from="./recu.html?id=%d&print=pdf"|args:$recu.id
 	}}
+	{{:save
+		id=$recu.id
+		envoi=$now|date:"Y-m-d H:i:s"
+		validate_schema="./recu.schema.json"
+	}}
 	{{:redirect to="envoyer.html?id=%d&sent=1"|args:$recu.id}}
 {{/form}}
 
@@ -34,6 +39,9 @@
 <form method="post" action="">
 	<fieldset>
 		<legend>Envoyer un reçu fiscal</legend>
+		{{if $recu.envoi}}
+			<p class="block alert">Ce reçu a déjà été envoyé le {{$recu.envoi|date_long:true}}</p>
+		{{/if}}
 		<dl>
 			<dt>Numéro du reçu</dt>
 			<dd>{{$recu.id}}</dd>
