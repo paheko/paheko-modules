@@ -180,8 +180,8 @@
 
 	{{else}}
 
-		{{:include file="./_create_slots_list.tpl" event=$event keep="slots,closed"}}
-		{{:include file="./_slots_list.html" event=$event slots=$slots event_selected=$event_selected closed=$closed}}
+		{{:include file="./_create_slots_list.tpl" event=$event keep="slots"}}
+		{{:include file="./_slots_list.html" event=$event slots=$slots event_selected=$event_selected}}
 
 	{{/if}}
 

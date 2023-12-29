@@ -23,26 +23,28 @@
 	<h2 class="ruler">Créneaux disponibles</h2>
 
 {{#foreach from=$slots item="slot" key="timestamp"}}
-	{{* take into account the closing dates *}}
-	{{if $event.use_closings}}
-		{{#foreach from=$closed item="closing"}}
-			{{if $closing.start <= $timestamp && $closing.end >= $timestamp}}
-				{{if $slot.frequency == 'only'}}
-					{{* Don't cancel specific dates if they are in a closed time, it's probably an event during a closed time *}}
-					{{:continue}}
-				{{elseif $slot.frequency == 'this'}}
-					{{:assign end_date="%d+86400"|math:$closing.end|date:'Y-m-d'}}
-					{{:assign timestamp="%s, %s %s, %s"|args:$end_date:$slot.frequency:$slot.day:$slot.open|strtotime}}
-				{{else}}
-					{{:assign end_date="%d+86400"|math:$closing.end|date:'Y-m'}}
-					{{:assign timestamp="%s, %s %s, %s"|args:$end_date:$slot.frequency:$slot.day:$slot.open|strtotime}}
-				{{/if}}
-			{{/if}}
-		{{/foreach}}
-	{{/if}}
-
 	{{:assign this_date=$timestamp|date:"Y-m-d"}}
 	{{:assign this_datetime=$timestamp|date:"Y-m-d H:i"}}
+
+	{{if $this_date != $last_date}}
+		{{if $last_date}}
+				</ul>
+			</article>
+		{{/if}}
+		{{:assign last_date=$this_date}}
+		<article>
+			<h3>{{$timestamp|date_long}}</h3>
+			<ul>
+
+		{{if $slot === null}}
+			<li><h4>Fermé — Closed</h4></li>
+		{{/if}}
+	{{/if}}
+
+	{{if $slot === null}}
+		{{* ignore closed times *}}
+		{{:continue}}
+	{{/if}}
 
 	{{:assign count=0}}
 	{{if $slot.key}}
@@ -59,17 +61,6 @@
 
 	{{if $available > 0 && $slots_available === false}}
 		{{:assign slots_available=true}}
-	{{/if}}
-
-	{{if $this_date != $last_date}}
-		{{if $last_date}}
-				</ul>
-			</article>
-		{{/if}}
-		{{:assign last_date=$this_date}}
-		<article>
-			<h3>{{$timestamp|date_long}}</h3>
-			<ul>
 	{{/if}}
 
 	{{if !$available}}

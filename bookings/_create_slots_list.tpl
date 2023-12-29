@@ -117,5 +117,28 @@
 	{{/load}}
 {{/if}}
 
+{{* take into account the closing dates *}}
+{{if $event.use_closings}}
+	{{#foreach from=$slots item="slot" key="timestamp"}}
+		{{#foreach from=$closed item="closing"}}
+			{{if $closing.start <= $timestamp && $closing.end >= $timestamp}}
+				{{if $slot.frequency == 'only'}}
+					{{* Don't cancel specific dates if they are in a closed time, it's probably an event during a closed time *}}
+					{{:break}}
+				{{elseif $slot.frequency == 'this'}}
+					{{:assign end_date="%d+86400"|math:$closing.end|date:'Y-m-d'}}
+					{{:assign new_timestamp="%s, %s %s, %s"|args:$end_date:$slot.frequency:$slot.day:$slot.open|strtotime}}
+				{{else}}
+					{{:assign end_date="%d+86400"|math:$closing.end|date:'Y-m'}}
+					{{:assign new_timestamp="%s, %s %s, %s"|args:$end_date:$slot.frequency:$slot.day:$slot.open|strtotime}}
+				{{/if}}
+				{{:assign var="slots.%d"|args:$timestamp value=null}}
+				{{:assign var="slots.%d"|args:$new_timestamp value=$slot}}
+			{{/if}}
+		{{/foreach}}
+	{{/foreach}}
+{{/if}}
+
+
 {{* Make sure we sort slots by datetime *}}
 {{:assign slots=$slots|ksort}}
