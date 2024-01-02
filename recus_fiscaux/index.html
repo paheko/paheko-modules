@@ -49,6 +49,11 @@
 	</form>
 </div>
 
+{{if $_GET.sent !== null}}
+	<p class="block confirm">{{$_GET.sent|intval}} reçus ont bien été envoyés par e-mail.</p>
+{{/if}}
+
+
 {{if $_GET.q}}
 	{{if $_GET.q|regexp_match:'/^\d+$/'}}
 		{{:assign where="id = :id_search" id=$_GET.q|intval}}
@@ -62,6 +67,7 @@
 	{{:assign where="SUBSTR($$.date, 1, 4) = :year"}}
 {{/if}}
 
+<form method="post" action="envoyer_tout.html">
 {{#list
 	select="id AS 'Numéro';
 		$$.nom AS 'Nom du bénéficiaire';
@@ -70,13 +76,21 @@
 		CASE WHEN $$.annule = 1 THEN 'Annulé' ELSE '' END AS 'Annulé ?';
 		$$.envoi AS 'Envoyé le'"
 	where=$where
-	order=1 desc=true
+	order=1
+	desc=true
+	check=true
 	:year=$_GET.year
 	:date=$date
 	:id_search=$id
 	:nom=$nom
 }}
 	<tr class="{{if $annule}}disabled crossed{{/if}}">
+		<td class="check">
+			{{if !$envoi}}
+				{{:assign has_checks=true}}
+				{{:input type="checkbox" name="check[]" value=$id}}
+			{{/if}}
+		</td>
 		<td class="num">
 			{{:link href="recu.html?id=%d"|args:$id label=$id target="_dialog"}}
 		</td>
@@ -118,5 +132,12 @@
 		{{/if}}
 	</p>
 {{/list}}
+
+{{if $has_checks}}
+	<p class="actions">
+		{{:button type="submit" name="send" label="Envoyer les reçus cochés" shape="mail"}}
+	</p>
+{{/if}}
+</form>
 
 {{:admin_footer}}
