@@ -68,6 +68,7 @@
 		description=$description|or:$_POST.description|trim|or:null
 		amount=$amount|or:$_POST.amount|money_int
 		reference=$_POST.reference|trim|or:null
+		date=$_POST.date|parse_date|or:null
 	}}
 	{{:http redirect="details.html?key=%s"|args:$claim.key}}
 {{/form}}
@@ -86,6 +87,7 @@
 		<dl class="category">
 			{{:input type="textarea" name="description" label="Description"}}
 			<dd class="alert block" id="notes"></dd>
+			{{:input type="date" name="date" label="Date de la dépense"}}
 			{{:input type="text" name="reference" label="Référence du justificatif" help="Par exemple : numéro de facture, nom du magasin, etc."}}
 		</dl>
 		<dl class="vehicle">

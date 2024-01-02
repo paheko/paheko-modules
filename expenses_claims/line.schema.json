@@ -32,7 +32,11 @@
 		"reference": {
 			"description": "Réf.",
 			"type": ["string", "null"]
+		},
+		"date": {
+			"description": "Date",
+			"type": ["string", "null"]
 		}
 	},
-	"required": ["type", "claim", "label", "account", "category", "description", "amount", "reference"]
+	"required": ["type", "claim", "label", "account", "category", "description", "amount", "reference", "date"]
 }

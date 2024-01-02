@@ -103,14 +103,19 @@
 			</thead>
 			<tbody>
 				{{#load type="line" claim=$claim.key}}
-				{{:assign default_account=null}}
-				{{:assign var="default_account.%s"|args:$account value=$account}}
-				<tr>
-					<td class="account">{{:input type="list" name="lines[account][]" required=true target="!acc/charts/accounts/selector.php?targets=5&key=code&year=%d"|args:$best_year default=$default_account}}</td>
-					<td>{{:input type="text" name="lines[label][]" default=$label required=false}}</td>
-					<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
-					<td class="money">{{:input type="money" name="lines[amount][]" default=$amount required=true}}</td>
-				</tr>
+					{{:assign default_account=null}}
+					{{:assign default_label=$label}}
+					{{if $date}}
+						{{:assign date_short=$date|date_short}}
+						{{:assign default_label="%s (%s)"|args:$label:$date_short}}
+					{{/if}}
+					{{:assign var="default_account.%s"|args:$account value=$account}}
+					<tr>
+						<td class="account">{{:input type="list" name="lines[account][]" required=true target="!acc/charts/accounts/selector.php?targets=5&key=code&year=%d"|args:$best_year default=$default_account}}</td>
+						<td>{{:input type="text" name="lines[label][]" default=$default_label required=false}}</td>
+						<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
+						<td class="money">{{:input type="money" name="lines[amount][]" default=$amount required=true}}</td>
+					</tr>
 				{{/load}}
 			</tbody>
 		</table>

@@ -153,7 +153,7 @@
 	</p>
 {{/if}}
 {{#list
-	select="$$.label AS 'Libellé'; $$.description AS 'Description'; $$.reference AS 'Réf. justificatif'; $$.category AS 'Catégorie'; $$.amount AS 'Montant'"
+	select="$$.label AS 'Libellé'; $$.description AS 'Description'; $$.date AS 'Date'; $$.reference AS 'Réf. justificatif'; $$.category AS 'Catégorie'; $$.amount AS 'Montant'"
 	order=1
 	desc=false
 	where="$$.type = 'line' AND $$.claim = :claim"
@@ -162,6 +162,7 @@
 	<tr>
 		<th>{{$label}}</th>
 		<td class="desc">{{$description|escape|nl2br}}</td>
+		<td>{{$date|date_short}}</td>
 		<td>{{$reference}}</td>
 		<td>{{$category}}</td>
 		<td class="money">{{$amount|money_currency}}</td>
