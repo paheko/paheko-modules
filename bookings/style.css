@@ -12,7 +12,7 @@
 	border-top: .2rem solid #999;
 }
 
-header {
+.booking_header {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -193,7 +193,7 @@ header {
 	margin: 1rem;
 }
 
-footer p.back {
+.booking_footer p.back {
 	text-align: center;
 	margin-top: 5em;
 }

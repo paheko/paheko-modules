@@ -92,11 +92,13 @@
 {{/if}}
 
 {{if !$event}}
-	<header>
+	<header class="booking_header">
 		{{if $event_selected}}
 			<p class="back">{{:linkbutton shape="left" label="Liste des événements" href="./"}}</p>
 		{{/if}}
-		<h4><a href="{{$site_url}}"><img src="{{$config.files.icon}}" alt="" />{{$config.org_name}}</a></h4>
+		{{if !$is_logged}}
+			<h4><a href="{{$site_url}}"><img src="{{$config.files.icon}}" alt="" />{{$config.org_name}}</a></h4>
+		{{/if}}
 	</header>
 
 	<section class="booking_events">

@@ -34,6 +34,8 @@
 	{{if $event}}
 		<ul class="sub">
 			<li class="title">{{$event.label}}</li>
+			<li {{if $subcurrent === 'default'}}class="current"{{/if}}><a href="?event={{$event.key}}">Inscriptions</a></li>
+			<li {{if $subcurrent === 'past'}}class="current"{{/if}}><a href="?event={{$event.key}}&amp;past">Inscriptions passées</a></li>
 		</ul>
 	{{elseif $current === 'config'}}
 		<ul class="sub">

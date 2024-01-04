@@ -22,7 +22,16 @@
 
 {{:admin_header title=$title custom_css="./style.css" current="module_bookings"}}
 
-{{:include file="./_nav.html" current="bookings"}}
+{{if $_GET.past !== null}}
+	{{:assign subcurrent="past"}}
+	{{:assign where="date($$.date) < date()"}}
+	{{:delete type="booking" where="date($$.date) < date('now', '-1 month')"}}
+{{else}}
+	{{:assign subcurrent="default"}}
+	{{:assign where="date($$.date) >= date()"}}
+{{/if}}
+
+{{:include file="./_nav.html" current="bookings" subcurrent=$subcurrent}}
 
 {{if !$event}}
 
@@ -48,7 +57,7 @@
 	<section class="booking_list">
 
 		{{:assign current_day=null}}
-		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'" type="booking" event=$event.key where="date($$.date) >= date()" order="2" export=true}}
+		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'" type="booking" event=$event.key where=$where order="2" export=true}}
 			<tr>
 				<td>
 					{{if $col1 !== $current_day}}
