@@ -12,6 +12,14 @@
 	border-top: .2rem solid #999;
 }
 
+header {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 2rem;
+	margin-bottom: 2rem;
+}
+
 .booking_event fieldset {
 	border: none;
 	border-top: .2rem solid #999;
@@ -185,12 +193,8 @@
 	margin: 1rem;
 }
 
-p.back {
+footer p.back {
 	text-align: center;
 	margin-top: 5em;
 }
 
-.booking_event p.back {
-	margin-top: 0;
-	margin-bottom: 2em;
-}

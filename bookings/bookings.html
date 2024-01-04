@@ -48,10 +48,7 @@
 	<section class="booking_list">
 
 		{{:assign current_day=null}}
-		<p class="actions">
-			{{:exportmenu right=true}}
-		</p>
-		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'" type="booking" event=$event.key where="date($$.date) >= date()" order="2"}}
+		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'" type="booking" event=$event.key where="date($$.date) >= date()" order="2" export=true}}
 			<tr>
 				<td>
 					{{if $col1 !== $current_day}}

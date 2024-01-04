@@ -60,7 +60,7 @@
 	{{/if}}
 	{{* My bookings *}}
 	{{if $logged_user.id}}
-		{{#load type="booking" id_user=$logged_user.id where="key != :booking" :booking=$_GET.b|or:''}}
+		{{#load type="booking" id_user=$logged_user.id where="key != :booking AND $$.date >= date()" :booking=$_GET.b|or:''}}
 			{{#load type="event" key=$event assign="e"}}{{/load}}
 			<article>
 				<h5>Vous avez réservé&nbsp;:</h5>
@@ -92,6 +92,12 @@
 {{/if}}
 
 {{if !$event}}
+	<header>
+		{{if $event_selected}}
+			<p class="back">{{:linkbutton shape="left" label="Liste des événements" href="./"}}</p>
+		{{/if}}
+		<h4><a href="{{$site_url}}"><img src="{{$config.files.icon}}" alt="" />{{$config.org_name}}</a></h4>
+	</header>
 
 	<section class="booking_events">
 		<h1 class="ruler">Réservations</h1>
