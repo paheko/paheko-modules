@@ -25,7 +25,7 @@
 	{{:assign var="number_field" value=$name}}
 {{/select}}
 
-<main class="sheet">
+<main class="sheet" {{if $module.config.sheet_gap}}style="--sheet-gap: {{$module.config.sheet_gap}}mm"{{/if}}>
 
 	<table>
 		{{:assign i=0}}

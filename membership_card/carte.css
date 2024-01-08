@@ -42,8 +42,9 @@ main.single {
 	border-collapse: collapse;
 }
 
-.sheet td {
-	border: 2px dashed #ccc;
+.sheet article {
+	margin: var(--sheet-gap);
+	outline: 1px dashed #ccc;
 }
 
 article {
