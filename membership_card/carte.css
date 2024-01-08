@@ -44,7 +44,7 @@ main.single {
 
 .sheet article {
 	margin: var(--sheet-gap);
-	outline: 1px dashed #ccc;
+	border: 1px dashed #ccc;
 }
 
 article {
