@@ -18,12 +18,20 @@
 		body=$_POST.email_body|trim
 		attach_from="./carte.html?id=%d&print=pdf&mode=print"|args:$user.id
 	}}
+	{{:save
+		id_user=$user.id
+		sent=$now
+	}}
 	{{:redirect to="envoyer.html?id=%d&sent"|args:$user.id}}
 {{/form}}
 
 {{if $_GET.sent}}
 	<p class="block confirm">La carte a bien été envoyée par e-mail.</p>
 {{/if}}
+
+{{#load id_user=$user.id}}
+	<p class="alert block">Cette carte a déjà été envoyé le {{$sent|date_long}}.</p>
+{{/load}}
 
 {{:form_errors}}
 
