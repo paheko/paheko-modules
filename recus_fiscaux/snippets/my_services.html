@@ -1,0 +1,14 @@
+<h2 class="ruler">{{$module.label}}</h2>
+
+<table class="list">
+{{#load linked_user=$logged_user.id}}
+<tr class="{{if $annule}}disabled crossed{{/if}}">
+	<td class="num">{{:link href="%srecu.html?id=%d"|args:$module.url:$id target="_dialog" label=$id}}</td>
+	<td>{{$date|date_short}}</td>
+	<td class="money">{{$montant|raw|money_currency_html}}</td>
+	<td class="actions">
+		{{:linkbutton shape="eye" label="Ouvrir" href="%srecu.html?id=%d"|args:$module.url:$id target="_dialog"}}
+	</td>
+</tr>
+{{/load}}
+</table>
