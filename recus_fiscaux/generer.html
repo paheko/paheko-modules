@@ -150,12 +150,15 @@
 	{{#select
 		*,
 		GROUP_CONCAT(tid, ',') AS id_transaction,
-		SUM(total_numeraire) AS total_numeraire,
-		SUM(total_abandon_frais) AS total_abandon_frais,
-		SUM(total_nature) AS total_nature,
-		SUM(total_especes) AS total_especes,
-		SUM(total_cheques) AS total_cheques,
-		SUM(total_numeraire) - SUM(total_especes) - SUM(total_cheques) AS total_autres,
+		SUM(total_numeraire) AS montant_numeraire,
+		SUM(total_nature) AS montant_nature,
+		SUM(montant) AS montant,
+		SUM(total_numeraire) > 0 AS numeraire,
+		SUM(total_abandon_frais) > 0 AS abandon_frais,
+		SUM(total_nature) > 0 AS nature,
+		SUM(total_especes) > 0 AS moyens_especes,
+		SUM(total_cheques) > 0 AS moyens_cheques,
+		(SUM(total_numeraire) - SUM(total_especes) - SUM(total_cheques)) > 0 AS moyens_autres,
 		entreprise_forme IS NOT NULL AND entreprise_numero IS NOT NULL AS entreprise
 		FROM (
 			SELECT
@@ -265,11 +268,11 @@
 					</td>
 					<th>{{$nom}}</th>
 					<td>{{$adresse}}</td>
-					<td>{{if $total_especes}}{{:icon shape="check"}}{{/if}}</td>
-					<td>{{if $total_cheques}}{{:icon shape="check"}}{{/if}}</td>
-					<td>{{if $total_autres}}{{:icon shape="check"}}{{/if}}</td>
-					<td>{{if $total_abandon_frais}}{{:icon shape="check"}}{{/if}}</td>
-					<td>{{if $total_nature}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $moyens_especes}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $moyens_cheques}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $moyens_autres}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $abandon_frais}}{{:icon shape="check"}}{{/if}}</td>
+					<td>{{if $nature}}{{:icon shape="check"}}{{/if}}</td>
 					<td class="money">{{$montant|money}}</td>
 					<td class="actions">
 						{{:linkbutton shape="plus" href="nouveau.html?id_user=%d&type=user"|args:$id_user label="Saisie manuelle du reçu"}}
