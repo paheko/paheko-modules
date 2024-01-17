@@ -20,7 +20,16 @@
 	{{:admin_footer}}
 
 {{else}}
-	{{#transactions id=$_GET.id}}
+	{{if $module.config.accounts === null}}
+		{{:assign var="module.config.accounts.754" value="754"}}
+	{{elseif $module.config.accounts|gettype === 'string'}}
+		{{:include file="../_upgrade.tpl" keep="module.config.accounts"}}
+	{{/if}}
+
+	{{#foreach from=$module.config.accounts key="code"}}
+		{{:assign var="accounts." value=$code|cat:'%'}}
+	{{/foreach}}
+	{{#transactions id=$_GET.id credit_codes=$accounts}}
 		{{:assign var="name" value=$_GET.name|or:$users_names}}
 		{{:include file="/receipt/_header.html" page_size="A5" title="Reçu de don %d - %s"|args:$id:$name}}
 
@@ -38,7 +47,7 @@
 			<h4>le {{$date|date_short}}</h4>
 
 			<p>
-				<em>Ce reçu n'est pas un reçu fiscal et ne donne pas droit à une réduction d'impôt au bénéfice des dispositions des articles 200, 238 bis et 885-0 V bis A du code général des impôts.</em>
+				<em>Ce reçu n'est pas un reçu fiscal et ne donne pas droit à une réduction d'impôt prévue au code général des impôts.</em>
 			</p>
 
 			{{:signature}}
