@@ -2,14 +2,23 @@
 
 {{:include file="./_config_default.tpl" keep="module.config"}}
 
-{{if !$_POST.check|count}}
+{{if !$_POST.selected|count}}
 	{{:error message="Aucun reçu n'a été coché"}}
 {{/if}}
 
-{{:admin_header title="Envoyer des reçus"}}
+{{#form on="check"}}
+	{{#foreach from=$_POST.selected item="id"}}
+		{{:assign var="selected." id=$id|intval}}
+	{{/foreach}}
+	{{:save from=$selected
+		envoi=$now|date:"Y-m-d H:i:s"
+		validate_schema="./recu.schema.json"
+	}}
+	{{:redirect to="./"}}
+{{/form}}
 
 {{#form on="send"}}
-	{{#foreach from=$_POST.check item="id"}}
+	{{#foreach from=$_POST.selected item="id"}}
 		{{#load id=$id|intval assign="recu"}}
 		{{else}}
 			{{:continue}}
@@ -42,6 +51,10 @@
 	{{/foreach}}
 	{{:redirect to="./?sent=%d"|args:$count}}
 {{/form}}
+
+{{:admin_header title="Envoyer des reçus"}}
+
+{{:form_errors}}
 
 <form method="post" action="">
 	<fieldset>

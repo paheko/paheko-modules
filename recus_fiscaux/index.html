@@ -88,7 +88,7 @@
 		<td class="check">
 			{{if !$envoi}}
 				{{:assign has_checks=true}}
-				{{:input type="checkbox" name="check[]" value=$id}}
+				{{:input type="checkbox" name="selected[]" value=$id}}
 			{{/if}}
 		</td>
 		<td class="num">
@@ -135,6 +135,7 @@
 
 {{if $has_checks}}
 	<p class="actions">
+		{{:button type="submit" name="check" label="Marquer les reçus cochés comme envoyés" shape="check"}}
 		{{:button type="submit" name="send" label="Envoyer les reçus cochés" shape="mail"}}
 	</p>
 {{/if}}
