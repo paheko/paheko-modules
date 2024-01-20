@@ -194,7 +194,7 @@
 				WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS total_numeraire
 
 			FROM acc_transactions t
-			INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
+			INNER JOIN (SELECT DISTINCT tu.id_transaction, tu.id_user FROM acc_transactions_users tu) tu ON tu.id_transaction = t.id
 			INNER JOIN users u ON tu.id_user = u.id
 			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
 			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!codes_don_nature OR a1.!codes_don OR a1.!codes_don_abandon_frais)
