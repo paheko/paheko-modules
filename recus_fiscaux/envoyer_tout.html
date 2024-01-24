@@ -18,6 +18,12 @@
 {{/form}}
 
 {{#form on="send"}}
+	{{if !$_POST.subject|trim}}
+		{{:error message="Le sujet est vide"}}
+	{{elseif !$_POST.body|trim}}
+		{{:error message="Le message est vide"}}
+	{{/if}}
+
 	{{#foreach from=$_POST.selected item="id"}}
 		{{#load id=$id|intval assign="recu"}}
 		{{else}}
