@@ -18,9 +18,9 @@
 {{/form}}
 
 {{#form on="send"}}
-	{{if !$_POST.subject|trim}}
+	{{if !$_POST.email_subject|trim}}
 		{{:error message="Le sujet est vide"}}
-	{{elseif !$_POST.body|trim}}
+	{{elseif !$_POST.email_body|trim}}
 		{{:error message="Le message est vide"}}
 	{{/if}}
 
