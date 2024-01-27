@@ -81,15 +81,17 @@
 	<fieldset>
 		<legend>Dépense</legend>
 		<dl>
-			{{:input type="text" name="label" label="Libellé" help="Inclure ici une description courte, par exemple 'Abonnement fibre atelier, mars 2023'." required=true}}
 			{{:input type="select" name="category" options=$categories_select label="Catégorie" required=true default_empty="— Sélectionner une catégorie —"}}
 		</dl>
 		<dl class="category">
-			{{:input type="textarea" name="description" label="Description"}}
-			<dd class="alert block" id="notes"></dd>
-			{{:input type="date" name="date" label="Date de la dépense"}}
-			{{:input type="text" name="reference" label="Référence du justificatif" help="Par exemple : numéro de facture, nom du magasin, etc."}}
+			{{:input type="text" name="label" label="Libellé" help="Inclure ici une description courte, par exemple 'Abonnement fibre atelier, mars 2023'." required=true}}
 		</dl>
+		<dl class="amount">
+			{{:input type="money" name="amount" label="Montant total" required=true}}
+		</dl>
+	</fieldset>
+	<fieldset class="vehicle km">
+		<legend>Trajet</legend>
 		<dl class="vehicle">
 			{{:input type="select" name="vehicle" options=$vehicles label="Type de véhicule" required=true}}
 			<dd class="carbone">--
@@ -103,8 +105,14 @@
 				Le barème sera calculé lors de l'enregistrement, en fonction de la distance et du type de véhicule.
 			</dd>
 		</dl>
-		<dl class="amount">
-			{{:input type="money" name="amount" label="Montant total" required=true}}
+	</fieldset>
+	<fieldset class="category">
+		<legend>Détails</legend>
+		<dl>
+			{{:input type="date" name="date" label="Date de la dépense"}}
+			{{:input type="text" name="reference" label="Référence du justificatif" help="Par exemple : numéro de facture, nom du magasin, etc."}}
+			{{:input type="textarea" name="description" label="Description"}}
+			<dd class="alert block" id="notes"></dd>
 		</dl>
 	</fieldset>
 
@@ -127,10 +135,10 @@ function selectCategory() {
 			return;
 		}
 
-		g.toggle('dl.category, p.submit', true);
-		g.toggle('dl.vehicle', c.expense_type === 'km_vehicle');
-		g.toggle('dl.amount', c.expense_type !== 'km_vehicle' && c.expense_type !== 'km_free');
-		g.toggle('dl.km', c.expense_type === 'km_vehicle' || c.expense_type === 'km_free');
+		g.toggle('.category, p.submit', true);
+		g.toggle('.vehicle', c.expense_type === 'km_vehicle');
+		g.toggle('.amount', c.expense_type !== 'km_vehicle' && c.expense_type !== 'km_free');
+		g.toggle('.km', c.expense_type === 'km_vehicle' || c.expense_type === 'km_free');
 
 		var notes = $('#notes');
 
@@ -176,7 +184,7 @@ function selectVehicle() {
 	$('.carbone')[0].innerHTML = msg;
 }
 
-g.toggle('dl.category, dl.vehicle, dl.amount, p.submit', false);
+g.toggle('.category, .vehicle, .amount, p.submit', false);
 s.onchange = selectCategory;
 
 selectCategory();
