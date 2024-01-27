@@ -30,7 +30,7 @@
 	{{:delete_file path=$upload_path}}
 	{{:delete type="line" claim=$claim.key}}
 	{{:delete type="claim" key=$claim.key}}
-	{{:http redirect="./"}}
+	{{:redirect to="./"}}
 {{/form}}
 
 {{:admin_header title="Supprimer note de frais n°%d"|args:$claim.number}}

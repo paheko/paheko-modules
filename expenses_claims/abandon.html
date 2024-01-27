@@ -52,7 +52,7 @@
 	{{:assign var="claim.payments." value=$result.id}}
 
 	{{:save key=$claim.key status="paid" payments=$claim.payments}}
-	{{:http redirect="details.html?key=%s"|args:$claim.key}}
+	{{:redirect to="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
 {{#load type="line" claim=$claim.key}}

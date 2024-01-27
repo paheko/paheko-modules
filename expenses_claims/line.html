@@ -70,7 +70,7 @@
 		reference=$_POST.reference|trim|or:null
 		date=$_POST.date|parse_date|or:null
 	}}
-	{{:http redirect="details.html?key=%s"|args:$claim.key}}
+	{{:redirect to="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
 {{:admin_header title="Ajouter une ligne à la note de frais n°%d"|args:$claim.number}}

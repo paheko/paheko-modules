@@ -34,7 +34,7 @@
 		a3=$_POST.a3|strval|trim|or:null
 		ll=$lines|or:null
 	}}
-	{{:http redirect="./"}}
+	{{:redirect to="./"}}
 {{/if}}
 
 {{#select id, CASE WHEN code IS NOT NULL THEN code || ' — ' || label ELSE label END AS label FROM acc_projects ORDER BY code, label}}

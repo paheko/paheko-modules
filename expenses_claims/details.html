@@ -32,19 +32,19 @@
 			{{:assign var="notify_emails." value=$config.org_email}}
 		{{/if}}
 		{{:mail to=$notify_emails subject="Une nouvelle note de frais a été soumise" body=$message|raw}}
-		{{:http redirect="details.html?key=%s"|args:$claim.key}}
+		{{:redirect to="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 
 	{{#form on="delete_line"}}
 		{{:delete type="line" claim=$claim.key key=$_POST.delete_line}}
-		{{:http redirect="details.html?key=%s"|args:$claim.key}}
+		{{:redirect to="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 
 {{elseif $claim.status === 'waiting'}}
 	{{if $claim.user_id === $logged_user.id}}
 		{{#form on="cancel"}}
 			{{:save key=$claim.key status="cancelled"}}
-			{{:http redirect="details.html?key=%s"|args:$claim.key}}
+			{{:redirect to="details.html?key=%s"|args:$claim.key}}
 		{{/form}}
 	{{/if}}
 {{/if}}

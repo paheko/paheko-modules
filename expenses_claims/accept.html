@@ -54,7 +54,7 @@
 		{{:mail to=$_email subject="Votre note de frais a été acceptée" body=$message|raw}}
 	{{/users}}
 
-	{{:http redirect="details.html?key=%s"|args:$claim.key}}
+	{{:redirect to="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
 {{#load type="line" claim=$claim.key}}
