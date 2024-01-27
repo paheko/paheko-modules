@@ -9,6 +9,7 @@
 		photo=$_POST.photo|or:null
 		id_service=$_POST.id_service|intval|or:null
 		show_fields_names=$_POST.show_fields_names|boolval
+		show_subscription_label=$_POST.show_subscription_label|boolval
 		email_subject=$_POST.email_subject|trim
 		email_body=$_POST.email_body|trim
 		sheet_gap=$_POST.sheet_gap|intval
@@ -77,6 +78,7 @@
 		{{if $services|count}}
 			{{:input type="select" name="id_service" label="Activité à afficher" options=$services required=true help="Utile pour afficher par exemple la date d'expiration de la cotisation annuelle." source=$module.config}}
 		{{/if}}
+		{{:input type="checkbox" name="show_subscription_label" value=1 label="Afficher le nom de l'activité" source=$module.config}}
 	</dl>
 </fieldset>
 

@@ -24,7 +24,7 @@
 		</div>
 		{{/if}}
 
-		<h1>{{$_name}}</h1>
+		<h1>{{if $module.config.show_balance}}<small>Nom&nbsp;:</small>{{/if}}{{$_name}}</h1>
 
 		{{if $module.config.fields}}
 			<ul class="fields">
@@ -53,10 +53,10 @@
 
 		{{if $module.config.id_service}}
 			{{#subscriptions user=$id id_service=$module.config.id_service active=true}}
-				<h3>Jusqu'au <strong>{{$expiry_date|date_short}}</strong></h3>
+				<h3>{{if $module.config.show_subscription_label}}{{$label}}&nbsp;: {{/if}}Jusqu'au <strong>{{$expiry_date|date_short}}</strong></h3>
 			{{else}}
 				{{#subscriptions user=$id id_service=$module.config.id_service active=false}}
-					<h3>Expiré</h3>
+					<h3>{{if $module.config.show_subscription_label}}{{$label}}&nbsp;: {{/if}}Expiré</h3>
 				{{/subscriptions}}
 			{{/subscriptions}}
 		{{/if}}
