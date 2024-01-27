@@ -11,6 +11,9 @@
 
 {{#transactions id=$claim.id_transaction}}
 	{{:assign total=$debit}}
+	{{#transaction_lines transaction=$id where="credit > 0" limit=1}}
+		{{:assign debit_account=$account_code}}
+	{{/transaction_lines}}
 {{/transactions}}
 
 {{if $claim.payments|count}}
@@ -41,7 +44,7 @@
 		reference="NDF-%d"|args:$claim.number
 		notes=$_POST.notes|trim|or:null
 		amount=$total|money_raw
-		debit=$_POST.account|keys|key:0
+		debit=$debit_account
 		credit=$_POST.abandon_account|keys|key:0
 		linked_users=$claim.user_id
 		linked_transactions=$claim.id_transaction|intval
@@ -55,7 +58,6 @@
 {{#load type="line" claim=$claim.key}}
 	{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
 {{/load}}
-{{:assign var="default_account.4110" value="4110 — Autres usagers"}}
 {{:assign var="default_abandon_account.75412" value="75412 — Abandons de frais par les bénévoles"}}
 {{#years closed=false}}
 	{{:assign var="open_years.%d"|args:$id value=$label}}
@@ -80,7 +82,6 @@
 			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default=$default_label name="label" label="Libellé" required=true}}
-			{{:input type="list" name="account" label="Compte de tiers" required=true target="!acc/charts/accounts/selector.php?targets=4&key=code&year=%d"|args:$best_year default=$default_account}}
 			{{:input type="list" name="abandon_account" label="Compte d'abandon" required=true target="!acc/charts/accounts/selector.php?targets=6&key=code&year=%d"|args:$best_year default=$default_abandon_account}}
 			{{:input type="textarea" name="notes" label="Remarques" default=$notes|trim cols=50 rows=5}}
 		</dl>

@@ -9,15 +9,22 @@
 	{{:error message="Cette note de frais n'est pas en attente de paiement: %s"|args:$claim.status}}
 {{/if}}
 
+{{#transactions id=$claim.id_transaction}}
+	{{:assign total=$debit}}
+	{{#transaction_lines transaction=$id where="credit > 0" limit=1}}
+		{{:assign debit_account=$account_code}}
+	{{/transaction_lines}}
+{{/transactions}}
+
 {{#form on="save"}}
 	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|key:0}}
-	{{:assign var="lines." debit=$_POST.amount account="4110"}}
+	{{:assign var="lines." debit=$_POST.amount account=$debit_account}}
 	{{:api
 		method="POST"
 		path="accounting/transaction"
 		assign="result"
 
-		id_year="match"
+		id_year=$_POST.id_year|intval
 		type="advanced"
 		date=$_POST.date
 		label=$_POST.label
@@ -42,10 +49,6 @@
 	}}
 	{{:redirect to="./details.html?key=%s"|args:$claim.key}}
 {{/form}}
-
-{{#transactions id=$claim.id_transaction}}
-	{{:assign total=$debit}}
-{{/transactions}}
 
 {{if $claim.payments|count}}
 	{{#transactions id=$claim.payments}}
