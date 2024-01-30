@@ -11,6 +11,7 @@
 
 {{#transactions id=$claim.id_transaction}}
 	{{:assign total=$debit}}
+	{{:assign default_year=$id_year}}
 	{{#transaction_lines transaction=$id where="credit > 0" limit=1}}
 		{{:assign debit_account=$account_code}}
 	{{/transaction_lines}}
@@ -73,6 +74,12 @@
 	{{:error message="Aucun exercice n'est ouvert, il n'est pas possible de créer une écriture et donc d'accepter cette note de frais."}}
 {{/if}}
 
+{{if !$default_year|key_in:$open_years}}
+	{{:assign default_year=null}}
+{{/if}}
+
+{{:assign default_year=$default_year|or:$best_year}}
+
 {{:admin_header title="Nouveau paiement"}}
 
 {{:form_errors}}
@@ -81,11 +88,11 @@
 	<fieldset>
 		<legend>Nouveau paiement de remboursement</legend>
 		<dl>
-			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
+			{{:input type="select" default=$default_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default=$default_label name="label" label="Libellé" required=true}}
 			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
-			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code&year=%d"|args:$best_year}}
+			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code&year=%d"|args:$default_year}}
 			{{:input type="checkbox" name="paid" value=1 default=1 label="Marquer cette note de frais comme payée"}}
 		</dl>
 	</fieldset>

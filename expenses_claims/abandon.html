@@ -11,6 +11,7 @@
 
 {{#transactions id=$claim.id_transaction}}
 	{{:assign total=$debit}}
+	{{:assign default_year=$id_year}}
 	{{#transaction_lines transaction=$id where="credit > 0" limit=1}}
 		{{:assign debit_account=$account_code}}
 	{{/transaction_lines}}
@@ -71,6 +72,12 @@
 	{{:error message="Aucun exercice n'est ouvert, il n'est pas possible de créer une écriture et donc d'accepter cette note de frais."}}
 {{/if}}
 
+{{if !$default_year|key_in:$open_years}}
+	{{:assign default_year=null}}
+{{/if}}
+
+{{:assign default_year=$default_year|or:$best_year}}
+
 {{:admin_header title="Abandonner la note de frais n°%d"|args:$claim.number}}
 
 {{:form_errors}}
@@ -79,10 +86,10 @@
 	<fieldset>
 		<legend>Écriture d'abandon de note de frais</legend>
 		<dl>
-			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
+			{{:input type="select" default=$default_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default=$default_label name="label" label="Libellé" required=true}}
-			{{:input type="list" name="abandon_account" label="Compte d'abandon" required=true target="!acc/charts/accounts/selector.php?targets=6&key=code&year=%d"|args:$best_year default=$default_abandon_account}}
+			{{:input type="list" name="abandon_account" label="Compte d'abandon" required=true target="!acc/charts/accounts/selector.php?targets=6&key=code&year=%d"|args:$default_year default=$default_abandon_account}}
 			{{:input type="textarea" name="notes" label="Remarques" default=$notes|trim cols=50 rows=5}}
 		</dl>
 	</fieldset>
