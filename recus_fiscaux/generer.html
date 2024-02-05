@@ -147,8 +147,18 @@
 	{{:assign var="total" value=0}}
 	{{:assign var="count" value=0}}
 
+	{{if $module.table}}
+		{{:assign join_existing="LEFT JOIN %s m ON json_extract(m.document, '$.linked_user') = u.id
+				AND json_extract(m.document, '$.annule') = 0
+				AND t.id IN (SELECT value FROM json_each(m.document, '$.linked_transactions'))"|args:$module.table
+			select_existing="m.id AS existing"}}
+	{{else}}
+		{{:assign select_existing="NULL AS existing"}}
+	{{/if}}
+
 	{{#select
 		*,
+		GROUP_CONCAT(existing) AS existing,
 		GROUP_CONCAT(tid, ',') AS id_transaction,
 		SUM(total_numeraire) AS montant_numeraire,
 		SUM(total_nature) AS montant_nature,
@@ -162,6 +172,7 @@
 		entreprise_forme IS NOT NULL AND entreprise_numero IS NOT NULL AS entreprise
 		FROM (
 			SELECT
+			!select_existing,
 			strftime('%Y', t.date) AS periode_annee,
 			u.id AS id_user,
 			!champs_numero AS numero,
@@ -198,6 +209,7 @@
 			INNER JOIN users u ON tu.id_user = u.id
 			INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.credit != 0
 			INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!codes_don_nature OR a1.!codes_don OR a1.!codes_don_abandon_frais)
+			!join_existing
 
 			WHERE t.!years
 				AND t.date >= :start_date
@@ -219,6 +231,8 @@
 		!codes_especes="code"|sql_where:"IN":$codes_especes
 		!codes_cheques="code"|sql_where:"IN":$codes_cheques
 		!years="id_year"|sql_where:"IN":$selected_years_ids
+		!join_existing=$join_existing
+		!select_existing=$select_existing
 		:start_date="%d-01-01"|args:$year
 		:end_date="%d-12-31"|args:$year
 		assign="rows."
@@ -254,12 +268,12 @@
 				{{else}}
 					{{:assign locked=false}}
 				{{/if}}
-				<tr class="{{if !$locked}}checked{{/if}}">
+				<tr class="{{if !$locked && !$row.existing}}checked{{/if}}{{if $row.existing}} disabled{{/if}}">
 					<td class="check">
 					{{:assign line="%d+1"|math:$line}}
-					{{if !$locked}}
+					{{if !$locked && !$row.existing}}
 						{{:input type="checkbox" name="new[%d]"|args:$line value=$row|json_encode checked=true}}
-					{{else}}
+					{{elseif $locked}}
 						{{:icon shape="alert" title="Saisie manuelle obligatoire"}}
 					{{/if}}
 					</td>
@@ -275,8 +289,14 @@
 					<td>{{if $nature}}{{:icon shape="check"}}{{/if}}</td>
 					<td class="money">{{$montant|money}}</td>
 					<td class="actions">
-						{{:linkbutton shape="plus" href="nouveau.html?id_user=%d&type=user"|args:$id_user label="Saisie manuelle du reçu"}}
-						{{:linkbutton shape="menu" href="!acc/transactions/user.php?id=%d&year=%d"|args:$id_user:$_GET.id_year label="Liste des écritures" target="_dialog"}}
+						{{if $row.existing}}
+							{{:linkbutton shape="delete" label="Annuler" href="annuler.html?id=%d"|args:$row.existing target="_dialog"}}
+							{{:linkbutton shape="mail" label="Envoyer" href="envoyer.html?id=%d"|args:$row.existing target="_dialog"}}
+							{{:linkbutton shape="eye" label="Ouvrir" href="recu.html?id=%d"|args:$row.existing target="_dialog"}}
+						{{else}}
+							{{:linkbutton shape="plus" href="nouveau.html?id_user=%d&type=user"|args:$id_user label="Saisie manuelle du reçu"}}
+							{{:linkbutton shape="menu" href="!acc/transactions/user.php?id=%d&year=%d"|args:$id_user:$_GET.id_year label="Liste des écritures" target="_dialog"}}
+						{{/if}}
 					</td>
 				</tr>
 				{{:assign var="total" value="%d+%d"|math:$total:$montant}}
