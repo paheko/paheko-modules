@@ -8,6 +8,8 @@
 			{{:error message="L'objet de l'association n'a pas été renseigné."}}
 		{{elseif !$_POST.numero_asso}}
 			{{:error message="Le numéro SIREN ou RNA n'a pas été renseigné."}}
+		{{elseif !$_POST.art200|boolval && !$_POST.art238bis|boolval && !$_POST.art978|boolval}}
+			{{:error message="Merci de cocher au moins un des articles donnant éligibilité aux réductions d'impôt."}}
 		{{/if}}
 	{{/if}}
 
@@ -17,8 +19,6 @@
 		{{:error message="Aucun compte d'espèces n'a été renseigné."}}
 	{{elseif !$_POST.comptes_cheques|count}}
 		{{:error message="Aucun compte de chèques n'a été renseigné."}}
-	{{elseif !$_POST.art200|boolval && !$_POST.art238bis|boolval && !$_POST.art978|boolval}}
-		{{:error message="Merci de cocher au moins un des articles donnant éligibilité aux réductions d'impôt."}}
 	{{elseif !$_POST.champs_adresse|count}}
 		{{:error message="Aucun champ d'adresse n'a été coché."}}
 	{{/if}}
