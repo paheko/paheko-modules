@@ -17,7 +17,7 @@
 	{{:redirect to="./"}}
 {{/form}}
 
-{{#form on="send"}}
+{{#form on="send_checked"}}
 	{{if !$_POST.email_subject|trim}}
 		{{:error message="Le sujet est vide"}}
 	{{elseif !$_POST.email_body|trim}}
@@ -71,10 +71,10 @@
 		</dl>
 	</fieldset>
 	<p class="submit">
-		{{#foreach from=$_POST.check item="id"}}
-			<input type="hidden" name="check[]" value="{{$id|intval}}" />
+		{{#foreach from=$_POST.selected item="id"}}
+			<input type="hidden" name="selected[]" value="{{$id|intval}}" />
 		{{/foreach}}
-		{{:button type="submit" label="Envoyer" name="send" shape="right" class="main"}}
+		{{:button type="submit" label="Envoyer" name="send_checked" shape="right" class="main"}}
 	</p>
 </form>
 
