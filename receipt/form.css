@@ -25,15 +25,19 @@
 	#buttons {
 		display: none;
 	}
+
+	.page {
+		page-break-after: always;
+	}
 }
 
 @media screen {
 	html, body {
 		background: #666;
 	}
-	#page {
+	.page {
 		position: relative;
-		margin: 0 auto;
+		margin: .5cm auto;
 		padding: 1cm;
 		background: #fff;
 		width: 210mm;

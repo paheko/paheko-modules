@@ -34,6 +34,10 @@
 				{{/load}}
 
 				{{:input type="select" name="year" options=$years default=$_GET.year|or:0 required=true onchange="this.form.submit();"}}
+
+				{{if $_GET.year}}
+					{{:linkbutton shape="print" label="Imprimer tous les reçus %d"|args:$_GET.year href="recus_tout.html?year=%d"|args:$_GET.year target="_dialog"}}
+				{{/if}}
 			</p>
 		</fieldset>
 	</form>
@@ -48,6 +52,7 @@
 		</fieldset>
 	</form>
 </div>
+
 
 {{if $_GET.sent !== null}}
 	<p class="block confirm">{{$_GET.sent|intval}} reçus ont bien été envoyés par e-mail.</p>
