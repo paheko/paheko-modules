@@ -98,21 +98,21 @@
 <fieldset>
 	<legend>Détection automatique selon les comptes utilisés</legend>
 	<dl>
-		{{:input type="list" required=true name="comptes_don" label="Comptes éligibles aux reçus" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
+		{{:input type="list" required=true name="comptes_don" label="Comptes correspondants aux dons" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
 		<dd class="help">
-			Pour chaque compte indiqué dans ce champ, le reçu de don sera proposé (en dessous de la fiche de l'écriture).
+			Généralement <tt>754</tt>. Utiliser pour identifier quelles écritures sont éligibles aux reçus.
 		</dd>
 	</dl>
 
 	<dl class="type-asso">
-		{{:input type="list" required=false name="comptes_don_abandon_frais" label="Comptes pour les abandons de frais des bénévoles" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
+		{{:input type="list" required=false name="comptes_don_abandon_frais" label="Comptes correspondants aux abandons de frais des bénévoles" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
 		<dd class="help">
-			Par exemple <tt>75412</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
+			Généralement <tt>75412</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
 		</dd>
 
-		{{:input type="list" required=false name="comptes_don_nature" label="Comptes pour les dons en nature" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
+		{{:input type="list" required=false name="comptes_don_nature" label="Comptes correspondants aux dons en nature" source=$module.config target="!acc/charts/accounts/selector.php?targets=8&key=code" multiple=true}}
 		<dd class="help">
-			Utilisé pour cocher automatiquement la bonne case dans le reçu.
+			Généralement <tt>870</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
 		</dd>
 	</dl>
 
