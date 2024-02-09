@@ -64,7 +64,7 @@
 			{{if $config.files.logo}}
 			<h3>{{$config.org_name}}</h3>
 			{{/if}}
-			{{if $config.org_address}}
+			{{if $config.org_address && $module.config.show_address !== false}}
 				<h4>
 					{{* Lien permettant d'ouvrir l'adresse dans l'app de cartographie du téléphone, ou OpenStreetMap sinon *}}
 					<a href="https://www.openstreetmap.org/search?query={{$config.org_address|replace:"\n":", "|urlencode}}" target="_blank" class="map" onclick="var ua = navigator.userAgent, q = encodeURIComponent(this.innerText.replace(/\n/, ', ')); if (ua.match(/Android/i)) { return !window.open('https://maps.google.com/?q=' + q); } else if (!ua.match(/iPod|iPad|iPhone/i)) { return !window.open('https://maps.apple.com/?q=' + q); }">
@@ -73,10 +73,10 @@
 					</a>
 				</h4>
 			{{/if}}
-			{{if $config.org_phone}}
+			{{if $config.org_phone && $module.config.show_phone !== false}}
 				<h5>{{$config.org_phone|raw|protect_contact:'tel'}}</h5>
 			{{/if}}
-			{{if $config.org_email}}
+			{{if $config.org_email && $module.config.show_email !== false}}
 				<h5>{{$config.org_email|raw|protect_contact}}</h5>
 			{{/if}}
 		</article>

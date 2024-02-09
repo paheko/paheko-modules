@@ -6,6 +6,9 @@
 		color2=$_POST.color2|trim|or:null
 		layout=$_POST.layout|trim|or:null
 		background=$_POST.background|trim|or:null
+		show_address=$_POST.show_address|boolval
+		show_email=$_POST.show_email|boolval
+		show_phone=$_POST.show_phone|boolval
 	}}
 	{{:redirect to="?ok=1"}}
 {{/form}}
@@ -69,6 +72,18 @@ iframe {
 		{{:input type="color" name="color1" default=$config.color1 label="Couleur primaire" required=false source=$module.config}}
 		{{:input type="color" name="color2" default=$config.color2 label="Couleur secondaire" required=false source=$module.config}}
 		{{:input type="select" name="background" options=$backgrounds label="Couleur de fond" required=true source=$module.config}}
+		{{if $config.org_address || $config.org_email || $config.org_phone}}
+			<dt>Informations à afficher sur le site</dt>
+			{{if $config.org_address}}
+				{{:input type="checkbox" name="show_address" value=1 label="Adresse physique" source=$module.config default=1}}
+			{{/if}}
+			{{if $config.org_phone}}
+				{{:input type="checkbox" name="show_phone" value=1 label="Numéro de téléphone" source=$module.config default=1}}
+			{{/if}}
+			{{if $config.org_email}}
+				{{:input type="checkbox" name="show_email" value=1 label="Adresse e-mail" source=$module.config default=1}}
+			{{/if}}
+		{{/if}}
 	</dl>
 </fieldset>
 
