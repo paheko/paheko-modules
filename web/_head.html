@@ -66,11 +66,15 @@
 			{{/if}}
 			{{if $config.org_address && $module.config.show_address !== false}}
 				<h4>
+				{{if $module.config.show_marker !== false}}
 					{{* Lien permettant d'ouvrir l'adresse dans l'app de cartographie du téléphone, ou OpenStreetMap sinon *}}
 					<a href="https://www.openstreetmap.org/search?query={{$config.org_address|replace:"\n":", "|urlencode}}" target="_blank" class="map" onclick="var ua = navigator.userAgent, q = encodeURIComponent(this.innerText.replace(/\n/, ', ')); if (ua.match(/Android/i)) { return !window.open('https://maps.google.com/?q=' + q); } else if (!ua.match(/iPod|iPad|iPhone/i)) { return !window.open('https://maps.apple.com/?q=' + q); }">
 					<svg viewBox="0 0 384 512" xmlns="http://www.w3.org/2000/svg"><path d="m172.268 501.67c-145.298-210.639-172.268-232.257-172.268-309.67 0-106.039 85.961-192 192-192s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zm19.732-229.67c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"/></svg>
 					<span>{{$config.org_address|escape|nl2br}}</span>
 					</a>
+				{{else}}
+					{{$config.org_address|escape|nl2br}}
+				{{/if}}
 				</h4>
 			{{/if}}
 			{{if $config.org_phone && $module.config.show_phone !== false}}
