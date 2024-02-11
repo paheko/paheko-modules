@@ -10,6 +10,7 @@
 		show_email=$_POST.show_email|boolval
 		show_phone=$_POST.show_phone|boolval
 		show_marker=$_POST.show_marker|boolval
+		contact_form=$_POST.contact_form|boolval
 	}}
 	{{:redirect to="?ok=1"}}
 {{/form}}
@@ -84,6 +85,7 @@ iframe {
 			{{/if}}
 			{{if $config.org_email}}
 				{{:input type="checkbox" name="show_email" value=1 label="Adresse e-mail" source=$module.config default=1}}
+				{{:input type="checkbox" name="contact_form" value=1 label="Formulaire de contact" source=$module.config default=0}}
 			{{/if}}
 		{{/if}}
 	</dl>

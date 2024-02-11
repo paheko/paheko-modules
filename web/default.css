@@ -670,19 +670,29 @@ fieldset {
 
 fieldset legend {
     padding: 0 1em;
+    color: var(--gray-text-color);
 }
 
-fieldset input, fieldset textarea, fieldset select {
+fieldset input, fieldset textarea, fieldset select, fieldset button {
     padding: .5rem;
-    border: 1px solid #999;
+    border: 1px solid var(--gray-text-color);
     border-radius: .3rem;
-    font-size: 1.2em;
+    font-size: 1em;
+    font-family: inherit;
 }
 
-fieldset input[type=submit] {
-    background: #999;
-    color: #fff;
+fieldset input[type=submit], fieldset button {
+    background: inherit;
     cursor: pointer;
+    border: none;
+    box-shadow: 0px 0px 5px 1px var(--gray-text-color);
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+fieldset input[type=submit]:hover, fieldset button:hover {
+    box-shadow: 0px 0px 5px 1px var(--hover-link-color);
+    color: var(--hover-link-color);
 }
 
 input:focus, textarea:focus, select:focus, button:focus {
@@ -690,8 +700,32 @@ input:focus, textarea:focus, select:focus, button:focus {
     box-shadow: 0px 0px 5px 2px orange;
 }
 
-fieldset dl dd {
+fieldset dt b {
+    font-size: 0.7em;
+    font-weight: normal;
+    vertical-align: super;
+    color: var(--hover-link-color);
+}
+
+fieldset dt label {
+    font-weight: bold;
+}
+
+fieldset dd {
     margin: .5em 1em;
+}
+
+fieldset dd input[type=text], fieldset dd input[type=email], fieldset dd textarea {
+    width: calc(100% - 2em);
+}
+
+form .captcha label {
+    display: block;
+}
+
+form p.submit {
+    margin: 1em;
+    margin-top: 2em;
 }
 
 aside.admin {

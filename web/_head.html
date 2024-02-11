@@ -106,6 +106,9 @@
 	{{#categories parent=null order="title"}}
 		<li><a href="{{$url}}" {{if $url == $.url}}class="current"{{/if}}>{{ $title }}</a></li>
 	{{/categories}}
+	{{if $module.config.contact_form === true}}
+		<li><a href="{{$site_url}}contact.html" {{if $contact_form}}class="current"{{/if}}>Contact</a></li>
+	{{/if}}
 	</ul>
 
 
