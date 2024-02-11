@@ -6,6 +6,10 @@
 	{{:captcha verify=true}}
 	{{if $_POST.name|trim === ''}}
 		{{:error message="Merci de renseigner un nom."}}
+	{{elseif $_POST.name|regexp_match:'/https?:|www\./'}}
+		{{:error message="Le nom ne peut pas comporter d'adresse web"}}
+	{{elseif $_POST.email|regexp_match:'/https?:|www\./'}}
+		{{:error message="L'adresse e-mail ne peut pas comporter d'adresse web"}}
 	{{elseif $_POST.message|trim === ''}}
 		{{:error message="Merci de renseigner un message."}}
 	{{elseif !$_POST.email|trim === ''}}
