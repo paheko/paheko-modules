@@ -874,11 +874,6 @@ nav.main article.opening-hours h4 {
     text-align: left;
 }
 
-nav.main article.opening-hours table tr {
-    display: flex;
-    flex-direction: column;
-}
-
 /* Modifications du style pour les petits écrans */
 @media handheld, screen and (max-width: 980px) {
     body {
