@@ -57,16 +57,16 @@
 
 			<h2>{{$credit|raw|money_currency:false}}</h2>
 
+			{{if $payment_reference}}
+				<p>(Référence de paiement : {{$payment_reference}})</p>
+			{{/if}}
+
 			<p>pour le motif suivant&nbsp;:</p>
 
 			<h3>{{$label}}</h3>
 
 			{{if $notes}}
 				<p>{{$notes|escape|nl2br}}</p>
-			{{/if}}
-
-			{{if $payment_reference}}
-				<p>Référence de paiement : {{$payment_reference}}</p>
 			{{/if}}
 
 			<p>
