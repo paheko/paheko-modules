@@ -65,6 +65,10 @@
 				<p>{{$notes|escape|nl2br}}</p>
 			{{/if}}
 
+			{{if $payment_reference}}
+				<p>Référence de paiement : {{$payment_reference}}</p>
+			{{/if}}
+
 			<p>
 				<em>Ce reçu n'est pas un reçu fiscal et ne donne pas droit à une réduction d'impôt au bénéfice des dispositions du code général des impôts.</em>
 			</p>

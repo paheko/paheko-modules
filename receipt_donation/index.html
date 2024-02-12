@@ -46,6 +46,10 @@
 			<h2>{{$credit|raw|money_currency:false}}</h2>
 			<h4>le {{$date|date_short}}</h4>
 
+			{{if $payment_reference}}
+				<p>Référence de paiement : {{$payment_reference}}</p>
+			{{/if}}
+
 			<p>
 				<em>Ce reçu n'est pas un reçu fiscal et ne donne pas droit à une réduction d'impôt prévue au code général des impôts.</em>
 			</p>
