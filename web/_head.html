@@ -27,24 +27,23 @@
 
 <body class="layout-{{$module.config.layout|or:"2col"}} bg-{{$module.config.background|or:"white"}}">
 
-<header class="nav">
-	<nav>
-		<ul>
-			<li class="current"><a href="{{$root_uri}}">{{$config.org_name}}</a></li>
-			<li><a href="{{$admin_url}}" target="_blank">Connexion</a></li>
-		</ul>
+{{if $logged_user}}
+	<nav class="admin">
+		{{:linkbutton href="!" shape="user" label="Administration"}}
 		{{#restrict section="web" level="write"}}
-			<aside class="admin">
 			{{if $page.id}}
 				{{:linkbutton href="!web/edit.php?id=%d"|args:$page.id shape="edit" label="Modifier cette page"}}
 				{{:linkbutton href="!web/?id=%d"|args:$page.id shape="eye" label="Gérer cette page"}}
 			{{else}}
 				{{:linkbutton href="!web/" shape="edit" label="Gérer le site web"}}
 			{{/if}}
-			</aside>
 		{{/restrict}}
 	</nav>
-</header>
+{{else}}
+	<nav class="admin login">
+		{{:linkbutton href="!" label="Connexion"}}
+	</nav>
+{{/if}}
 
 <main>
 
