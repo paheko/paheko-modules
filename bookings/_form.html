@@ -7,6 +7,19 @@
 	{{:assign var="module.config.access" value="write"}}
 {{/if}}
 
+{{#form on="cancel"}}
+	{{#load key=$_POST.cancel type="booking" limit=1 assign="booking"}}
+		{{:delete id=$id}}
+		{{#load key=$event type="event"}}
+			{{if $notify_email}}
+				{{:assign my_date=$booking.date|parse_datetime|date_long:true
+					fields=$booking.fields|array_to_list}}
+				{{:mail to=$notify_email subject="%s — Annulation"|args:$label body="Nom : %s\nDate : %s\nAdresse e-mail : %s\nDétails :\n%s"|args:$booking.name:$my_date:$booking.email:$fields}}
+			{{/if}}
+		{{/load}}
+	{{/load}}
+	{{:redirect to="./?deleted=%s"|args:$_POST.cancel}}
+{{/form}}
 
 {{if $_GET.event}}
 	{{#load type="event" key=$_GET.event assign="event" archived=false}}
@@ -18,11 +31,6 @@
 	{{#load type="event" archived=false group="$$.type HAVING COUNT(*) = 1" assign="event"}}
 	{{/load}}
 {{/if}}
-
-{{#form on="cancel"}}
-	{{:delete key=$_POST.cancel type="booking"}}
-	{{:redirect to="./?deleted=%s"|args:$_POST.cancel}}
-{{/form}}
 
 {{:form_errors}}
 
@@ -151,27 +159,37 @@
 
 		{{#foreach from=$event.fields key="i" item="field"}}
 			{{:assign var="value" from="_POST.fields.%d"|args:$i}}
-			{{:assign var="fields." label=$field.label value=$value|trim}}
+			{{:assign label=$field.label|replace:']':')'}}
+			{{:assign var="fields[%s]"|args:$label value=$value}}
 			{{if $field.required && $value|trim === ''}}
 				{{:error message="Le champ '%s' doit être renseigné."|args:$field.label}}
 			{{/if}}
 		{{/foreach}}
 
 		{{:assign key=""|uuid}}
+		{{:assign name=$_POST.name|trim
+			email=$_POST.email|trim|or:null
+			my_date=$_GET.slot_time|parse_datetime|date_long:true}}
+
 		{{:save type="booking"
 			key=$key
 			validate_schema="./booking.schema.json"
 			slot=$slot.key
 			event=$event.key
 			date=$_GET.slot_time
-			name=$_POST.name|trim
-			email=$_POST.email|trim|or:null
+			name=$name
+			email=$email
 			id_user=$logged_user.id
 			fields=$fields
 		}}
 
+		{{if $event.notify_email}}
+			{{:assign fields=$fields|array_to_list}}
+			{{:assign body="Nouvelle réservation de :\n%s\n\nÉvénement : %s\nDate : %s\nAdresse e-mail : %s\nDétails :\n%s"|args:$name:$event.label:$my_date:$email:$fields}}
+			{{:mail to=$event.notify_email subject="%s — Nouvelle réservation"|args:$event.label body=$body}}
+		{{/if}}
+
 		{{if $_POST.email|trim}}
-			{{:assign my_date=$_GET.slot_time|parse_datetime|date_long:true}}
 			{{:assign url="%s?b=%s"|args:$module.url:$key}}
 			{{:mail to=$_POST.email|trim subject="Réservation du %s"|args:$my_date body="Vous avez réservé pour : %s\n\nLe : %s\n\nPour annuler votre réservation, cliquez ici :\n%s"|args:$event.label:$my_date:$url}}
 		{{/if}}

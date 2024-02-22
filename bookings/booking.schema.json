@@ -26,17 +26,9 @@
 			"type": ["null", "integer"]
 		},
 		"fields": {
-			"type": ["null", "array"],
+			"type": ["null", "object"],
 			"items": {
-				"type": "object",
-				"properties": {
-					"label": {
-						"type": "string"
-					},
-					"value": {
-						"type": ["null", "string"]
-					}
-				}
+				"type": "string"
 			}
 		}
 	},

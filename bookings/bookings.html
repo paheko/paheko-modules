@@ -69,8 +69,11 @@
 				<th>{{$name}}</th>
 				<td>
 					{{if $email}}<a href="mailto:{{$email}}">{{$email}}</a><br />{{/if}}
-					{{#foreach from=$fields item="field"}}
-						<strong>{{$field.label}}&nbsp;:</strong> {{$field.value}}<br />
+					{{#foreach from=$fields key="label" item="value"}}
+						{{if $value|gettype === 'array'}}
+							{{:assign value=$value.value label=$value.label}}
+						{{/if}}
+						<strong>{{$label}}&nbsp;:</strong> {{$value}}<br />
 					{{/foreach}}
 				</td>
 				<td class="actions">

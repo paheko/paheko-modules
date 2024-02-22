@@ -33,6 +33,9 @@
 		{{/if}}
 		{{:assign var="fields." required=$field.required|boolval type=$field.type label=$field.label help=$field.help|or:null}}
 	{{/foreach}}
+	{{if $_POST.notify_email|trim !== '' && !$_POST.notify_email|check_email}}
+		{{:error message="Adresse e-mail de notification invalide : %s"|args:$_POST.notify_email}}
+	{{/if}}
 	{{:save key=$key
 		validate_schema="./event.schema.json"
 		type="event"
@@ -47,6 +50,7 @@
 		email=$_POST.email|boolval
 		archived=$_POST.archived|boolval
 		fields=$fields|arrayval
+		notify_email=$_POST.notify_email|strval|or:null
 	}}
 	{{:redirect to="./config.html?ok=1"}}
 {{/form}}
@@ -62,6 +66,7 @@
 			<dd class="help">Syntaxe MarkDown acceptée. {{:linkbutton shape="help" target="_dialog" href="!static/doc/markdown.html" label="Aide de la syntaxe MarkDown"}}</dd>
 			{{:input type="checkbox" label="Archiver cet événement" name="archived" source=$event value=1}}
 			<dd class="help">Si coché, cet événement ne sera plus visible dans la liste et ne pourra plus être réservé.</dd>
+			{{:input type="email" label="Adresse e-mail de notification" help="Si renseignée, cette adresse recevra un message pour chaque réservation et chaque annulation. Laisser vide pour ne pas recevoir de notification." name="notify_email" source=$event}}
 			{{:input type="number" min=1 step=1 max=12 name="max_weeks" label="Nombre de semaines réservables pour les événements hebdomadaires" help="Par exemple, pour un événement tous les vendredis, inscrire le chiffre 2 ici permettra de réserver pour ce vendredi, et le vendredi suivant." source=$event default=1}}
 			{{#module name="openings"}}
 				<dt><strong>Synchronisation avec les ouvertures</strong></dt>
