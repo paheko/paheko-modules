@@ -11,7 +11,7 @@
 
 {{:include file="./_config_default.tpl" keep="module.config"}}
 
-{{#years order="end_date ASC"}}
+{{#years order="end_date DESC"}}
 	{{:assign var="year" value=$end_date|date:'Y'}}
 	{{:assign var="years.%d.%d"|args:$year:$id id=$id start_date=$start_date end_date=$end_date label=$label}}
 	{{:assign var="years_select.%d"|args:$year value=$year}}

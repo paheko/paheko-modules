@@ -188,6 +188,11 @@
 		{{:assign var="user_select.%d"|args:$year value="%d (%s)"|args:$year:$total_money}}
 	{{/foreach}}
 
+	{{if $user_select|count}}
+		{{* Reverse order so that last year is first *}}
+		{{:assign user_select=$user_select|ksort|reverse}}
+	{{/if}}
+
 	<script type="text/javascript">
 	var user_years = {{$user_years|json_encode|raw}};
 	</script>
