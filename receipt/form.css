@@ -26,8 +26,9 @@
 		display: none;
 	}
 
-	.page {
-		page-break-after: always;
+	.page + .page {
+		page-break-before: always;
+		break-before: always;
 	}
 }
 
