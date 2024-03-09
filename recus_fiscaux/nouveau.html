@@ -36,32 +36,33 @@
 		{{:error message="L'adresse du donateur ne peut être laissée vide."}}
 	{{/if}}
 
+
 	{{if $_POST.entreprise}}
-		{{if !$_POST.montant_nature|intval && !$_POST.montant_numeraire|intval}}
+		{{:assign montant_nature=$_POST.montant_nature|money_int
+			montant_numeraire=$_POST.montant_numeraire|money_int}}
+		{{:assign total="%d+%d"|math:$montant_numeraire:$montant_nature}}
+
+		{{if !$montant_nature && !$montant_numeraire}}
 			{{:error message="Aucun montant n'a été saisi."}}
-		{{elseif $_POST.montant_numeraire && !$_POST.moyens_especes && !$_POST.moyens_cheques && !$_POST.moyens_autres}}
+		{{elseif $montant_numeraire && !$_POST.moyens_especes && !$_POST.moyens_cheques && !$_POST.moyens_autres}}
 			{{:error message="Aucun moyen de paiement n'a été coché."}}
-		{{elseif $_POST.montant_nature && !$_POST.description_nature|trim}}
+		{{elseif $montant_nature && !$_POST.description_nature|trim}}
 			{{:error message="La description des dons en nature doit être renseignée."}}
 		{{elseif !$_POST.entreprise_forme|trim}}
 			{{:error message="La forme juridique de l'entreprise doit être renseignée."}}
 		{{elseif !$_POST.entreprise_numero|trim}}
 			{{:error message="Le numéro SIREN de l'entreprise doit être renseigné."}}
 		{{/if}}
-
-		{{:assign montant_nature=$_POST.montant_nature|money_int
-			montant_numeraire=$_POST.montant_numeraire|money_int}}
-		{{:assign total="%d+%d"|math:$montant_numeraire:$montant_nature}}
 	{{else}}
+		{{:assign total=$_POST.montant|money_int}}
+
 		{{if !$_POST.numeraire && !$_POST.nature && !$_POST.abandon_frais}}
 			{{:error message="Le type de don n'a pas été sélectionné."}}
 		{{elseif $_POST.numeraire && !$_POST.moyens_especes && !$_POST.moyens_cheques && !$_POST.moyens_autres}}
 			{{:error message="Aucun moyen de paiement n'a été coché."}}
-		{{elseif !$_POST.montant|trim || $_POST.montant < 0}}
+		{{elseif !$montant || $montant < 0}}
 			{{:error message="Le montant du don ne peut être laissé vide."}}
 		{{/if}}
-
-		{{:assign total=$_POST.montant|money_int}}
 	{{/if}}
 
 	{{:assign id_transaction=null}}
