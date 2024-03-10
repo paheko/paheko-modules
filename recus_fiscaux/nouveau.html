@@ -60,7 +60,7 @@
 			{{:error message="Le type de don n'a pas été sélectionné."}}
 		{{elseif $_POST.numeraire && !$_POST.moyens_especes && !$_POST.moyens_cheques && !$_POST.moyens_autres}}
 			{{:error message="Aucun moyen de paiement n'a été coché."}}
-		{{elseif !$montant || $montant < 0}}
+		{{elseif !$total || $total < 0}}
 			{{:error message="Le montant du don ne peut être laissé vide."}}
 		{{/if}}
 	{{/if}}
