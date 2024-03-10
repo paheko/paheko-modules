@@ -1,0 +1,68 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"number": {
+			"type": ["null", "integer"],
+		},
+		"type": {
+			"type": "string",
+			"enum": ["invoice"]
+		},
+		"label": {
+			"description": "Libellé",
+			"type": "string"
+		},
+		"date": {
+			"description": "Date d'émission",
+			"type": "string",
+			"format": "date"
+		},
+		"date_expiry": {
+			"description": "Date d'échéance",
+			"type": ["string", "null"],
+			"format": "date"
+		},
+		"date_sent": {
+			"type": ["string", "null"],
+			"format": "date"
+		},
+		"status": {
+			"description": "Statut",
+			"type": "string",
+			"enum": ["draft", "payable", "paid", "cancelled"]
+		},
+		"total": {
+			"description": "Montant total",
+			"type": "integer",
+			"minimum": 0
+		},
+		"client": {
+			"description": "UUID of client",
+			"type": ["null", "string"]
+		},
+		"id_user": {
+			"description": "ID of user",
+			"type": ["null", "integer"]
+		},
+		"id_transaction": {
+			"type": ["null", "integer"]
+		},
+		"payments": {
+			"type": "array",
+			"items": {
+				"type": "integer"
+			}
+		},
+		"quote": {
+			"description": "UUID of original quote",
+			"type": ["null", "string"]
+		},
+		"html": {
+			"description": "HTML content of generated invoice",
+			"type": ["null", "string"]
+		}
+	},
+	"required": [ "number", "type", "label", "description", "date", "date_expiry", "date_sent",
+		"status", "total", "client", "id_user", "quote", "id_transaction", "html" ]
+}

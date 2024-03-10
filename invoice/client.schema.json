@@ -1,0 +1,43 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["individual", "business"],
+		},
+		"name": {
+			"description": "Nom",
+			"type": "string"
+		},
+		"address": {
+			"description": "Adresse",
+			"type": "string"
+		},
+		"business_number": {
+			"description": "Numéro SIRET",
+			"type": ["null", "string"]
+		},
+		"vat_number": {
+			"description": "Numéro TVA",
+			"type": ["null", "string"]
+		},
+		"phone": {
+			"description": "Numéro de téléphone",
+			"type": ["null", "string"]
+		},
+		"email": {
+			"description": "Adresse e-mail",
+			"type": ["null", "string"]
+		},
+		"notes": {
+			"description": "Notes",
+			"type": ["null", "string"]
+		},
+		"archived": {
+			"description": "Archivé",
+			"type": "boolean"
+		}
+	},
+	"required": [ "type", "name", "address", "business_number", "vat_number", "phone", "email", "notes", "archived" ]
+}
