@@ -1,0 +1,15 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"footer_text": {
+			"description": "Notes de bas de page",
+			"type": ["null", "string"]
+		},
+		"users_address_fields": {
+			"description": "Champs utilisés pour l'adresse du membre",
+			"type": "array"
+		}
+	},
+	"required": ["footer_text"]
+}

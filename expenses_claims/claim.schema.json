@@ -33,7 +33,7 @@
 			"enum": ["draft", "waiting", "payable", "paid", "cancelled"]
 		},
 		"id_transaction": {
-			"type": "integer"
+			"type": ["null", "integer"]
 		},
 		"payments": {
 			"type": "array",

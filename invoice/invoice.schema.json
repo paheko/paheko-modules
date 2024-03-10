@@ -37,6 +37,10 @@
 			"type": "integer",
 			"minimum": 0
 		},
+		"client_name": {
+			"description": "Name of client",
+			"type": ["null", "string"]
+		},
 		"client": {
 			"description": "UUID of client",
 			"type": ["null", "string"]
@@ -58,11 +62,15 @@
 			"description": "UUID of original quote",
 			"type": ["null", "string"]
 		},
+		"footer_text": {
+			"description": "Notes de bas de page",
+			"type": ["null", "string"]
+		},
 		"html": {
 			"description": "HTML content of generated invoice",
 			"type": ["null", "string"]
 		}
 	},
 	"required": [ "number", "type", "label", "description", "date", "date_expiry", "date_sent",
-		"status", "total", "client", "id_user", "quote", "id_transaction", "html" ]
+		"status", "total", "client_name", "client", "id_user", "id_transaction", "quote", "footer_text", "html" ]
 }
