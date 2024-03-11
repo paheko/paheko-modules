@@ -8,7 +8,7 @@
 <nav class="tabs">
 	<ul>
 		<li><a href="./">Liste des reçus</a></li>
-		<li class="current"><a href="./recap.html">Récapitulatif annuel pour déclaration</a></li>
+		<li class="current"><a href="./recap.html">Récapitulatif pour déclaration</a></li>
 	</ul>
 </nav>
 
@@ -21,11 +21,13 @@
 	<p>{{:linkbutton shape="right" target="_blank" label="Déclarer les dons auprès de l'administration" href="https://www.demarches-simplifiees.fr/commencer/declaration-des-dons"}}</p>
 </div>
 
-{{#list select="SUBSTR($$.date, 1, 4) AS 'Année'; SUM($$.montant) AS 'Montant cumulé'; COUNT(id) AS 'Nombre de reçus'" where="$$.annule = 0" order=1}}
+{{#list select="SUBSTR($$.date, 1, 4) AS 'Année de création du reçu'; (SELECT label FROM acc_years WHERE id = $$.id_year) AS 'Exercice concerné'; SUM($$.montant) AS 'Montant cumulé'; COUNT(id) AS 'Nombre de reçus'" where="$$.annule = 0" group="$$.id_year, SUBSTR($$.date, 1, 4)" order=1}}
 	<tr>
 		<th>{{$col1}}</th>
-		<td>{{$col2|raw|money_currency}}</td>
-		<td>{{$col3}}</td>
+		<th>{{if !$col2}}<em>— Non spécifié —</em>{{else}}{{$col2}}{{/if}}</th>
+		<td>{{$col3|raw|money_currency}}</td>
+		<td>{{$col4}}</td>
+		<td></td>
 	</tr>
 {{else}}
 	<p class="block alert">

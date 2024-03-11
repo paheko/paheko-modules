@@ -53,7 +53,7 @@
 			linked_user=$row.id_user
 			linked_transactions=$row.id_transaction|explode:','|map:intval
 			annule=false
-			id_year=$_GET.id_year|intval
+			id_year=$row.id_year|intval
 			recu=$recu
 		}}
 	{{/foreach}}
@@ -172,6 +172,7 @@
 		entreprise_forme IS NOT NULL AND entreprise_numero IS NOT NULL AS entreprise
 		FROM (
 			SELECT
+			t.id_year,
 			!select_existing,
 			strftime('%Y', t.date) AS periode_annee,
 			u.id AS id_user,
