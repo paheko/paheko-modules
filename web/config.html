@@ -1,6 +1,15 @@
 {{:admin_header title="Configuration du site web"}}
 
 {{#form on="save"}}
+	{{:assign uri=null}}
+	{{if $_POST.home_sticky_uri|trim}}
+		{{:assign uri=$_POST.home_sticky_uri|trim|regexp_replace:'!^.*?([a-zA-Z0-9_-]+)$!':"$1"}}
+		{{#pages uri=$uri}}
+		{{else}}
+			{{:error message="Cette page n'existe pas ou est en brouillon : %s"|args:$uri}}
+		{{/pages}}
+	{{/if}}
+
 	{{:save key="config"
 		color1=$_POST.color1|trim|or:null
 		color2=$_POST.color2|trim|or:null
@@ -12,6 +21,7 @@
 		show_marker=$_POST.show_marker|boolval
 		show_search=$_POST.show_search|boolval
 		contact_form=$_POST.contact_form|boolval
+		home_sticky_uri=$uri|or:null
 	}}
 	{{:redirect to="?ok=1"}}
 {{/form}}
@@ -88,6 +98,7 @@ iframe {
 			{{:input type="checkbox" name="show_email" value=1 label="Adresse e-mail" source=$module.config default=1}}
 			{{:input type="checkbox" name="contact_form" value=1 label="Formulaire de contact" source=$module.config default=0}}
 		{{/if}}
+		{{:input type="text" name="home_sticky_uri" label="Identifiant unique de la page à épingler en haut de la page d'accueil" source=$module.config help="En renseignant ici l'identifiant d'une page du site web, celle-ci restera toujours en premier sur la page d'accueil du site. C'est utile par exemple pour afficher une courte présentation de l'association en permanence."}}
 	</dl>
 </fieldset>
 
