@@ -24,14 +24,14 @@ if (e) {
 
 selectEntreprise();
 
-var y = $('#f_annees');
+var y = $('#f_id_year');
 
-if (y) {
+if (y && y.tagName.toUpperCase() === 'SELECT') {
 	function selectYear() {
 		$('#f_nature_1, #f_numeraire_1, #f_moyens_especes_1, #f_moyens_cheques_1, #f_moyens_autres_1').forEach((e) => e.checked = false);
 
-		let year = y.value;
-		let d = user_years[year];
+		let id = y.value;
+		let d = user_years[id];
 		$('#f_montant').value = g.formatMoney(d.total);
 
 		$('#f_moyens_especes_1').checked = d.total_especes > 0;

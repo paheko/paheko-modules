@@ -91,10 +91,10 @@
 		montant=$total
 		linked_user=$_POST.id_user|intval|or:null
 		linked_transactions=$id_transaction
-		id_year=$_POST.id_year
+		id_year=$_POST.id_year|intval|or:null
 		annule=false
 		entreprise=$_POST.entreprise|boolval
-		recu=$recu
+		recu=$recu|trim|minify
 	}}
 
 	{{if !$dialog}}
@@ -181,12 +181,12 @@
 		!codes_especes="code"|sql_where:"IN":$codes_especes
 		!codes_cheques="code"|sql_where:"IN":$codes_cheques
 	}}
-		{{:assign .="user_years.%d"|args:$year}}
+		{{:assign .="user_years.%d"|args:$id}}
 	{{/select}}
 
-	{{#foreach from=$user_years key="year" item="data"}}
+	{{#foreach from=$user_years item="data"}}
 		{{:assign total_money=$data.total|money_currency}}
-		{{:assign var="user_select.%d"|args:$year value="%d (%s)"|args:$year:$total_money}}
+		{{:assign var="user_select.%d"|args:$data.id value="%d (%s)"|args:$data.year:$total_money}}
 	{{/foreach}}
 
 	{{if $user_select|count}}
@@ -250,6 +250,10 @@
 		{{:assign var="default.numeraire" value=$default.total_numeraire|boolval}}
 		{{:assign var="default.autre" value=$default.total_nature|boolval}}
 	{{/if}}
+{{elseif $_GET.type === 'blank'}}
+	{{#years order="end_date DESC"}}
+		{{:assign var="years_select.%d"|args:$id value=$label}}
+	{{/years}}
 {{/if}}
 
 {{if !$dialog}}
@@ -267,7 +271,7 @@
 			<dl>
 				{{:input type="radio-btn" name="type" value="user" label="Créer un reçu pour un membre"}}
 				{{:input type="radio-btn" name="type" value="transaction" label="Créer un reçu à partir d'une écriture"}}
-				{{:input type="radio-btn" name="type" value="vierge" label="Créer un reçu vierge"}}
+				{{:input type="radio-btn" name="type" value="blank" label="Créer un reçu vierge"}}
 			</dl>
 		</fieldset>
 		<fieldset class="type-user hidden">
@@ -342,13 +346,16 @@
 			<legend>Période des reçus</legend>
 			<dl>
 				{{if $user_select}}
-					{{:input type="select" name="annees" label="Pour quelle année le reçu doit-il être généré ?" required=true options=$user_select}}
+					{{:input type="select" name="id_year" label="Pour quelle année le reçu doit-il être généré ?" required=true options=$user_select}}
 				{{elseif $default.date}}
 					{{:input type="date" name="periode_date" required=true label="Date de versement du don" default=$default.date}}
 				{{else}}
 					{{:input type="year" name="periode_annee" required=true label="Année de versement des dons"}}
 				{{/if}}
 				{{:input type="date" name="date" required=true label="Date du reçu" default=$default.date}}
+				{{if !$user_select && $years_select}}
+					{{:input type="select" name="id_year" required=true label="Exercice concerné" options=$years_select}}
+				{{/if}}
 			</dl>
 		</fieldset>
 

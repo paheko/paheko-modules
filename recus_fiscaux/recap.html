@@ -18,12 +18,13 @@
 		<li>du montant cumulé des dons et versements perçus ayant donné lieu à l’émission d’un reçu fiscal ;</li>
 		<li>du nombre de reçus délivrés.</li>
 	</ul>
+	<p>Et ce, dans un délai de 3 mois suivant la clôture de l'exercice.</p>
 	<p>{{:linkbutton shape="right" target="_blank" label="Déclarer les dons auprès de l'administration" href="https://www.demarches-simplifiees.fr/commencer/declaration-des-dons"}}</p>
 </div>
 
-{{#list select="SUBSTR($$.date, 1, 4) AS 'Année de création du reçu'; (SELECT label FROM acc_years WHERE id = $$.id_year) AS 'Exercice concerné'; SUM($$.montant) AS 'Montant cumulé'; COUNT(id) AS 'Nombre de reçus'" where="$$.annule = 0" group="$$.id_year, SUBSTR($$.date, 1, 4)" order=1}}
+{{#list select="SUBSTR($$.date, 1, 4) AS 'Année de création du reçu'; (SELECT label FROM acc_years WHERE id = $$.id_year) AS 'Exercice concerné'; SUM($$.montant) AS 'Montant cumulé'; COUNT(id) AS 'Nombre de reçus'" where="$$.annule = 0" group="$$.id_year, CASE WHEN $$.id_year IS NULL THEN SUBSTR($$.date, 1, 4) ELSE NULL END" order=1}}
 	<tr>
-		<th>{{$col1}}</th>
+		<th>{{if !$col2}}{{$col1}}{{/if}}</th>
 		<th>{{if !$col2}}<em>— Non spécifié —</em>{{else}}{{$col2}}{{/if}}</th>
 		<td>{{$col3|raw|money_currency}}</td>
 		<td>{{$col4}}</td>
