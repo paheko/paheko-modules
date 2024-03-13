@@ -10,17 +10,34 @@
 		{{/pages}}
 	{{/if}}
 
+	{{:assign var="checkboxes.show_search" value=null}}
+	{{:assign var="checkboxes.show_bookings" value=null}}
+	{{:assign var="checkboxes.show_address" value=null}}
+	{{:assign var="checkboxes.show_email" value=null}}
+	{{:assign var="checkboxes.show_phone" value=null}}
+	{{:assign var="checkboxes.show_marker" value=null}}
+	{{:assign var="checkboxes.contact_form" value=null}}
+
+	{{#foreach from=$checkboxes key="name"}}
+		{{:assign var="present" from="_POST.%s_present"|args:$name}}
+		{{:assign var="value" from="_POST.%s"|args:$name}}
+		{{if $present}}
+			{{:assign var="checkboxes.%s"|args:$name value=$value|boolval}}
+		{{/if}}
+	{{/foreach}}
+
 	{{:save key="config"
 		color1=$_POST.color1|trim|or:null
 		color2=$_POST.color2|trim|or:null
 		layout=$_POST.layout|trim|or:null
 		background=$_POST.background|trim|or:null
-		show_address=$_POST.show_address|boolval
-		show_email=$_POST.show_email|boolval
-		show_phone=$_POST.show_phone|boolval
-		show_marker=$_POST.show_marker|boolval
-		show_search=$_POST.show_search|boolval
-		contact_form=$_POST.contact_form|boolval
+		show_search=$checkboxes.show_search
+		show_bookings=$checkboxes.show_bookings
+		show_address=$checkboxes.show_address
+		show_email=$checkboxes.show_email
+		show_phone=$checkboxes.show_phone
+		show_marker=$checkboxes.show_marker
+		contact_form=$checkboxes.contact_form
 		home_sticky_uri=$uri|or:null
 	}}
 	{{:redirect to="?ok=1"}}
@@ -87,6 +104,9 @@ iframe {
 		{{:input type="select" name="background" options=$backgrounds label="Couleur de fond" required=true source=$module.config}}
 		<dt>Éléments à afficher sur le site</dt>
 		{{:input type="checkbox" name="show_search" value=1 label="Formulaire de recherche" source=$module.config default=1}}
+		{{#module name="bookings"}}
+			{{:input type="checkbox" name="show_bookings" value=1 label="Accès aux réservations" source=$module.config default=1}}
+		{{/module}}
 		{{if $config.org_address}}
 			{{:input type="checkbox" name="show_address" value=1 label="Adresse physique" source=$module.config default=1}}
 			{{:input type="checkbox" name="show_marker" value=1 label="Lien pour ouvrir l'adresse sur une carte" source=$module.config default=1}}

@@ -88,11 +88,13 @@
 
 <nav class="main">
 
-{{#module name="bookings"}}
-	<p class="booking-btn">
-		<a href="{{$public_url}}" target="_blank"><span></span><b>Réserver un créneau</b></a>
-	</p>
-{{/module}}
+{{if $module.config.show_bookings !== false}}
+	{{#module name="bookings"}}
+		<p class="booking-btn">
+			<a href="{{$public_url}}" target="_blank"><span></span><b>Réserver un créneau</b></a>
+		</p>
+	{{/module}}
+{{/if}}
 
 	{{if $module.config.show_search !== false || $_GET.search}}
 	<form method="get" action="{{ $root_uri }}search.html" class="search-widget">
