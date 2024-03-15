@@ -17,6 +17,7 @@
 	{{:assign var="checkboxes.show_phone" value=null}}
 	{{:assign var="checkboxes.show_marker" value=null}}
 	{{:assign var="checkboxes.contact_form" value=null}}
+	{{:assign var="checkboxes.show_login" value=null}}
 
 	{{#foreach from=$checkboxes key="name"}}
 		{{:assign var="present" from="_POST.%s_present"|args:$name}}
@@ -38,6 +39,7 @@
 		show_phone=$checkboxes.show_phone
 		show_marker=$checkboxes.show_marker
 		contact_form=$checkboxes.contact_form
+		show_login=$checkboxes.show_login
 		home_sticky_uri=$uri|or:null
 	}}
 	{{:redirect to="?ok=1"}}
@@ -103,6 +105,7 @@ iframe {
 		{{:input type="color" name="color2" default=$config.color2 label="Couleur secondaire" required=false source=$module.config}}
 		{{:input type="select" name="background" options=$backgrounds label="Couleur de fond" required=true source=$module.config}}
 		<dt>Éléments à afficher sur le site</dt>
+		{{:input type="checkbox" name="show_login" value=1 label="Lien de connexion" source=$module.config default=1 help="Si coché, affiche un lien pour se connecter à la gestion de l'association."}}
 		{{:input type="checkbox" name="show_search" value=1 label="Formulaire de recherche" source=$module.config default=1}}
 		{{#module name="bookings"}}
 			{{:input type="checkbox" name="show_bookings" value=1 label="Accès aux réservations" source=$module.config default=1}}

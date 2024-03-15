@@ -39,7 +39,7 @@
 			{{/if}}
 		{{/restrict}}
 	</nav>
-{{else}}
+{{elseif $module.config.show_login !== false}}
 	<nav class="admin login">
 		{{:linkbutton href="!" label="Connexion"}}
 	</nav>
