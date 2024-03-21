@@ -208,23 +208,23 @@
 		-- Paiements en espèces?
 		(SELECT SUM(l2.credit + l2.debit) FROM acc_transactions_lines l2
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_especes
-			WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS total_especes,
+			WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS total_especes,
 		-- Paiements en chèques?
 		(SELECT SUM(l2.credit + l2.debit) FROM acc_transactions_lines l2
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_cheques
-			WHERE l2.credit = 0 AND l2.id_transaction = id_transaction LIMIT 1) AS total_cheques,
+			WHERE l2.credit = 0 AND l2.id_transaction = t.id LIMIT 1) AS total_cheques,
 		-- Dons en abandon de frais ?
 		(SELECT SUM(l2.credit + l2.debit) FROM acc_transactions_lines l2
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_don_abandon_frais
-			WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS total_abandon_frais,
+			WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS total_abandon_frais,
 		-- Dons en nature ?
 		(SELECT SUM(l2.credit + l2.debit) FROM acc_transactions_lines l2
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_don_nature
-			WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS total_nature,
+			WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS total_nature,
 		-- Dons en numeraire ?
 		(SELECT SUM(l2.credit + l2.debit) FROM acc_transactions_lines l2
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_don
-			WHERE l2.debit = 0 AND l2.id_transaction = id_transaction) AS total_numeraire
+			WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS total_numeraire
 		FROM acc_transactions t
 		INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
 		INNER JOIN users u ON u.id = tu.id_user
@@ -248,7 +248,10 @@
 
 	{{if $default.total_numeraire}}
 		{{:assign var="default.numeraire" value=$default.total_numeraire|boolval}}
-		{{:assign var="default.autre" value=$default.total_nature|boolval}}
+
+		{{if !$default.total_especes && !$default.total_cheques}}
+			{{:assign var="default.autres" value=true}}
+		{{/if}}
 	{{/if}}
 {{elseif $_GET.type === 'blank'}}
 	{{#years order="end_date DESC"}}
@@ -394,8 +397,8 @@
 			</p>
 			{{/if}}
 			<dl>
-				{{:input type="checkbox" name="moyens_especes" value=1 label="Espèces" default=$default.especes}}
-				{{:input type="checkbox" name="moyens_cheques" value=1 label="Chèques" default=$default.cheques}}
+				{{:input type="checkbox" name="moyens_especes" value=1 label="Espèces" default=$default.total_especes|boolval}}
+				{{:input type="checkbox" name="moyens_cheques" value=1 label="Chèques" default=$default.total_cheques|boolval}}
 				{{:input type="checkbox" name="moyens_autres" value=1 label="Virement, prélèvement, carte bancaire, ou autre" default=$default.autres}}
 			</dl>
 		</fieldset>

@@ -44,6 +44,7 @@
 		{{:assign var="row.date" value=$now}}
 
 		{{:include file="./_recu.html" capture="recu" r=$row}}
+
 		{{:save
 			validate_schema="./recu.schema.json"
 			assign_new_id="new_id"
@@ -168,7 +169,7 @@
 		SUM(total_nature) > 0 AS nature,
 		SUM(total_especes) > 0 AS moyens_especes,
 		SUM(total_cheques) > 0 AS moyens_cheques,
-		(SUM(total_numeraire) - SUM(total_especes) - SUM(total_cheques)) > 0 AS moyens_autres,
+		(SUM(total_numeraire) - IFNULL(SUM(total_especes), 0) - IFNULL(SUM(total_cheques), 0)) AS moyens_autres,
 		entreprise_forme IS NOT NULL AND entreprise_numero IS NOT NULL AS entreprise
 		FROM (
 			SELECT
