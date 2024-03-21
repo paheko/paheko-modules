@@ -108,6 +108,8 @@
 
 {{:assign var="champs_adresse" value=$module.config.champs_adresse|sql_user_fields:"u":" — "}}
 {{:assign var="champs_nom" value=$config.user_fields.name|sql_user_fields:"u"}}
+{{:assign var="champ_entreprise_numero" value=$module.config.champ_entreprise_numero|sql_user_fields:"u"}}
+{{:assign var="champ_entreprise_forme" value=$module.config.champ_entreprise_forme|sql_user_fields:"u"}}
 
 {{:assign var="codes_don" value=$module.config.comptes_don|keys|map:strval}}
 {{:assign var="codes_don_abandon_frais" value=$module.config.comptes_don_abandon_frais|keys|map:strval}}
@@ -205,6 +207,8 @@
 		t.date AS date,
 		!champs_nom AS name,
 		!champs_adresse AS address,
+		!champ_entreprise_numero AS entreprise_numero,
+		!champ_entreprise_forme AS entreprise_forme,
 		-- Paiements en espèces?
 		(SELECT SUM(l2.credit + l2.debit) FROM acc_transactions_lines l2
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_especes
@@ -234,6 +238,8 @@
 		;
 		!champs_nom=$champs_nom
 		!champs_adresse=$champs_adresse
+		!champ_entreprise_numero=$champ_entreprise_numero
+		!champ_entreprise_forme=$champ_entreprise_forme
 		!codes_don_nature="code"|sql_where:"IN":$codes_don_nature
 		!codes_don_abandon_frais="code"|sql_where:"IN":$codes_don_abandon_frais
 		!codes_don="code"|sql_where:"IN":$codes_don
