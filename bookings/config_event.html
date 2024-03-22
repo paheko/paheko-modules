@@ -7,6 +7,10 @@
 	{{else}}
 		{{:error message="Événément introuvable"}}
 	{{/load}}
+{{elseif $_GET.copy}}
+	{{#load key=$_GET.copy type="event" assign="event"}}
+	{{/load}}
+	{{:assign key=""|uuid}}
 {{else}}
 	{{:assign key=""|uuid}}
 {{/if}}
@@ -52,7 +56,23 @@
 		fields=$fields|arrayval
 		notify_email=$_POST.notify_email|strval|or:null
 	}}
+
+	{{if $_GET.copy}}
+		{{#load type="slot" event=$event.key}}
+			{{:save key="uuid"
+				validate_schema="./slot.schema.json"
+				type="slot"
+				event=$.key
+				frequency=$frequency
+				day=$day
+				date=$date
+				open=$open
+				seats=$seats
+			}}
+		{{/load}}
+	{{/if}}
 	{{:redirect to="./config.html?ok=1"}}
+	}
 {{/form}}
 
 {{:form_errors}}
