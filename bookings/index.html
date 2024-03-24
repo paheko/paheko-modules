@@ -7,6 +7,12 @@
 	{{:include file="./_nav.html" current="index"}}
 {{/if}}
 
+{{if !$_GET.event && $logged_user.id}}
+	{{#load type="booking" id_user=$logged_user.id where="$$.date >= date()" count=true}}
+		<p class="alert block">Vous avez {{$count}} réservations. {{:linkbutton shape="menu" label="Voir mes réservations" href="my_bookings.html"}}</p>
+	{{/load}}
+{{/if}}
+
 {{:include file="./_form.html" current="index"}}
 
 {{:admin_footer}}

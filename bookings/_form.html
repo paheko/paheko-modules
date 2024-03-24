@@ -66,21 +66,6 @@
 			<p class="error block">La réservation indiquée est introuvable, elle a peut-être déjà été annulée.</p>
 		{{/load}}
 	{{/if}}
-	{{* My bookings *}}
-	{{if $logged_user.id}}
-		{{#load type="booking" id_user=$logged_user.id where="key != :booking AND $$.date >= date()" :booking=$_GET.b|or:''}}
-			{{#load type="event" key=$event assign="e"}}{{/load}}
-			<article>
-				<h5>Vous avez réservé&nbsp;:</h5>
-				<h2>{{$e.label}}</h2>
-				<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
-				<h5>(Au nom de&nbsp;: {{$name}})</h5>
-				<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
-					{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
-				</form>
-			</article>
-		{{/load}}
-	{{/if}}
 		<template id="booking">
 			<article>
 				<h5>Vous avez réservé&nbsp;:</h5>

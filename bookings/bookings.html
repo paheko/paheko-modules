@@ -35,16 +35,20 @@
 
 {{if !$event}}
 
-	<section class="booking_events">
-		{{#load type="event" order="$$.label"}}
-		<article>
-			<h2><a href="?event={{$key}}">{{$label}}</a></h2>
-			<p>Voir les inscrits pour cet événement</p>
-		</article>
-		{{else}}
-			<p class="block alert">Il n'y a aucun événement.</p>
-		{{/load}}
-	</section>
+	{{#list select="$$.label AS 'Événement';
+		(SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date >= date()) AS 'Inscriptions à venir';
+		(SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date < date()) AS 'Inscriptions passées'"
+		where="$$.type = 'event'"
+		order=1}}
+		<tr>
+			<th><a href="?event={{$key}}">{{$label}}</a></th>
+			<td>{{:link href="?event=%s"|args:$key label=$col2 class="num"}}</td>
+			<td>{{:link href="?event=%s&past"|args:$key label=$col3 class="num"}}</td>
+			<td class="actions">{{:linkbutton shape="menu" label="Liste des inscriptions" href="?event=%s"|args:$key}}</td>
+		</tr>
+	{{else}}
+		<p class="block alert">Il n'y a aucun événement.</p>
+	{{/list}}
 
 {{else}}
 
@@ -56,8 +60,12 @@
 
 	<section class="booking_list">
 
-		{{:assign current_day=null}}
-		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'" type="booking" event=$event.key where=$where order="2" export=true}}
+		{{if $subcurrent !== 'past'}}
+			{{:assign slots_left_column="MAX(0, (SELECT $$.seats FROM @TABLE b WHERE $$.type = 'slot' AND key = @TABLE.$$.slot)
+			- (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot)) AS 'Places restantes';"}}
+		{{/if}}
+		{{:assign current_day=null current_slot=null}}
+		{{#list select="date($$.date) AS 'Date'; $$.date AS 'Heure'; %s $$.name AS 'Nom'; json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations'"|args:$slots_left_column type="booking" event=$event.key where=$where order="2" export=true}}
 			<tr>
 				<td>
 					{{if $col1 !== $current_day}}
@@ -65,7 +73,18 @@
 						{{:assign current_day=$col1}}
 					{{/if}}
 				</td>
-				<td>{{$date|date_hour}}</td>
+				{{if $slots_left_column}}
+					{{if $slot !== $current_slot}}
+						<td>{{$date|date_hour}}</td>
+						<td>{{$col3}}</td>
+						{{:assign current_slot=$slot}}
+					{{else}}
+						<td></td>
+						<td></td>
+					{{/if}}
+				{{else}}
+					<td>{{$date|date_hour}}</td>
+				{{/if}}
 				<th>{{$name}}</th>
 				<td>
 					{{if $email}}<a href="mailto:{{$email}}">{{$email}}</a><br />{{/if}}

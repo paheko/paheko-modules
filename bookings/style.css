@@ -74,7 +74,7 @@
 }
 
 .booking_event .slots article h3 {
-	background: #eee;
+	background: var(--gLightBackgroundColor);
 	padding: .5rem;
 }
 
@@ -150,13 +150,12 @@
 	display: block;
 }
 
-.booking_events {
-	text-align: center;
-}
-
-.booking_events article {
+.booking_events article a {
 	margin: 1rem;
-	font-size: 1.2em;
+	display: block;
+	background: var(--gLightBackgroundColor);
+	padding: .3em .5em;
+	border-radius: .5em;
 }
 
 .my_bookings {

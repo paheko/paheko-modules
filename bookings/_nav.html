@@ -19,6 +19,10 @@
 			{{:linkbutton shape="plus" label="Nouvel événement" href="config_event.html?new=1"}}
 		{{/if}}
 		</aside>
+	{{elseif $event}}
+		<aside>
+			{{:linkbutton shape="plus" label="Inscrire" href="./?event=%s"|args:$event.key}}
+		</aside>
 	{{/if}}
 
 	<ul>
@@ -26,6 +30,7 @@
 		<li{{if $current == 'index'}} class="current"{{/if}}><a href="./">Inscription</a></li>
 		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="bookings.html">Voir les inscrits</a></li>
 	{{/if}}
+		<li{{if $current == 'my_bookings'}} class="current"{{/if}}><a href="my_bookings.html">Mes réservations</a></li>
 	{{if $access_config}}
 		<li{{if $current == 'config'}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
 	{{/if}}
