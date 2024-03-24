@@ -9,7 +9,9 @@
 
 {{if !$_GET.event && $logged_user.id}}
 	{{#load type="booking" id_user=$logged_user.id where="$$.date >= date()" count=true}}
-		<p class="alert block">Vous avez {{$count}} réservations. {{:linkbutton shape="menu" label="Voir mes réservations" href="my_bookings.html"}}</p>
+		{{if $count}}
+			<p class="alert block">Vous avez {{$count}} réservations. {{:linkbutton shape="menu" label="Voir mes réservations" href="my_bookings.html"}}</p>
+		{{/if}}
 	{{/load}}
 {{/if}}
 
