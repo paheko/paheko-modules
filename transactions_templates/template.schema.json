@@ -79,6 +79,11 @@
 					"r": {
 						"description": "Référence ligne",
 						"type": ["string", "null"]
+					},
+					"k": {
+						"description": "Bloquer saisie",
+						"type": ["string", "null"],
+						"enum": ["d", "c", "a"]
 					}
 				}
 			},

@@ -83,12 +83,14 @@
 				<td>Code du compte</td>
 				<td>Débit</td>
 				<td>Crédit</td>
+				<td>Bloquer saisie</td>
 				<td>Libellé ligne</td>
 				<td>Réf. ligne</td>
 				<td></td>
 			</tr>
 		</thead>
 		<tbody>
+		{{:assign var="lock_options" d="Débit" c="Crédit" a="Débit et crédit"}}
 		{{#foreach from=$tpl.ll key="k" item="line"}}
 			<tr>
 				<td class="account">
@@ -96,6 +98,7 @@
 				</td>
 				<td class="money">{{:input type="text" name="ll[d][]" default=$line.d size=5}}</td>
 				<td class="money">{{:input type="text" name="ll[c][]" default=$line.c size=5}}</td>
+				<td>{{:input type="select" name="ll[k][]" default=$line.k options=$lock_options default_empty="Non"}}</td>
 				<td>{{:input type="text" name="ll[l][]" default=$line.l}}</td>
 				<td>{{:input type="text" name="ll[r][]" default=$line.r size=10}}</td>
 				<td>{{:button label="Enlever" title="Enlever la ligne" shape="minus" class="line_del"}}</td>
