@@ -21,6 +21,7 @@
 		</aside>
 	{{elseif $event}}
 		<aside>
+			{{:linkbutton shape="search" label="Chercher les inscriptions liées" href="?event=%s&past=%d&users=1"|args:$event.key:$_GET.past}}
 			{{:linkbutton shape="plus" label="Inscrire" href="./?event=%s"|args:$event.key}}
 		</aside>
 	{{/if}}
@@ -41,7 +42,7 @@
 			<li class="title">{{$event.label}}</li>
 			{{if $current === 'bookings'}}
 			<li {{if $subcurrent === 'default'}}class="current"{{/if}}><a href="?event={{$event.key}}">Inscriptions</a></li>
-			<li {{if $subcurrent === 'past'}}class="current"{{/if}}><a href="?event={{$event.key}}&amp;past">Inscriptions passées</a></li>
+			<li {{if $subcurrent === 'past'}}class="current"{{/if}}><a href="?event={{$event.key}}&amp;past=1">Inscriptions passées</a></li>
 			{{/if}}
 		</ul>
 	{{elseif $current === 'config'}}
