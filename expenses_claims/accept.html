@@ -51,7 +51,7 @@
 			{{:break}}
 		{{/if}}
 		{{:include file="./messages/accept.txt" capture="message" message=$_POST.message|trim claim=$claim}}
-		{{:mail to=$_email subject="Votre note de frais a été acceptée" body=$message|raw}}
+		{{:mail to=$_email subject="Votre note de frais a été acceptée" body=$message|raw notification=true}}
 	{{/users}}
 
 	{{:redirect to="details.html?key=%s"|args:$claim.key}}

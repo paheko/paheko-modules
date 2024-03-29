@@ -17,7 +17,7 @@
 			{{:break}}
 		{{/if}}
 		{{:include file="./messages/deny.txt" capture="message" message=$_POST.message|trim claim=$claim action=$_POST.action}}
-		{{:mail to=$_email subject="Votre note de frais a été refusée" body=$message|raw}}
+		{{:mail to=$_email subject="Votre note de frais a été refusée" body=$message|raw notification=true}}
 	{{/users}}
 
 	{{if $_POST.action === 'delete'}}
