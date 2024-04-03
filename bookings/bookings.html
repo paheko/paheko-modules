@@ -109,6 +109,9 @@
 						<td>{{$date|date_hour}}</td>
 						<td>{{$col3}}</td>
 						{{:assign current_slot=$slot}}
+					{{elseif !$slot}}
+						<td>{{$date|date_hour}}</td>
+						<td></td>
 					{{else}}
 						<td></td>
 						<td></td>
