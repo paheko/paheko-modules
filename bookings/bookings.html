@@ -69,8 +69,12 @@
 
 	<section class="booking_list">
 		{{if $subcurrent !== 'past'}}
-			{{:assign slots_left_column="MAX(0, (SELECT $$.seats FROM @TABLE b WHERE $$.type = 'slot' AND key = @TABLE.$$.slot)
-			- (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot)) AS 'Places restantes';"}}
+			{{if $event.use_openings}}
+				{{:assign seats_left_column="MAX(0, %s - (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.date = @TABLE.$$.date)) AS 'Places restantes';"|args:$event.openings_seats}}
+			{{else}}
+				{{:assign seats_left_column="MAX(0, (SELECT $$.seats FROM @TABLE b WHERE $$.type = 'slot' AND key = @TABLE.$$.slot)
+					- (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot)) AS 'Places restantes';"}}
+			{{/if}}
 		{{/if}}
 		{{:assign
 			current_day=null
@@ -86,7 +90,7 @@
 		{{#list select="date($$.date) AS 'Date';
 			$$.date AS 'Heure';
 			%s $$.name AS 'Nom';
-			json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations' %s"|args:$slots_left_column:$user_columns
+			json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations' %s"|args:$seats_left_column:$user_columns
 			type="booking"
 			event=$event.key
 			where=$where
@@ -104,15 +108,20 @@
 						{{:assign current_day=$col1 current_hour=null}}
 					{{/if}}
 				</td>
-				<td>
-					{{:assign hour=$date|date_hour}}
-					{{if $hour !== $current_hour}}
+				{{:assign hour=$date|date_hour}}
+				{{if $hour !== $current_hour}}
+					<td>
 						{{$hour}}
 						{{:assign current_hour=$hour}}
+					</td>
+					{{if $seats_left_column}}
+						<td>{{$col3}}</td>
 					{{/if}}
-				</td>
-				{{if $slots_left_column}}
-					<td>{{$col3}}</td>
+				{{else}}
+					<td></td>
+					{{if $seats_left_column}}
+						<td></td>
+					{{/if}}
 				{{/if}}
 				<th>{{$name}}</th>
 				<td>

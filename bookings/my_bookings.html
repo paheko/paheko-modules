@@ -18,6 +18,8 @@
 				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
 			</form>
 		</article>
+	{{else}}
+		<p class="alert block">Vous n'avez fait aucune réservation.</p>
 	{{/load}}
 </section>
 
