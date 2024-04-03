@@ -74,7 +74,7 @@
 		{{/if}}
 		{{:assign
 			current_day=null
-			current_slot=null
+			current_hour=null
 			export=true
 		}}
 		{{if $_GET.users}}
@@ -101,23 +101,18 @@
 				<td>
 					{{if $col1 !== $current_day}}
 						{{$date|date_long}}
-						{{:assign current_day=$col1}}
+						{{:assign current_day=$col1 current_hour=null}}
+					{{/if}}
+				</td>
+				<td>
+					{{:assign hour=$date|date_hour}}
+					{{if $hour !== $current_hour}}
+						{{$hour}}
+						{{:assign current_hour=$hour}}
 					{{/if}}
 				</td>
 				{{if $slots_left_column}}
-					{{if $slot !== $current_slot}}
-						<td>{{$date|date_hour}}</td>
-						<td>{{$col3}}</td>
-						{{:assign current_slot=$slot}}
-					{{elseif !$slot}}
-						<td>{{$date|date_hour}}</td>
-						<td></td>
-					{{else}}
-						<td></td>
-						<td></td>
-					{{/if}}
-				{{else}}
-					<td>{{$date|date_hour}}</td>
+					<td>{{$col3}}</td>
 				{{/if}}
 				<th>{{$name}}</th>
 				<td>
