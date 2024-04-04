@@ -26,12 +26,12 @@ selectEntreprise();
 
 var y = $('#f_id_year');
 
-if (y && y.tagName.toUpperCase() === 'SELECT') {
+if (y && y.tagName.toUpperCase() === 'SELECT' && typeof user_years !== 'undefined') {
 	function selectYear() {
 		$('#f_nature_1, #f_numeraire_1, #f_moyens_especes_1, #f_moyens_cheques_1, #f_moyens_autres_1').forEach((e) => e.checked = false);
 
 		let id = y.value;
-		let d = user_years[id];
+		let d = user_years[id] ?? null;
 		$('#f_montant').value = g.formatMoney(d.total);
 
 		$('#f_moyens_especes_1').checked = d.total_especes > 0;
