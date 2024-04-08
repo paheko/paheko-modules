@@ -10,16 +10,10 @@
 {{/module}}
 
 {{if $module.config.home_sticky_uri}}
-	{{#articles uri=$module.config.home_sticky_uri assign="sticky"}}
+	{{#pages uri=$module.config.home_sticky_uri assign="sticky"}}
 		{{:assign hide_date=true}}
-	{{/articles}}
+	{{/pages}}
 {{/if}}
-
-{{if !$sticky}}
-	{{#articles order="published DESC" limit=1 assign="sticky"}}
-	{{/articles}}
-{{/if}}
-
 
 {{if $sticky}}
 	<section class="articles main">
