@@ -15,6 +15,12 @@
 	{{/pages}}
 {{/if}}
 
+{{if !$sticky}}
+	{{#articles order="published DESC" limit=1 assign="sticky"}}
+	{{/articles}}
+	{{:assign start=1}}
+{{/if}}
+
 {{if $sticky}}
 	<section class="articles main">
 		<article>
@@ -27,7 +33,7 @@
 	</section>
 {{/if}}
 
-{{#articles order="published DESC" begin=1 limit=9}}
+{{#articles order="published DESC" begin=$start|intval limit=9}}
 <section class="articles">
 	<article>
 		<h3><a href="{{ $url }}">{{ $title }}</a></h3>
