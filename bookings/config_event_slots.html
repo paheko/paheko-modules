@@ -22,7 +22,7 @@
 	{{if $count}}
 		<table class="list">
 			<tbody>
-			{{#load type="slot" event=$event.key order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
+			{{#load type="slot" event=$event.key order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.frequency DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
 				<tr>
 					<th>
 						{{if $date}}
