@@ -50,18 +50,13 @@ if (y && y.tagName.toUpperCase() === 'SELECT' && typeof user_years !== 'undefine
 		$('#f_abandon_frais_1').checked = d.total_abandon_frais > 0;
 		$('#f_montant_numeraire').value = g.formatMoney(d.total_numeraire);
 		$('#f_montant_nature').value = g.formatMoney(d.total_nature + d.total_abandon_frais);
+		$('#f_periode_annee').value = d.year;
 
 		selectType();
 	}
 
 	y.onchange = selectYear;
 	selectYear();
-}
-else if ($('#f_periode_date').value == '') {
-	g.toggle('.periode-date', false);
-}
-else {
-	g.toggle('.periode-annee', false);
 }
 
 let p = $('[name=preview]')[0];

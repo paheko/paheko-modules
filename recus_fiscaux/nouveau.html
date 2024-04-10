@@ -356,6 +356,7 @@
 			<dl>
 				{{if $user_select}}
 					{{:input type="select" name="id_year" label="Pour quelle année le reçu doit-il être généré ?" required=true options=$user_select}}
+					{{:input type="hidden" name="periode_annee"}}
 				{{elseif $default.date}}
 					{{:input type="date" name="periode_date" required=true label="Date de versement du don" default=$default.date}}
 				{{else}}
