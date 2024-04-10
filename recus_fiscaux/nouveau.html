@@ -230,8 +230,8 @@
 			INNER JOIN acc_accounts a2 ON a2.id = l2.id_account AND a2.!codes_don
 			WHERE l2.debit = 0 AND l2.id_transaction = t.id) AS total_numeraire
 		FROM acc_transactions t
-		INNER JOIN acc_transactions_users tu ON tu.id_transaction = t.id
-		INNER JOIN users u ON u.id = tu.id_user
+		LEFT JOIN acc_transactions_users tu ON tu.id_transaction = t.id
+		LEFT JOIN users u ON u.id = tu.id_user
 		INNER JOIN acc_transactions_lines l1 ON l1.id_transaction = t.id AND l1.debit = 0
 		INNER JOIN acc_accounts a1 ON a1.id = l1.id_account AND (a1.!codes_don_nature OR a1.!codes_don OR a1.!codes_don_abandon_frais)
 		WHERE t.id = {$_GET.id_transaction|intval}
