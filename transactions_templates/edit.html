@@ -20,6 +20,7 @@
 	{{:save id=$tpl.id
 		validate_schema="./template.schema.json"
 		name=$_POST.name|strval|trim
+		help=$_POST.help|strval|trim|or:null
 		t=$_POST.t|intval
 		l=$_POST.l|strval|trim|or:null
 		dt=$_POST.dt|strval|trim|or:null
@@ -46,6 +47,7 @@
 	<legend>{{if !$tpl}}Nouveau modèle{{else}}Modifier le modèle{{/if}}</legend>
 	<dl>
 		{{:input type="text" required=true name="name" label="Nom du modèle" source=$tpl}}
+		{{:input type="textarea" cols=70 rows=10 name="help" label="Aide à la saisie" help="MarkDown autorisé. Ce texte sera affiché sur la page de saisie." source=$tpl}}
 		{{:input type="select" name="t" label="Type" options=$types required=true source=$tpl}}
 		{{:input type="text" name="l" label="Libellé" source=$tpl}}
 		{{:input type="date" name="dt" label="Date" source=$tpl}}

@@ -6,6 +6,10 @@
 			"description": "Libellé du modèle",
 			"type": "string"
 		},
+		"help": {
+			"description": "Aide à la saisie",
+			"type": ["string", "null"]
+		},
 		"t": {
 			"description": "Type de l'écriture",
 			"type": "integer"
@@ -90,5 +94,5 @@
 			"required": [ "a", "d", "c", "l", "r" ]
 		}
 	},
-	"required": [ "name", "t", "l", "dt", "r", "a00", "p", "ar", "ae", "ab", "at", "a3", "ll"]
+	"required": [ "name", "help", "t", "l", "dt", "r", "a00", "p", "ar", "ae", "ab", "at", "a3", "ll"]
 }
