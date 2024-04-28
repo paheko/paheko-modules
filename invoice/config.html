@@ -1,0 +1,48 @@
+{{:admin_header title="Configuration des devis et factures"}}
+
+{{#form on="save"}}
+	{{:save key="config"
+		validate_schema="./config.schema.json"
+		users_address_fields=$_POST.users_address_fields|or:null
+		invoice_text=$_POST.invoice_text|or:null
+		quote_text=$_POST.quote_text|or:null
+	}}
+	{{:redirect to="?ok=1"}}
+{{/form}}
+
+{{if $_GET.ok}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+
+<fieldset>
+	<legend>Configuration</legend>
+	<dl>
+		<dt>Champs des fiches membre à utiliser pour l'adresse d'un membre</dt>
+		<dd class="help"><em>(Le nom du membre est toujours affiché.)</em></dd>
+
+		{{#select * FROM config_users_fields WHERE type IN ('number', 'country', 'text', 'textarea', 'datalist') AND system & (1 << 4) = 0 ORDER BY sort_order}}
+			{{if $module.config.users_address_fields|has:$name}}
+				{{:assign var="checked" value=$name}}
+			{{else}}
+				{{:assign var="checked" value=null}}
+			{{/if}}
+			{{:input type="checkbox" name="users_address_fields[]" value=$name label=$label default=$checked}}
+		{{/select}}
+
+		{{:input type="textarea" cols="70" rows="5" name="invoice_text" required=false source=$module.config label="Texte à afficher en bas de chaque facture" help="Syntaxe MarkDown acceptée"}}
+		{{:input type="textarea" cols="70" rows="5" name="quote_text" required=false source=$module.config label="Texte à afficher en bas de chaque facture" help="Syntaxe MarkDown acceptée"}}
+
+	</dl>
+</fieldset>
+
+<p class="submit">
+	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+</p>
+
+</form>
+
+{{:admin_footer}}

@@ -1,71 +1,79 @@
-{{if $logged_user.perm_accounting < $access_level.write}}
-	{{:error message="Seuls les membres avec accès en écriture à la comptabilité peuvent générer ce document"}}
+{{if $_GET.show === 'payable'}}
+	{{:assign title="Factures en souffrance"}}
+{{elseif $_GET.show === 'paid'}}
+	{{:assign title="Factures réglées"}}
+{{elseif $_GET.show === 'drafts'}}
+	{{:assign title="Brouillons"}}
+{{elseif $_GET.show === 'quotes'}}
+	{{:assign title="Devis"}}
+{{else}}
+	{{:assign title="Devis et factures"}}
 {{/if}}
-{{:admin_header title="Devis et factures" current="acc"}}
 
-<nav class="tabs">
-	<aside>
-		{{:linkbutton href="edit.html" label="Nouveau document" shape="plus" target="_dialog"}}
-	</aside>
+{{:admin_header title=$title current="acc"}}
 
-	<ul>
-		<li{{if !$_GET.show}} class="current"{{/if}}><a href="./">Tous les documents</a></li>
-		<li{{if $_GET.show == 'quote'}} class="current"{{/if}}><a href="./?show=quote">Devis</a></li>
-		<li{{if $_GET.show == 'unpaid'}} class="current"{{/if}}><a href="./?show=unpaid">Factures en souffrance</a></li>
-		<li{{if $_GET.show == 'paid'}} class="current"{{/if}}><a href="./?show=paid">Factures réglées</a></li>
-		<li><a href="clients.html">Clients</a></li>
-	</ul>
-</nav>
+{{:include file="./_nav.html" current=$_GET.show|or:"index"}}
 
 {{if $_GET.show == 'quote'}}
-	{{:assign filter="json_extract(value, '$.type') = 'quote'"}}
+	{{:assign filter="$$.type = 'quote'"}}
 {{elseif $_GET.show == 'paid'}}
-	{{:assign filter="json_extract(value, '$.type') = 'invoice' AND json_extract(value, '$.date_paid') IS NOT NULL"}}
-{{elseif $_GET.show == 'unpaid'}}
-	{{:assign filter="json_extract(value, '$.type') = 'invoice' AND json_extract(value, '$.date_paid') IS NULL"}}
+	{{:assign filter="$$.type = 'invoice' AND $$.status = 'paid'"}}
+{{elseif $_GET.show == 'payable'}}
+	{{:assign filter="$$.type = 'invoice' AND $$.status = 'payable'"}}
+{{elseif $_GET.show == 'drafts'}}
+	{{:assign filter="$$.status = 'draft'"}}
 {{else}}
 	{{:assign filter="1"}}
 {{/if}}
 
-<table class="list">
-	<thead>
+{{if $_GET.show === 'drafts' || !$_GET.show}}
+	{{:assign first_column="CASE $$.type WHEN 'invoice' THEN 'Facture' ELSE 'Devis' END AS 'Type'; "}}
+{{/if}}
+
+{{#list select="%s $$.ref AS 'Numéro'; $$.date AS 'Date'; $$.date_expiry AS 'Échéance'; NULL AS 'Tiers'; $$.total AS 'Montant'; NULL AS 'Statut'"|args:$first_column where="$$.type != 'client' AND "|cat:$filter}}
 		<tr>
-			<th>Numéro</th>
-			<td>Émission</td>
-			<td>Échéance</td>
-			<td>Tiers</td>
-			<td class="money">Montant</td>
-			<td>Statut</td>
-			<td></td>
-		</tr>
-	</thead>
-	<tbody>
-{{#load where="key != 'config' AND %s"|args:$filter select="value AS json, key, datetime(json_extract(value, '$.date')) AS date" order="date DESC"}}
-		<tr>
+			{{if $first_column}}
+			<td>{{$col1}}</td>
+			{{/if}}
 			<th>{{$number}}</th>
 			<td>{{$date|date_short}}</td>
-			<td>{{$date_required|date_short}}</td>
-			<td></td>
+			<td>{{$date_expiry|date_short}}</td>
+			<td>
+
+			</td>
 			<td class="money">{{$total|raw|money_currency}}</td>
 			<td>
-				{{if $archived}}
-					Archivé
-				{{elseif $date_paid}}
-					Payé le {{$date_paid|date_short}}
-				{{elseif $type == 'invoice'}}
-					En attente
+				{{if $type === 'quote'}}
+					{{if $status === 'waiting'}}
+						En attente
+					{{elseif $status === 'accepted'}}
+						Accepté
+					{{elseif $status == 'draft'}}
+						Brouillon
+					{{elseif $status == 'refused'}}
+						Refusé
+					{{/if}}
+				{{else}}
+					{{if $status === 'paid'}}
+						Payé
+					{{elseif $status === 'payable'}}
+						Payé
+					{{elseif $status == 'draft'}}
+						Brouillon
+					{{elseif $status == 'cancelled'}}
+						Annulé
+					{{/if}}
 				{{/if}}
 			</td>
 			<td class="actions">
-				{{if !$archived}}
+				{{if $status === 'draft'}}
 				{{:linkbutton shape="edit" label="Modifier" href="edit.html?key=%s"|args:$key}}
 				{{/if}}
+				{{:linkbutton shape="menu" label="Détails" href="details.html?key=%s"|args:$key}}
 			</td>
 		</tr>
 {{else}}
-		<tr><td colspan="6">Aucun document</td></tr>
-{{/load}}
-</tbody>
-</table>
+	<p class="alert block">Aucun document ici.</p>
+{{/list}}
 
 {{:admin_footer}}

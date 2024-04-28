@@ -2,14 +2,22 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"properties": {
-		"footer_text": {
-			"description": "Notes de bas de page",
+		"invoice_text": {
+			"type": ["null", "string"]
+		},
+		"quote_text": {
 			"type": ["null", "string"]
 		},
 		"users_address_fields": {
-			"description": "Champs utilisés pour l'adresse du membre",
-			"type": "array"
+			"description": "Fields used for the address of the user",
+			"type": ["null", "array"],
+			"items": {
+				"type": "string"
+			}
+		},
+		"prefix_year": {
+			"type": "boolean"
 		}
 	},
-	"required": ["footer_text"]
+	"required": ["invoice_text", "quote_text", "users_address_fields"]
 }

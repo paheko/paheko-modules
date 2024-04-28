@@ -1,0 +1,21 @@
+<nav class="tabs">
+	<aside>
+		{{#restrict section="config" level="admin"}}
+			{{:linkbutton href="config.html" label="Configuration" shape="settings" target="_dialog"}}
+		{{/restrict}}
+	{{if $current === 'quote'}}
+		{{:linkbutton href="edit_invoice.html" label="Nouvelle facture" shape="plus" target="_dialog"}}
+	{{else}}
+		{{:linkbutton href="edit_invoice.html" label="Nouvelle facture" shape="plus" target="_dialog"}}
+	{{/if}}
+	</aside>
+
+	<ul>
+		<li{{if $current === 'index'}} class="current"{{/if}}><a href="./">Tous les documents</a></li>
+		<li{{if $current === 'drafts'}} class="current"{{/if}}><a href="./?show=drafts">Brouillons</a></li>
+		<li{{if $current === 'quotes'}} class="current"{{/if}}><a href="./?show=quotes">Devis</a></li>
+		<li{{if $current === 'payable'}} class="current"{{/if}}><a href="./?show=payable">Factures en souffrance</a></li>
+		<li{{if $current === 'paid'}} class="current"{{/if}}><a href="./?show=paid">Factures réglées</a></li>
+		<li{{if $current === 'clients'}} class="current"{{/if}}><a href="clients.html">Clients</a></li>
+	</ul>
+</nav>
