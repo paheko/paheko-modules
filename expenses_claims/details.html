@@ -139,12 +139,6 @@
 	<dt>Écriture de note de frais</dt>
 	<dd>{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$claim.id_transaction label="#%d"|args:$claim.id_transaction}}</dd>
 	{{/if}}
-
-
-	{{#foreach from=$claim.transactions item="id"}}
-	<dt>Écriture de paiement</dt>
-	<dd>{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$id label="#%d"|args:$id}}</dd>
-	{{/foreach}}
 </dl>
 
 {{if $claim.status === 'draft'}}
