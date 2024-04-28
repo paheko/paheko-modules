@@ -15,8 +15,11 @@
 				"type": "string"
 			}
 		},
-		"prefix_year": {
-			"type": "boolean"
+		"first_invoice_number": {
+			"type": "integer"
+		},
+		"first_quote_number": {
+			"type": "integer"
 		}
 	},
 	"required": ["invoice_text", "quote_text", "users_address_fields"]

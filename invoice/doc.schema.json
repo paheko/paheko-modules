@@ -3,23 +3,20 @@
 	"type": "object",
 	"properties": {
 		"number": {
-			"type": ["null", "string"],
+			"type": "string"
 		},
 		"type": {
 			"type": "string",
-			"enum": ["invoice"]
+			"enum": ["invoice", "quote"]
 		},
 		"label": {
-			"description": "Libellé",
 			"type": "string"
 		},
 		"date": {
-			"description": "Date d'émission",
 			"type": "string",
 			"format": "date"
 		},
 		"date_expiry": {
-			"description": "Date d'échéance",
 			"type": ["string", "null"],
 			"format": "date"
 		},
@@ -28,26 +25,27 @@
 			"format": "date"
 		},
 		"status": {
-			"description": "Statut",
 			"type": "string",
-			"enum": ["draft", "payable", "paid", "cancelled"]
+			"enum": ["draft", "waiting", "ok", "cancelled"]
 		},
 		"total": {
-			"description": "Montant total",
 			"type": "integer",
 			"minimum": 0
 		},
 		"client_name": {
-			"description": "Name of client",
+			"type": "string"
+		},
+		"client_address": {
+			"type": "string"
+		},
+		"client_email": {
 			"type": ["null", "string"]
 		},
 		"client": {
-			"description": "UUID of client",
 			"type": ["null", "string"]
 		},
-		"id_user": {
-			"description": "ID of user",
-			"type": ["null", "integer"]
+		"header_text": {
+			"type": ["null", "string"]
 		},
 		"id_transaction": {
 			"type": ["null", "integer"]
@@ -59,11 +57,9 @@
 			}
 		},
 		"quote": {
-			"description": "UUID of original quote",
 			"type": ["null", "string"]
 		},
-		"footer_text": {
-			"description": "Notes de bas de page",
+		"invoice": {
 			"type": ["null", "string"]
 		},
 		"html": {
@@ -71,6 +67,17 @@
 			"type": ["null", "string"]
 		}
 	},
-	"required": [ "number", "type", "label", "description", "date", "date_expiry", "date_sent",
-		"status", "total", "client_name", "client", "id_user", "id_transaction", "quote", "footer_text", "html" ]
+	"required": [
+		"number",
+		"type",
+		"label",
+		"date",
+		"date_expiry",
+		"status",
+		"client_name",
+		"client_address",
+		"client_email",
+		"client",
+		"header_text"
+	]
 }

@@ -14,7 +14,7 @@
 
 {{:include file="./_nav.html" current=$_GET.show|or:"index"}}
 
-{{if $_GET.show == 'quote'}}
+{{if $_GET.show == 'quotes'}}
 	{{:assign filter="$$.type = 'quote'"}}
 {{elseif $_GET.show == 'paid'}}
 	{{:assign filter="$$.type = 'invoice' AND $$.status = 'paid'"}}
@@ -30,7 +30,7 @@
 	{{:assign first_column="CASE $$.type WHEN 'invoice' THEN 'Facture' ELSE 'Devis' END AS 'Type'; "}}
 {{/if}}
 
-{{#list select="%s $$.ref AS 'Numéro'; $$.date AS 'Date'; $$.date_expiry AS 'Échéance'; NULL AS 'Tiers'; $$.total AS 'Montant'; NULL AS 'Statut'"|args:$first_column where="$$.type != 'client' AND "|cat:$filter}}
+{{#list select="%s $$.ref AS 'Numéro'; $$.date AS 'Date'; $$.date_expiry AS 'Échéance'; $$.client_name AS 'Client'; $$.total AS 'Montant'; NULL AS 'Statut'"|args:$first_column where="$$.type != 'client' AND "|cat:$filter}}
 		<tr>
 			{{if $first_column}}
 			<td>{{$col1}}</td>
@@ -38,38 +38,31 @@
 			<th>{{$number}}</th>
 			<td>{{$date|date_short}}</td>
 			<td>{{$date_expiry|date_short}}</td>
-			<td>
-
-			</td>
+			<td>{{$client_name}}</td>
 			<td class="money">{{$total|raw|money_currency}}</td>
 			<td>
-				{{if $type === 'quote'}}
+				{{if $status === 'draft'}}
+					Brouillon
+				{{elseif $type === 'quote'}}
 					{{if $status === 'waiting'}}
 						En attente
-					{{elseif $status === 'accepted'}}
+					{{elseif $status === 'ok'}}
 						Accepté
-					{{elseif $status == 'draft'}}
-						Brouillon
-					{{elseif $status == 'refused'}}
-						Refusé
-					{{/if}}
-				{{else}}
-					{{if $status === 'paid'}}
-						Payé
-					{{elseif $status === 'payable'}}
-						Payé
-					{{elseif $status == 'draft'}}
-						Brouillon
 					{{elseif $status == 'cancelled'}}
 						Annulé
+					{{/if}}
+				{{else}}
+					{{if $status === 'ok'}}
+						Payée
+					{{elseif $status === 'waiting'}}
+						En souffrance
+					{{elseif $status == 'cancelled'}}
+						Annulée
 					{{/if}}
 				{{/if}}
 			</td>
 			<td class="actions">
-				{{if $status === 'draft'}}
-				{{:linkbutton shape="edit" label="Modifier" href="edit.html?key=%s"|args:$key}}
-				{{/if}}
-				{{:linkbutton shape="menu" label="Détails" href="details.html?key=%s"|args:$key}}
+				{{:linkbutton shape="menu" label="Détails" href="details.html?doc=%s"|args:$key}}
 			</td>
 		</tr>
 {{else}}

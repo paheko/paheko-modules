@@ -3,11 +3,8 @@
 		{{#restrict section="config" level="admin"}}
 			{{:linkbutton href="config.html" label="Configuration" shape="settings" target="_dialog"}}
 		{{/restrict}}
-	{{if $current === 'quote'}}
-		{{:linkbutton href="edit_invoice.html" label="Nouvelle facture" shape="plus" target="_dialog"}}
-	{{else}}
-		{{:linkbutton href="edit_invoice.html" label="Nouvelle facture" shape="plus" target="_dialog"}}
-	{{/if}}
+		{{:linkbutton href="edit.html?type=quote" label="Nouveau devis" shape="plus" target="_dialog"}}
+		{{:linkbutton href="edit.html?type=invoice" label="Nouvelle facture" shape="plus" target="_dialog"}}
 	</aside>
 
 	<ul>
