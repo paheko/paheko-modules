@@ -3,6 +3,8 @@
 	{{:error message="Ce document n'existe pas"}}
 {{/load}}
 
+{{:include file="./_defines.tpl"}}
+
 {{if $doc.status === 'draft'}}
 	{{#form on="validate"}}
 		{{* Create invoice/quote number *}}
@@ -26,18 +28,18 @@
 			validate_schema="./doc.schema.json"
 		}}
 
-		{{:redirect to="details.html?doc=%s"|args:$doc.key}}
+		{{:redirect reload="details.html?doc=%s"|args:$doc.key}}
 	{{/form}}
 
 	{{#form on="delete_line"}}
 		{{:delete type="line" document=$doc.key key=$_POST.delete_line}}
-		{{:redirect to="details.html?doc=%s"|args:$doc.key}}
+		{{:redirect reload="details.html?doc=%s"|args:$doc.key}}
 	{{/form}}
 
 {{elseif $doc.status !== 'cancelled'}}
 	{{#form on="cancel"}}
 		{{:save key=$doc.key validate_schema="./doc.schema.json" status="cancelled"}}
-		{{:redirect to="./details.html?doc=%s"|args:$doc.key}}
+		{{:redirect reload="./details.html?doc=%s"|args:$doc.key}}
 	{{/form}}
 {{/if}}
 
@@ -55,7 +57,7 @@
 	<aside>
 		{{:linkbutton shape="plus" label="Dupliquer" href="./duplicate.html?doc=%s"|args:$doc.key}}
 		{{if $doc.status === 'draft'}}
-			{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?doc=%s"|args:$doc.key}}
+			{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?doc=%s"|args:$doc.key target="_dialog"}}
 			{{:linkbutton shape="edit" label="Modifier" href="./edit.html?doc=%s"|args:$doc.key target="_dialog"}}
 		{{/if}}
 	</aside>
@@ -100,7 +102,7 @@
 
 <dl class="describe">
 	<dt>Numéro</dt>
-	<dd>{{$doc.number|or:"En attente de validation"}}</dd>
+	<dd>{{$doc.number|or:"En attente"}}</dd>
 	<dt>Objet</dt>
 	<dd>{{$doc.label}}</dd>
 	<dt>Date</dt>
@@ -118,25 +120,7 @@
 	</dd>
 	<dt>Statut</dt>
 	<dd>
-		{{if $doc.status === 'draft'}}
-			Brouillon
-		{{elseif $doc.type === 'quote'}}
-			{{if $doc.status === 'waiting'}}
-				En attente
-			{{elseif $doc.status === 'ok'}}
-				Accepté
-			{{elseif $doc.status == 'cancelled'}}
-				Annulé
-			{{/if}}
-		{{else}}
-			{{if $doc.status === 'ok'}}
-				Payée
-			{{elseif $doc.status === 'waiting'}}
-				En souffrance
-			{{elseif $doc.status == 'cancelled'}}
-				Annulée
-			{{/if}}
-		{{/if}}
+		{{:call function="display_status_label" status=$doc.status type=$doc.type}}
 	</dd>
 
 	<dt>Montant total</dt>

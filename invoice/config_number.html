@@ -12,11 +12,10 @@
 	{{/if}}
 
 	{{:save key="config"
-		validate_schema="./config.schema.json"
 		first_invoice_number=$_POST.first_invoice_number|intval
 		first_quote_number=$_POST.first_quote_number|intval
 	}}
-	{{:redirect to="./edit.html?type=%s"|args:$_GET.type}}
+	{{:redirect self="./edit.html?type=%s"|args:$_GET.type}}
 {{/form}}
 
 {{:form_errors}}

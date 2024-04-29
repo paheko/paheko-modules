@@ -1,3 +1,5 @@
+{{:include file="./_defines.tpl"}}
+
 {{if $_GET.show === 'payable'}}
 	{{:assign title="Factures en souffrance"}}
 {{elseif $_GET.show === 'paid'}}
@@ -41,25 +43,7 @@
 			<td>{{$client_name}}</td>
 			<td class="money">{{$total|raw|money_currency}}</td>
 			<td>
-				{{if $status === 'draft'}}
-					Brouillon
-				{{elseif $type === 'quote'}}
-					{{if $status === 'waiting'}}
-						En attente
-					{{elseif $status === 'ok'}}
-						Accepté
-					{{elseif $status == 'cancelled'}}
-						Annulé
-					{{/if}}
-				{{else}}
-					{{if $status === 'ok'}}
-						Payée
-					{{elseif $status === 'waiting'}}
-						En souffrance
-					{{elseif $status == 'cancelled'}}
-						Annulée
-					{{/if}}
-				{{/if}}
+				{{:call function="display_status_label"}}
 			</td>
 			<td class="actions">
 				{{:linkbutton shape="menu" label="Détails" href="details.html?doc=%s"|args:$key}}

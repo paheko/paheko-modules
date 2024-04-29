@@ -7,7 +7,7 @@
 		invoice_text=$_POST.invoice_text|or:null
 		quote_text=$_POST.quote_text|or:null
 	}}
-	{{:redirect to="?ok=1"}}
+	{{:redirect reload="?ok=1"}}
 {{/form}}
 
 {{if $_GET.ok}}

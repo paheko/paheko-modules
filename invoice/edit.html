@@ -1,5 +1,5 @@
-{{if $_GET.key}}
-	{{#load key=$_GET.key assign="doc" where="$$.type = 'quote' OR $$.type = 'invoice'"}}
+{{if $_GET.doc}}
+	{{#load key=$_GET.doc assign="doc" where="$$.type = 'quote' OR $$.type = 'invoice'"}}
 	{{else}}
 		{{:error message="Ce document n'existe pas ou plus"}}
 	{{/load}}
@@ -18,7 +18,7 @@
 {{/if}}
 
 {{if !$module.config.first_invoice_number}}
-	{{:redirect to="./config_number.html?type="|cat:$doc.type}}
+	{{:redirect self="./config_number.html?type="|cat:$doc.type}}
 {{/if}}
 
 {{#form on="save"}}
@@ -55,7 +55,7 @@
 		header_text=$_POST.header_text|trim
 	}}
 
-	{{:redirect to="./details.html?doc=%s"|args:$doc.key}}
+	{{:redirect reload="./details.html?doc=%s"|args:$doc.key}}
 {{/form}}
 
 {{if !$doc.id}}
