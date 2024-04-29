@@ -19,13 +19,7 @@
 
 {{:include file="./_recu.html"}}
 
-<figure class="signature">
-	{{if $config.files.signature}}
-		<img src="{{$config.files.signature}}" alt="Signature association" />
-	{{elseif $config.files.logo}}
-		<img src="{{$config.files.logo}}" alt="Signature association" />
-	{{/if}}
-</figure>
+{{:signature}}
 
 {{:include file="/receipt/_footer.html"}}
 
