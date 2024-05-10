@@ -1,3 +1,7 @@
+{{if !$page}}
+	{{:error message="Page not found"}}
+{{/if}}
+
 {{:include file="./_head.html" title=$page.title}}
 
 {{:include file="./_breadcrumbs.html" parent=$page.path}}
@@ -9,8 +13,8 @@
 
 	{{$page.html|raw}}
 
-	{{:include file="./gallery.html" parent=$page.path}}
-	{{:include file="./documents.html" parent=$page.path}}
+	{{:include file="./_gallery.html" parent=$page.path}}
+	{{:include file="./_documents.html" parent=$page.path}}
 </article>
 
 {{:include file="./_foot.html"}}

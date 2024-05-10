@@ -1,3 +1,7 @@
+{{if !$parent}}
+	{{:error message="Missing parent parameter"}}
+{{/if}}
+
 <section class="documents">
 {{#documents order="name" parent=$parent except_in_text=true}}
 	<figure class="file">
