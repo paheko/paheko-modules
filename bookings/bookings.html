@@ -70,10 +70,10 @@
 	<section class="booking_list">
 		{{if $subcurrent !== 'past'}}
 			{{if $event.use_openings}}
-				{{:assign seats_left_column="MAX(0, %s - (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.date = @TABLE.$$.date)) AS 'Places restantes';"|args:$event.openings_seats}}
+				{{:assign seats_left_column="MAX(0, %s - (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.date = @TABLE.$$.date AND $$.event = @TABLE.$$.event)) AS 'Places restantes';"|args:$event.openings_seats}}
 			{{else}}
 				{{:assign seats_left_column="MAX(0, (SELECT $$.seats FROM @TABLE b WHERE $$.type = 'slot' AND key = @TABLE.$$.slot)
-					- (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot)) AS 'Places restantes';"}}
+					- (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot AND $$.date = @TABLE.$$.date)) AS 'Places restantes';"}}
 			{{/if}}
 		{{/if}}
 		{{:assign
