@@ -5,6 +5,9 @@
 
 {{if $_GET.id}}
 	{{#load assign="tpl" id=$_GET.id|intval}}{{/load}}
+{{elseif $_GET.from}}
+	{{#load assign="tpl" id=$_GET.from|intval}}{{/load}}
+	{{:assign var="tpl.id" value=null}}
 {{/if}}
 
 {{if !$tpl}}

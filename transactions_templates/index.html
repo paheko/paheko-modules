@@ -19,6 +19,7 @@
 		<td class="actions">
 			{{:linkbutton href=$url label="Saisir cette écriture" shape="plus"}}
 			{{:linkbutton href="edit.html?id=%d"|args:$id label="Modifier" shape="edit"}}
+			{{:linkbutton href="edit.html?from=%d"|args:$id label="Dupliquer" shape="reload"}}
 			{{:linkbutton target="_dialog" href="delete.html?id=%d"|args:$id label="Supprimer" shape="delete"}}
 		</td>
 	</tr>
