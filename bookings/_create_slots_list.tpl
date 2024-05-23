@@ -81,7 +81,7 @@
 	{{#load
 		type="slot"
 		event=$event.key
-		where="$$.seats > 0 AND ($$.date IS NULL OR ($$.date > date() OR ($$.date = date() AND $$.open <= strftime('%H:%M'))))"
+		where="$$.seats > 0 AND ($$.date IS NULL OR ($$.date > date() OR ($$.date = date() AND $$.open >= strftime('%H:%M'))))"
 		order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
 		{{if $frequency == 'this'}}
 			{{:assign timestamp="%s %s, %s"|args:$frequency:$day:$open|strtotime}}
@@ -92,8 +92,8 @@
 		{{/if}}
 
 		{{* Make sure slot is in the future, can't book for past dates *}}
-		{{if $frequency != 'only' && $timestamp < $now|date:'U'}}
-			{{if $frequency == 'this'}}
+		{{if $frequency !== 'only' && $timestamp < $now|date:'U'}}
+			{{if $frequency === 'this'}}
 				{{:assign timestamp="next %s, %s"|args:$day:$open|strtotime}}
 			{{else}}
 				{{:assign timestamp="%s %s of next month, %s"|args:$frequency:$day:$open|strtotime}}
