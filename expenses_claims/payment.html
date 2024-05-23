@@ -17,6 +17,12 @@
 	{{/transaction_lines}}
 {{/transactions}}
 
+{{if $claim.payments|count}}
+	{{#transactions id=$claim.payments}}
+		{{:assign total="%d-%d"|math:$total:$credit}}
+	{{/transactions}}
+{{/if}}
+
 {{#form on="save"}}
 	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|key:0}}
 	{{:assign var="lines." debit=$_POST.amount account=$debit_account}}
@@ -35,7 +41,10 @@
 		linked_transactions=$claim.id_transaction|intval
 	}}
 
-	{{if $_POST.paid}}
+	{{:assign amount=$_POST.amount|money_int}}
+
+	{{if "%d-%d"|math:$total:$amount <= 0}}
+		{{* Nothing left to pay *}}
 		{{:assign new_status="paid"}}
 	{{else}}
 		{{:assign new_status=$claim.status}}
@@ -51,11 +60,6 @@
 	{{:redirect to="./details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
-{{if $claim.payments|count}}
-	{{#transactions id=$claim.payments}}
-		{{:assign total="%d-%d"|math:$total:$credit}}
-	{{/transactions}}
-{{/if}}
 
 {{if $claim.label}}
 	{{:assign default_label="Remboursement note de frais n°%d : %s"|args:$claim.number:$claim.label}}
@@ -93,7 +97,6 @@
 			{{:input type="text" default=$default_label name="label" label="Libellé" required=true}}
 			{{:input type="money" name="amount" label="Montant" required=true default=$total}}
 			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code&year=%d"|args:$default_year}}
-			{{:input type="checkbox" name="paid" value=1 default=1 label="Marquer cette note de frais comme payée"}}
 		</dl>
 	</fieldset>
 	<p class="submit">
