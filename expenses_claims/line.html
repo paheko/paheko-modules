@@ -135,6 +135,10 @@ function selectCategory() {
 			return;
 		}
 
+		if (c.expense_type === 'km_vehicle' && localStorage.getItem('last_vehicle')) {
+			v.value = localStorage.getItem('last_vehicle');
+		}
+
 		g.toggle('.category, p.submit', true);
 		g.toggle('.vehicle', c.expense_type === 'km_vehicle');
 		g.toggle('.amount', c.expense_type !== 'km_vehicle' && c.expense_type !== 'km_free');
@@ -191,7 +195,10 @@ selectCategory();
 
 var v = $('#f_vehicle');
 
-v.onchange = selectVehicle;
+v.onchange = () => {
+	localStorage.setItem('last_vehicle', v.value);
+	selectVehicle();
+};
 selectVehicle();
 
 </script>
