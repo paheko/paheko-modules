@@ -213,6 +213,10 @@
 				<td>{{$label}}</td>
 				<td class="money">{{$credit|money_currency}}</td>
 			</tr>
+		{{else}}
+			<tr>
+				<td colspan="4" class="help">Les écritures liées à cette note de frais ont été supprimées.</td>
+			</tr>
 		{{/transactions}}
 		</tbody>
 	</table>
