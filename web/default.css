@@ -293,6 +293,10 @@ header.main .contacts {
     flex-direction: column;
 }
 
+header.main .contacts a {
+    word-break: break-word;
+}
+
 header.main .contacts .map {
     color: inherit;
     text-decoration: none;
