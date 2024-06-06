@@ -144,8 +144,7 @@
 
 		{{#foreach from=$event.fields key="i" item="field"}}
 			{{:assign var="value" from="_POST.fields.%d"|args:$i}}
-			{{:assign label=$field.label|replace:']':')'}}
-			{{:assign var="fields[%s]"|args:$label value=$value}}
+			{{:assign var="fields" append=$label value=$value}}
 			{{if $field.required && $value|trim === ''}}
 				{{:error message="Le champ '%s' doit être renseigné."|args:$field.label}}
 			{{/if}}
