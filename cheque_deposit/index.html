@@ -30,8 +30,8 @@
 				{{#transaction_lines transaction=$id where="credit > 0"}}
 				<tr>
 					<th width="5%">{{$i}}.</th>
-					<td width="40%">{{$label}}</td>
 					<td width="40%">{{$reference}}</td>
+					<td width="40%">{{$label}}</td>
 					<td width="15%" class="money">{{$credit|raw|money_currency}}</td>
 				</tr>
 				{{:assign i="%d+1"|math:$i}}
