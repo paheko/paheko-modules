@@ -31,6 +31,7 @@
 		l=$_POST.l|strval|trim|or:null
 		dt=$_POST.dt|strval|trim|or:null
 		r=$_POST.r|strval|trim|or:null
+		n=$_POST.n|strval|trim|or:null
 		a00=$_POST.a00|money_int
 		pr=$_POST.pr|strval|or:null
 		p=$_POST.p|intval|or:null
@@ -58,6 +59,7 @@
 		{{:input type="text" name="l" label="Libellé" source=$tpl}}
 		{{:input type="date" name="dt" label="Date" source=$tpl}}
 		{{:input type="text" name="r" label="Numéro de pièce comptable" source=$tpl}}
+		{{:input type="textarea" name="n" label="Remarques" source=$tpl}}
 	</dl>
 	<dl class="t1 t2 t3 t4 t5">
 		{{:input type="money" name="a00" label="Montant" source=$tpl}}

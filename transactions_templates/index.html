@@ -11,7 +11,7 @@
 	select="$$.name AS 'Nom'"
 	order=1 desc=false
 }}
-	{{:assign var="qs" t=$t l=$l dt=$dt r=$r a00=$a00 pr=$pr p=$p ar=$ar ae=$ae ab=$ab at=$at a3=$a3 ll=$ll tplid=$id}}
+	{{:assign var="qs" t=$t l=$l dt=$dt r=$r a00=$a00 pr=$pr p=$p ar=$ar ae=$ae ab=$ab at=$at a3=$a3 ll=$ll n=$n tplid=$id}}
 	{{:assign qs=$qs|http_build_query}}
 	{{:assign url="!acc/transactions/new.php?%s"|args:$qs}}
 	<tr>

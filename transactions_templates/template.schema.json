@@ -58,6 +58,10 @@
 			"description": "Code du compte de tiers",
 			"type": ["string", "null"]
 		},
+		"n": {
+			"description": "Remarques",
+			"type": ["string", "null"]
+		},
 		"ll": {
 			"description": "Lignes de l'écriture avancée",
 			"type": ["array", "null"],
