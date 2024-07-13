@@ -1,5 +1,5 @@
 {{#restrict block=true section="config" level="admin"}}{{/restrict}}
-{{:include file="./_config_default.tpl" keep="vehicles"}}
+{{:include file="./_config_default.tpl" keep="module.config,vehicles"}}
 
 {{#form on="save"}}
 	{{:save key="config" notify_users=$_POST.notify_users|arrayval}}

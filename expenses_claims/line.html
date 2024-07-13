@@ -69,6 +69,7 @@
 		amount=$amount|or:$_POST.amount|money_int
 		reference=$_POST.reference|trim|or:null
 		date=$_POST.date|parse_date|or:null
+		id_project=$cat.id_project|intval|or:null
 	}}
 	{{:redirect to="details.html?key=%s"|args:$claim.key}}
 {{/form}}

@@ -16,7 +16,7 @@
 	{{/if}}
 
 	{{:save type="category"
-		schema="./category.schema.json"
+		validate_schema="./category.schema.json"
 		key=$key
 		label=$_POST.label|trim
 		account=$_POST.account|arrayval|or:null
@@ -24,6 +24,7 @@
 		km=$_POST.vehicle|strval|trim|or:null
 		expense_type=$_POST.expense_type
 		notes=$_POST.notes|trim|or:null
+		id_project=$_POST.id_project|intval|or:null
 	}}
 	{{:redirect to="./config.html"}}
 
@@ -40,6 +41,8 @@
 	km_free="Kilométrique, avec un barème personnalisé"
 }}
 
+{{#projects assign_list="projects"}}{{/projects}}
+
 <form method="post" action="">
 
 <fieldset>
@@ -48,6 +51,9 @@
 		{{:input type="text" name="label" label="Nom de la catégorie" required=true source=$cat}}
 		{{:input type="textarea" cols=50 rows=5 name="notes" label="Instructions" required=false source=$cat help="Ces instructions seront affichées en dessous du champ description.\nUtile par exemple pour indiquer quelles sont les informations supplémentaires que le membre doit renseigner."}}
 		{{:input type="list" required=false name="account" label="Compte de dépense" source=$cat target="!acc/charts/accounts/selector.php?targets=5&key=code"}}
+		{{if $projects|count}}
+			{{:input type="select" required=false name="id_project" label="Projet analytique" source=$cat options=$projects default_empty="— Aucun —"}}
+		{{/if}}
 		{{:input type="select" name="expense_type" required=true label="Type de dépense" options=$types source=$cat}}
 	</dl>
 	<dl class="expense_type expense_type-km_free">

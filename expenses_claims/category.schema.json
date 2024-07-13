@@ -15,7 +15,7 @@
 			"description": "Instructions"
 		},
 		"account": {
-			"type": ["string", "null"],
+			"type": ["object", "null"],
 			"description": "Code comptable"
 		},
 		"price": {

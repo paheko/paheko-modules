@@ -14,7 +14,7 @@
 	{{:assign var="upload_path" value="%s/%s"|args:$module.storage_root:$claim.key}}
 
 	{{#foreach from=$_POST.lines|array_transpose}}
-		{{:assign var="lines." debit=$amount label=$label account=$account|keys|key:0}}
+		{{:assign var="lines." debit=$amount label=$label account=$account|keys|key:0 id_project=$id_project}}
 		{{:assign amount=$amount|money_int}}
 		{{:assign total="%d+%d"|math:$amount:$total}}
 	{{/foreach}}
@@ -73,6 +73,8 @@
 	{{:error message="Aucun exercice n'est ouvert, il n'est pas possible de créer une écriture et donc d'accepter cette note de frais."}}
 {{/if}}
 
+{{#projects assign_list="projects"}}{{/projects}}
+
 {{:admin_header title="Accepter la note de frais n°%d"|args:$claim.number}}
 
 {{:form_errors}}
@@ -99,6 +101,9 @@
 					<td>Libellé</td>
 					<td>Référence</td>
 					<td>Montant</td>
+					{{if $projects|count}}
+						<td>Projet analytique</td>
+					{{/if}}
 				</tr>
 			</thead>
 			<tbody>
@@ -115,6 +120,9 @@
 						<td>{{:input type="text" name="lines[label][]" default=$default_label required=false}}</td>
 						<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
 						<td class="money">{{:input type="money" name="lines[amount][]" default=$amount required=true}}</td>
+						{{if $projects|count}}
+							<td>{{:input type="select" required=false name="lines[id_project][]" default=$id_project options=$projects default_empty="— Aucun —"}}</td>
+						{{/if}}
 					</tr>
 				{{/load}}
 			</tbody>
