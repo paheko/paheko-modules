@@ -29,16 +29,27 @@
 	{{elseif $_GET.status}}
 		{{:assign status=$_GET.status|quote_sql}}
 		{{:assign where="$$.status = %s"|args:$status}}
+		{{:assign check=true}}
 	{{/if}}
 {{/restrict}}
 
+<form method="post" action="payment_multi.html">
 {{#list
 	select="$$.number AS 'Numéro'; $$.user_name AS 'Membre'; $$.date AS 'Date'; $$.label AS 'Libellé'; CASE $$.status WHEN 'waiting' THEN 'À accepter' WHEN 'payable' THEN 'À payer' WHEN 'paid' THEN 'Payée' WHEN 'cancelled' THEN 'Annulée' ELSE 'Brouillon' END AS 'Statut'"|args:$config.user_fields.name_sql
 	order=1
 	desc=true
 	where="$$.type = 'claim' AND %s"|args:$where
+	check=$check
 }}
 	<tr class="{{if $status === 'cancelled'}}disabled crossed{{/if}}">
+		{{if $check}}
+		<td class="check">
+			{{if $status === 'payable'}}
+				{{:input type="checkbox" name="claims[]" value=$key}}
+				{{:assign has_checkboxes=true}}
+			{{/if}}
+		</td>
+		{{/if}}
 		<td class="num">{{:link href="details.html?key=%s"|args:$key label=$number}}</td>
 		<td>{{$col2}}</td>
 		<td>{{$date|date_short}}</td>
@@ -53,5 +64,13 @@
 		Aucune note de frais ici.
 	</p>
 {{/list}}
+
+{{if $has_checkboxes}}
+<p class="actions">
+	{{:button type="submit" label="Saisir un paiement pour les notes de frais sélectionnées" shape="right"}}
+</p>
+{{/if}}
+
+</form>
 
 {{:admin_footer}}
