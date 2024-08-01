@@ -4,7 +4,7 @@
 	"properties": {
 		"type": {
 			"type": "string",
-			"enum": ["individual", "business"],
+			"enum": ["client"]
 		},
 		"name": {
 			"description": "Nom",
@@ -13,6 +13,12 @@
 		"address": {
 			"description": "Adresse",
 			"type": "string"
+		},
+		"country": {
+			"description": "Pays",
+			"type": "string",
+			"minLength": 2,
+			"maxLength": 2
 		},
 		"business_number": {
 			"description": "Numéro SIRET",
@@ -36,8 +42,8 @@
 		},
 		"archived": {
 			"description": "Archivé",
-			"type": "boolean"
+			"type": "integer"
 		}
 	},
-	"required": [ "type", "name", "address", "business_number", "vat_number", "phone", "email", "notes", "archived" ]
+	"required": [ "type", "name", "address", "country", "business_number", "vat_number", "phone", "email", "notes", "archived" ]
 }

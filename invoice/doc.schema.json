@@ -32,17 +32,8 @@
 			"type": "integer",
 			"minimum": 0
 		},
-		"client_name": {
-			"type": "string"
-		},
-		"client_address": {
-			"type": "string"
-		},
-		"client_email": {
-			"type": ["null", "string"]
-		},
 		"client": {
-			"type": ["null", "string"]
+			"type": ["string"]
 		},
 		"header_text": {
 			"type": ["null", "string"]
@@ -65,6 +56,14 @@
 		"html": {
 			"description": "HTML content of generated invoice",
 			"type": ["null", "string"]
+		},
+		"buyer_ref": {
+			"description": "Factur-X : Code du service exécutant",
+			"type": ["null", "string"]
+		},
+		"issuer_assigned_id": {
+			"description": "Factur-X : Numéro d'engagement",
+			"type": ["null", "string"]
 		}
 	},
 	"required": [
@@ -74,9 +73,6 @@
 		"date",
 		"date_expiry",
 		"status",
-		"client_name",
-		"client_address",
-		"client_email",
 		"client",
 		"header_text"
 	]

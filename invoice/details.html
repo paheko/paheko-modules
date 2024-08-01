@@ -1,6 +1,9 @@
-{{#load assign="doc" key=$_GET.doc}}
+{{#load assign="doc" key=$_GET.doc where="$$.type = 'invoice' OR $$.type = 'quote'"}}
 {{else}}
 	{{:error message="Ce document n'existe pas"}}
+{{/load}}
+
+{{#load assign="client" type="client" key=$doc.client}}
 {{/load}}
 
 {{:include file="./_defines.tpl"}}
@@ -111,12 +114,9 @@
 	<dd>{{$doc.date_expiry|date_short|or:'— Aucune —'}}</dd>
 	<dt>Client</dt>
 	<dd>
-		<strong>{{$doc.client_name}}</strong>
-		{{if $doc.client}}
-			{{:linkbutton shape="user" href="./client.html?key=%s"|args:$doc.client label="Voir la fiche du client"}}
-		{{/if}}
-		<br />
-		{{$doc.client_address|nl2br}}
+		<strong>{{$client.name}}</strong><br />
+		{{$client.address|nl2br}}<br />
+		{{:linkbutton shape="user" href="./client.html?key=%s"|args:$client.key label="Voir la fiche du client"}}
 	</dd>
 	<dt>Statut</dt>
 	<dd>

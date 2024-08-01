@@ -32,15 +32,15 @@
 	{{:assign first_column="CASE $$.type WHEN 'invoice' THEN 'Facture' ELSE 'Devis' END AS 'Type'; "}}
 {{/if}}
 
-{{#list select="%s $$.ref AS 'Numéro'; $$.date AS 'Date'; $$.date_expiry AS 'Échéance'; $$.client_name AS 'Client'; $$.total AS 'Montant'; NULL AS 'Statut'"|args:$first_column where="$$.type != 'client' AND "|cat:$filter}}
+{{#list select="%s $$.ref AS 'Numéro'; $$.date AS 'Date'; $$.date_expiry AS 'Échéance'; (SELECT c.$$.name FROM @TABLE AS c WHERE c.$$.type = 'client' AND key = @TABLE.$$.client) AS 'Client'; $$.total AS 'Montant'; NULL AS 'Statut'"|args:$first_column where="($$.type = 'invoice' OR $$.type = 'quote') AND "|cat:$filter}}
 		<tr>
 			{{if $first_column}}
 			<td>{{$col1}}</td>
 			{{/if}}
-			<th>{{$number}}</th>
+			<th>{{if !$number}}<em>(Brouillon)</em>{{else}}{{$number}}{{/if}}</th>
 			<td>{{$date|date_short}}</td>
 			<td>{{$date_expiry|date_short}}</td>
-			<td>{{$client_name}}</td>
+			<td>{{if $first_column}}{{$col5}}{{else}}{{$col4}}{{/if}}</td>
 			<td class="money">{{$total|raw|money_currency}}</td>
 			<td>
 				{{:call function="display_status_label"}}
