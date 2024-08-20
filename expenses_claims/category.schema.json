@@ -25,7 +25,7 @@
 		"expense_type": {
 			"type": "string",
 			"description": "Type de dépense",
-			"enum": ["other", "km_free", "km_vehicle"]
+			"enum": ["other", "km_free", "km_vehicle", "flat_rate"]
 		}
 	},
 	"required": ["type", "label", "notes", "account", "expense_type"]
