@@ -192,7 +192,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
 /* CORPS */
 body {
     font-size: 100.01%;
-    font-family: "Trebuchet MS", Helvetica, Sans-serif;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
     background: #eee;
     background: hsl(var(--first-color), 50%, 90%);
     background: linear-gradient(200deg, hsl(var(--first-color), 50%, 90%) 5%, hsl(var(--second-color), 30%, 90%) 30%);
