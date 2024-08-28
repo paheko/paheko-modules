@@ -104,7 +104,7 @@
 	{{/if}}
 
 	<ul class="subcategories">
-	{{#categories parent=null order="title"}}
+	{{#categories parent=null order="title" private=true}}
 		<li><a href="{{$url}}" {{if $url == $.url}}class="current"{{/if}}>{{ $title }}</a></li>
 	{{/categories}}
 	{{if $module.config.contact_form === true}}
