@@ -379,6 +379,7 @@
     flex-wrap: wrap;
     grid-gap: 10px;
     justify-content: center;
+    align-items: center;
 }
 
 .web-content .gallery figure {
@@ -409,6 +410,8 @@
 
 .web-content .gallery.center img {
     object-fit: contain;
+    width: auto;
+    height: auto;
 }
 
 .web-content .gallery.center .images::after {
