@@ -496,6 +496,17 @@
     height: 100%;
 }
 
+.web-content .slideshow figure {
+    position: relative;
+}
+
+.web-content .slideshow figcaption {
+    position: absolute;
+    bottom: 1rem;
+    color: #fff;
+    text-shadow: 0px 0px 5px #000;
+}
+
 .web-content .slideshow img {
     max-width: 100%;
     max-height: 95%;
