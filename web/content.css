@@ -393,6 +393,19 @@
     display: block;
 }
 
+.web-content .gallery.center figure {
+    max-height: none;
+    flex: inherit;
+}
+
+.web-content .gallery.center img {
+    object-fit: contain;
+}
+
+.web-content .gallery.center .images::after {
+    display: none;
+}
+
 .web-content .slideshow {
     position: relative;
     width: 100%;
