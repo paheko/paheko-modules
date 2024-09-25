@@ -7,9 +7,10 @@
 	<p class="block confirm">Configuration enregistrée.</p>
 {{/if}}
 
-{{#list select="$$.label AS \'Événément\'" where="$$.type = 'event'" order="1"}}
-	<tr>
+{{#list select="$$.label AS \'Événément\'; $$.archived AS 'Archivé'" where="$$.type = 'event'" order="1"}}
+	<tr class="{{if $archived}}disabled{{/if}}">
 		<th>{{$label}}</th>
+		<td>{{if $archived}}{{:tag label="Archivé"}}{{/if}}</td>
 		<td class="actions">
 			{{if !$use_openings}}
 			{{:linkbutton label="Configurer les créneaux" href="config_event_slots.html?id=%s"|args:$key shape="calendar"}}
