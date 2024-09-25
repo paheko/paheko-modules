@@ -19,7 +19,7 @@
 	{{/if}}
 
 	{{:assign body="Message de :\n%s\n%s\n\n---\n\n%s"|args:$_POST.name:$_POST.email:$_POST.message}}
-	{{:mail to=$config.org_email subject="Message depuis le formulaire de contact" body=$body}}
+	{{:mail to=$config.org_email subject="Message depuis le formulaire de contact" body=$body replyto=$_POST.email|trim}}
 	{{:redirect to="%s?sent=ok"|args:$request_url}}
 {{/form}}
 
