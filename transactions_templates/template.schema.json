@@ -92,10 +92,14 @@
 						"description": "Bloquer saisie",
 						"type": ["string", "null"],
 						"enum": ["d", "c", "a"]
+					},
+					"p": {
+						"description": "Projet",
+						"type": ["integer", "null"]
 					}
 				}
 			},
-			"required": [ "a", "d", "c", "l", "r" ]
+			"required": [ "a", "d", "c", "l", "r", "p" ]
 		}
 	},
 	"required": [ "name", "help", "t", "l", "dt", "r", "a00", "p", "ar", "ae", "ab", "at", "a3", "ll"]

@@ -21,6 +21,7 @@
 		{{:assign var="lines" value=$_POST.ll|array_transpose}}
 		{{#foreach from=$lines item="line" key="i"}}
 			{{:assign var="lines.%d.k"|args:$i value=$line.k|or:null}}
+			{{:assign var="lines.%d.p"|args:$i value=$line.p|intval|or:null}}
 		{{/foreach}}
 	{{/if}}
 	{{:save id=$tpl.id
@@ -96,6 +97,7 @@
 				<td>Bloquer saisie</td>
 				<td>Libellé ligne</td>
 				<td>Réf. ligne</td>
+				<td>Projet</td>
 				<td></td>
 			</tr>
 		</thead>
@@ -111,6 +113,7 @@
 				<td>{{:input type="select" name="ll[k][]" default=$line.k options=$lock_options default_empty="Non"}}</td>
 				<td>{{:input type="text" name="ll[l][]" default=$line.l}}</td>
 				<td>{{:input type="text" name="ll[r][]" default=$line.r size=10}}</td>
+				<td>{{:input type="select" options=$projects name="ll[p][]" default=$line.p}}</td>
 				<td>{{:button label="Enlever" title="Enlever la ligne" shape="minus" class="line_del"}}</td>
 			</tr>
 		{{/foreach}}
