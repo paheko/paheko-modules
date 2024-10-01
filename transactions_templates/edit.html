@@ -97,7 +97,9 @@
 				<td>Bloquer saisie</td>
 				<td>Libellé ligne</td>
 				<td>Réf. ligne</td>
+				{{if $projects}}
 				<td>Projet</td>
+				{{/if}}
 				<td></td>
 			</tr>
 		</thead>
@@ -113,7 +115,9 @@
 				<td>{{:input type="select" name="ll[k][]" default=$line.k options=$lock_options default_empty="Non"}}</td>
 				<td>{{:input type="text" name="ll[l][]" default=$line.l}}</td>
 				<td>{{:input type="text" name="ll[r][]" default=$line.r size=10}}</td>
+				{{if $projects}}
 				<td>{{:input type="select" options=$projects name="ll[p][]" default=$line.p}}</td>
+				{{/if}}
 				<td>{{:button label="Enlever" title="Enlever la ligne" shape="minus" class="line_del"}}</td>
 			</tr>
 		{{/foreach}}
