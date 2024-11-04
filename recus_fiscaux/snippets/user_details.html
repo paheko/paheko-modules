@@ -14,6 +14,9 @@
 	<td class="money">{{$montant|raw|money_currency_html}}</td>
 	<td class="actions">
 		{{if $envoi}}{{:assign send_label="Renvoyer"}}{{else}}{{:assign send_label="Envoyer"}}{{/if}}
+		{{if !$annule}}
+			{{:linkbutton shape="delete" label="Annuler" href="%sannuler.html?id=%d"|args:$module.url:$id target="_dialog"}}
+		{{/if}}
 		{{:linkbutton shape="eye" label="Ouvrir" href="%srecu.html?id=%d"|args:$module.url:$id target="_dialog"}}
 		{{:linkbutton shape="mail" label=$send_label href="%senvoyer.html?id=%d"|args:$module.url:$id target="_dialog"}}
 	</td>
