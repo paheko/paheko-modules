@@ -49,12 +49,23 @@
 	{{/if}}
 {{/if}}
 
-{{:admin_header title="Note de frais n°%d — %s"|args:$claim.number:$claim.label}}
+{{:assign title="Note de frais n°%d — %s"|args:$claim.number:$claim.label}}
+
+{{if $_GET.print === 'pdf'}}
+	{{:http type="pdf" download="%s.pdf"|args:$title}}
+{{/if}}
+
+{{:admin_header title=$title}}
+
+{{if $_GET.print === 'pdf'}}
+	<h2>{{$title}}</h2>
+{{/if}}
 
 <form method="post" action="">
 
 <nav class="tabs">
 	<aside>
+		{{:linkbutton shape="pdf" label="Télécharger en PDF" href="?key=%s&print=pdf"|args:$claim.key}}
 		{{:linkbutton shape="plus" label="Dupliquer" href="./duplicate.html?claim=%s"|args:$claim.key}}
 {{if $is_admin || $claim.status === 'draft' || $claim.status === 'cancelled'}}
 		{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?claim=%s"|args:$claim.key}}
