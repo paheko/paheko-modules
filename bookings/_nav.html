@@ -1,11 +1,7 @@
-{{if !$module.config.access}}
-	{{:assign var="module.config.access" value="write"}}
-{{/if}}
-
-{{#restrict section="config" level="admin"}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin'}}
 	{{:assign var="access_config" value=true}}
 {{/restrict}}
-{{#restrict section="users" level=$module.config.access}}
+{{#restrict section="users" level=$module.config.manage_access|or:'write'}}
 	{{:assign var="access_bookings" value=true}}
 {{/restrict}}
 
@@ -14,9 +10,9 @@
 	{{if $current == 'config'}}
 		<aside>
 		{{if $event}}
-			{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key target="_dialog"}}
+			{{:linkbutton shape="plus" label="Nouveau créneau" href="slot.html?new=%s"|args:$event.key target="_dialog"}}
 		{{else}}
-			{{:linkbutton shape="plus" label="Nouvel événement" href="config_event.html?new=1"}}
+			{{:linkbutton shape="plus" label="Nouvel événement" href="event.html?new=1"}}
 		{{/if}}
 		</aside>
 	{{elseif $event}}
@@ -28,12 +24,12 @@
 
 	<ul>
 	{{if $access_bookings}}
-		<li{{if $current == 'index'}} class="current"{{/if}}><a href="./">Inscription</a></li>
-		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="bookings.html">Voir les inscriptions</a></li>
+		<li{{if $current == 'index'}} class="current"{{/if}}><a href="{{$module.url}}">Inscription</a></li>
+		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="{{$module.url}}bookings.html">Voir les inscriptions</a></li>
 	{{/if}}
-		<li{{if $current == 'my_bookings'}} class="current"{{/if}}><a href="my_bookings.html">Mes réservations</a></li>
+		<li{{if $current == 'my_bookings'}} class="current"{{/if}}><a href="{{$module.url}}my_bookings.html">Mes réservations</a></li>
 	{{if $access_config}}
-		<li{{if $current == 'config'}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
+		<li{{if $current == 'config'}} class="current"{{/if}}><a href="{{$module.url}}manage/">Configuration</a></li>
 	{{/if}}
 	</ul>
 
@@ -47,8 +43,10 @@
 		</ul>
 	{{elseif $current === 'config'}}
 		<ul class="sub">
-			<li{{if !$subcurrent}} class="current"{{/if}}><a href="config.html">Événements</a></li>
-			<li{{if $subcurrent === 'access'}} class="current"{{/if}}><a href="config_access.html">Accès</a></li>
+			<li{{if !$subcurrent}} class="current"{{/if}}><a href="{{$module.url}}manage/">Événements</a></li>
+			{{#restrict section="config" level="admin"}}
+			<li{{if $subcurrent === 'access'}} class="current"{{/if}}><a href="{{$module.url}}config.html">Accès</a></li>
+			{{/restrict}}
 		</ul>
 	{{/if}}
 </nav>

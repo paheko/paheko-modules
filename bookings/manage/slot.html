@@ -1,4 +1,4 @@
-{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin' block=true}}{{/restrict}}
 
 {{if $_GET.id}}
 	{{#load key=$_GET.id assign="slot"}}
@@ -17,7 +17,7 @@
 {{/if}}
 
 {{:admin_header title="Configuration d'un créneau" current="module_bookings"}}
-{{:include file="./_common.tpl" keep="frequencies,days"}}
+{{:include file="../_common.tpl" keep="frequencies,days"}}
 
 {{#form on="save"}}
 	{{if !$frequencies|keys|has:$_POST.frequency}}
@@ -41,7 +41,7 @@
 	{{/if}}
 
 	{{:save key=$key
-		validate_schema="./slot.schema.json"
+		validate_schema="../slot.schema.json"
 		type="slot"
 		event=$event
 		frequency=$_POST.frequency
@@ -50,7 +50,7 @@
 		open=$_POST.open|parse_time
 		seats=$_POST.seats|intval
 	}}
-	{{:redirect to="./config_event_slots.html?id=%s&ok=1"|args:$event}}
+	{{:redirect to="./event_slots.html?id=%s&ok=1"|args:$event}}
 {{/form}}
 
 {{:form_errors}}

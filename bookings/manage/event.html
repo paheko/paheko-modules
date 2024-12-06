@@ -1,4 +1,4 @@
-{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin' block=true}}{{/restrict}}
 {{:admin_header title="Configuration d'un événement" current="module_bookings"}}
 
 {{if $_GET.id}}
@@ -15,7 +15,7 @@
 	{{:assign key=""|uuid}}
 {{/if}}
 
-{{:include file="./_nav.html" current="config" event=null}}
+{{:include file="../_nav.html" current="config" event=null}}
 
 {{:assign var="types"
 	checkbox="Case à cocher"
@@ -41,7 +41,7 @@
 		{{:error message="Adresse e-mail de notification invalide : %s"|args:$_POST.notify_email}}
 	{{/if}}
 	{{:save key=$key
-		validate_schema="./event.schema.json"
+		validate_schema="../event.schema.json"
 		type="event"
 		label=$_POST.label|trim
 		description=$_POST.description|trim|or:null
@@ -60,7 +60,7 @@
 	{{if $_GET.copy}}
 		{{#load type="slot" event=$event.key}}
 			{{:save key="uuid"
-				validate_schema="./slot.schema.json"
+				validate_schema="../slot.schema.json"
 				type="slot"
 				event=$.key
 				frequency=$frequency
@@ -71,7 +71,7 @@
 			}}
 		{{/load}}
 	{{/if}}
-	{{:redirect to="./config.html?ok=1"}}
+	{{:redirect to="./?ok=1"}}
 	}
 {{/form}}
 

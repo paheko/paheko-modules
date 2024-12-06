@@ -1,4 +1,4 @@
-{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin' block=true}}{{/restrict}}
 
 {{if $_GET.id}}
 	{{#load key=$_GET.id assign="event"}}{{/load}}
@@ -10,13 +10,13 @@
 
 {{:admin_header title="%s — Créneaux"|args:$event.label current="module_bookings"}}
 
-{{:include file="./_nav.html" current="config" event=$event}}
+{{:include file="../_nav.html" current="config" event=$event}}
 
 {{if $_GET.ok}}
 	<p class="block confirm">Créneaux enregistrés.</p>
 {{/if}}
 
-{{:include file="./_common.tpl" keep="frequencies,days"}}
+{{:include file="../_common.tpl" keep="frequencies,days"}}
 
 {{#load count=true type="slot" event=$event.key}}
 	{{if $count}}
@@ -39,8 +39,8 @@
 						{{$seats}} places
 					</td>
 					<td class="actions">
-						{{:linkbutton label="Modifier" href="config_slot.html?id=%s"|args:$key shape="edit" target="_dialog"}}
-						{{:linkbutton label="Supprimer" href="config_slot_delete.html?id=%s"|args:$key shape="delete" target="_dialog"}}
+						{{:linkbutton label="Modifier" href="slot.html?id=%s"|args:$key shape="edit" target="_dialog"}}
+						{{:linkbutton label="Supprimer" href="slot_delete.html?id=%s"|args:$key shape="delete" target="_dialog"}}
 					</td>
 				</tr>
 			{{/load}}
@@ -51,7 +51,7 @@
 
 		<p class="alert block">
 			Il n'y a aucun créneau configuré.<br />
-			{{:linkbutton shape="plus" label="Nouveau créneau" href="config_slot.html?new=%s"|args:$event.key target="_dialog"}}
+			{{:linkbutton shape="plus" label="Nouveau créneau" href="slot.html?new=%s"|args:$event.key target="_dialog"}}
 		</p>
 
 	{{/if}}

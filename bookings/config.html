@@ -1,40 +1,35 @@
 {{#restrict section="config" level="admin" block=true}}{{/restrict}}
-{{:admin_header title="Configuration" current="module_bookings"}}
+{{#form on="save"}}
+	{{:save key="config"
+		access=$_POST.access
+		manage_access=$_POST.manage_access
+	}}
+	{{:redirect to="config.html?ok=1"}}
+{{/form}}
 
-{{:include file="./_nav.html" current="config"}}
+{{:admin_header title="Configuration des accès" current="module_bookings"}}
 
-{{if $_GET.ok}}
-	<p class="block confirm">Configuration enregistrée.</p>
-{{/if}}
+{{:include file="./_nav.html" current="config" subcurrent="access"}}
 
-{{#list select="$$.label AS \'Événément\'; $$.archived AS 'Archivé'" where="$$.type = 'event'" order="1"}}
-	<tr class="{{if $archived}}disabled{{/if}}">
-		<th>{{$label}}</th>
-		<td>{{if $archived}}{{:tag label="Archivé"}}{{/if}}</td>
-		<td class="actions">
-			{{if !$use_openings}}
-			{{:linkbutton label="Configurer les créneaux" href="config_event_slots.html?id=%s"|args:$key shape="calendar"}}
-			{{/if}}
-			{{:linkbutton label="Dupliquer" href="config_event.html?copy=%s"|args:$key shape="plus"}}
-			{{:linkbutton label="Modifier" href="config_event.html?id=%s"|args:$key shape="edit"}}
-			{{:linkbutton label="Supprimer" href="config_event_delete.html?id=%s"|args:$key shape="delete" target="_dialog"}}
-		</td>
-	</tr>
-{{else}}
-	<p class="alert block">
-		Il n'y a aucun événement configuré.<br />
-		{{:linkbutton shape="plus" label="Nouvel événement" href="config_event.html?new=1"}}
+<form method="post" action="">
+	<fieldset>
+		<legend>Qui peut voir et gérer les inscriptions ?</legend>
+		<dl>
+			{{:input type="radio" name="access" source=$module.config value="none" label="Tous les membres connectés"}}
+			{{:input type="radio" name="access" source=$module.config value="read" label="Seulement les membres pouvant lire la liste des membres"}}
+			{{:input type="radio" name="access" source=$module.config default="write" value="write" label="Seulement les membres pouvant ajouter et modifier des membres"}}
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>Qui peut gérer les événements et créneaux ?</legend>
+		<dl>
+			{{:input type="radio" name="manage_access" source=$module.config value="write" label="Les membres pouvant ajouter et modifier des membres"}}
+			{{:input type="radio" name="manage_access" source=$module.config default="admin" value="admin" label="Les membres administrateurs de la gestion des membres"}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" label="Enregistrer" name="save" shape="right" class="main"}}
 	</p>
-{{/list}}
-
-<div class="help block">
-	<h4>Accès à la réservation</h4>
-	<p>Les membres connectés pourront réserver un créneau via le menu « Réservations » à gauche.</p>
-	<p>Les non-membres pourront réserver un créneau via l'adresse suivante :<br />
-		{{:input copy=true name="url" type="url" readonly=true default=$module.public_url size=$module.public_url|strlen}}
-		{{:linkbutton href=$module.public_url label="Ouvrir" target="_blank" shape="eye"}}
-	</p>
-	<p>Les gestionnaires pourront visionner les réservations et gérer les inscrit⋅e⋅s dans le menu « Réservations ».</p>
-</div>
+</form>
 
 {{:admin_footer}}

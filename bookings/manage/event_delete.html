@@ -1,4 +1,4 @@
-{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin' block=true}}{{/restrict}}
 
 {{#load key=$_GET.id type="event" assign="event"}}
 {{else}}
@@ -7,7 +7,7 @@
 
 {{#form on="delete"}}
 	{{:delete where="key = :key OR $$.event = :key" :key=$event.key}}
-	{{:redirect to="./config.html"}}
+	{{:redirect to="./"}}
 {{/form}}
 
 {{:admin_header title="Supprimer un événement" current="module_bookings"}}
