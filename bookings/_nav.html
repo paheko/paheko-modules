@@ -1,5 +1,9 @@
 {{#restrict section="users" level=$module.config.manage_access|or:'admin'}}
 	{{:assign var="access_config" value=true}}
+{{else}}
+	{{#restrict section="config" level="admin"}}
+		{{:assign var="access_config" value=true}}
+	{{/restrict}}
 {{/restrict}}
 {{#restrict section="users" level=$module.config.manage_access|or:'write'}}
 	{{:assign var="access_bookings" value=true}}
@@ -23,8 +27,8 @@
 	{{/if}}
 
 	<ul>
-	{{if $access_bookings}}
 		<li{{if $current == 'index'}} class="current"{{/if}}><a href="{{$module.url}}">Inscription</a></li>
+	{{if $access_bookings}}
 		<li{{if $current == 'bookings'}} class="current"{{/if}}><a href="{{$module.url}}bookings.html">Voir les inscriptions</a></li>
 	{{/if}}
 		<li{{if $current == 'my_bookings'}} class="current"{{/if}}><a href="{{$module.url}}my_bookings.html">Mes réservations</a></li>

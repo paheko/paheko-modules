@@ -1,4 +1,8 @@
-{{#restrict section="users" level=$module.config.manage_access|or:'admin' block=true}}{{/restrict}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin'}}
+{{else}}
+	{{#restrict section="config" level="admin" block=true}}
+	{{/restrict}}
+{{/restrict}}
 {{:admin_header title="Configuration d'un événement" current="module_bookings"}}
 
 {{if $_GET.id}}

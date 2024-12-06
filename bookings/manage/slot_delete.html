@@ -1,4 +1,8 @@
-{{#restrict section="users" level=$module.config.manage_access|or:'admin' block=true}}{{/restrict}}
+{{#restrict section="users" level=$module.config.manage_access|or:'admin'}}
+{{else}}
+	{{#restrict section="config" level="admin" block=true}}
+	{{/restrict}}
+{{/restrict}}
 
 {{#load key=$_GET.id type="slot" assign="slot"}}
 {{else}}
