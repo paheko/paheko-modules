@@ -11,6 +11,7 @@
 	{{/if}}
 
 	{{:assign var="checkboxes.show_search" value=null}}
+	{{:assign var="checkboxes.show_hours" value=null}}
 	{{:assign var="checkboxes.show_bookings" value=null}}
 	{{:assign var="checkboxes.show_address" value=null}}
 	{{:assign var="checkboxes.show_email" value=null}}
@@ -33,6 +34,7 @@
 		layout=$_POST.layout|trim|or:null
 		background=$_POST.background|trim|or:null
 		show_search=$checkboxes.show_search
+		show_hours=$checkboxes.show_hours
 		show_bookings=$checkboxes.show_bookings
 		show_address=$checkboxes.show_address
 		show_email=$checkboxes.show_email
@@ -107,6 +109,9 @@ iframe {
 		<dt>Éléments à afficher sur le site</dt>
 		{{:input type="checkbox" name="show_login" value=1 label="Lien de connexion" source=$module.config default=1 help="Si coché, affiche un lien pour se connecter à la gestion de l'association."}}
 		{{:input type="checkbox" name="show_search" value=1 label="Formulaire de recherche" source=$module.config default=1}}
+		{{#module name="openings"}}
+			{{:input type="checkbox" name="show_hours" value=1 label="Horaires d'ouverture" source=$module.config default=1}}
+		{{/module}}
 		{{#module name="bookings"}}
 			{{:input type="checkbox" name="show_bookings" value=1 label="Accès aux réservations" source=$module.config default=1}}
 		{{/module}}

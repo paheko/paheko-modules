@@ -114,13 +114,13 @@
 	{{/if}}
 	</ul>
 
-
-	{{#module name="openings"}}
-	<article class="opening-hours">
-		{{:include file="/openings/_all.html"}}
-	</article>
-	{{/module}}
-
+	{{if $module.config.show_hours !== false}}
+		{{#module name="openings"}}
+		<article class="opening-hours">
+			{{:include file="/openings/_all.html"}}
+		</article>
+		{{/module}}
+	{{/if}}
 
 </nav>
 

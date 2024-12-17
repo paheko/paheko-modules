@@ -1,13 +1,15 @@
 {{:include file="./_head.html" home=true}}
 
-{{#module name="openings"}}
-	<article class="opening-next">
-		{{:include file="/openings/_next_opening.html"}}
-	</article>
-	<article class="opening-hours">
-		{{:include file="/openings/_all.html"}}
-	</article>
-{{/module}}
+{{if $module.config.show_hours !== false}}
+	{{#module name="openings"}}
+		<article class="opening-next">
+			{{:include file="/openings/_next_opening.html"}}
+		</article>
+		<article class="opening-hours">
+			{{:include file="/openings/_all.html"}}
+		</article>
+	{{/module}}
+{{/if}}
 
 {{if $module.config.home_sticky_uri}}
 	{{#pages uri=$module.config.home_sticky_uri assign="sticky"}}
