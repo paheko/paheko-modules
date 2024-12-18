@@ -107,10 +107,20 @@
 
 		{{:assign .="slots.%d"|args:$timestamp}}
 
-		{{if $frequency == 'this' && $repeat > 0}}
+		{{if $repeat > 1}}
+			{{if $frequency !== 'this'}}
+				{{* Change week repeat into month repeat for monthly events *}}
+				{{:assign repeat='round(%d/4.3)'|math:$repeat|intval}}
+			{{/if}}
 			{{#foreach count=$repeat}}
-				{{:assign date=$timestamp|date:'Y-m-d'}}
-				{{:assign timestamp="%s, next %s, %s"|args:$date:$day:$open|strtotime}}
+				{{if $frequency === 'this'}}
+					{{:assign timestamp=$timestamp|date:'Y-m-d'|cat:', +1 day'|strtotime}}
+					{{:assign date=$timestamp|date:'Y-m-d'}}
+				{{else}}
+					{{:assign timestamp=$timestamp|date:'Y-m-01'|cat:', +1 month'|strtotime}}
+					{{:assign date=$timestamp|date:'Y-m-01'}}
+				{{/if}}
+				{{:assign timestamp="%s, %s %s, %s"|args:$date:$frequency:$day:$open|strtotime}}
 				{{:assign ..="slots.%d"|args:$timestamp}}
 			{{/foreach}}
 		{{/if}}

@@ -91,7 +91,7 @@
 			{{:input type="checkbox" label="Archiver cet événement" name="archived" source=$event value=1}}
 			<dd class="help">Si coché, cet événement ne sera plus visible dans la liste et ne pourra plus être réservé.</dd>
 			{{:input type="email" label="Adresse e-mail de notification" help="Si renseignée, cette adresse recevra un message pour chaque réservation et chaque annulation. Laisser vide pour ne pas recevoir de notification." name="notify_email" source=$event}}
-			{{:input type="number" min=1 step=1 max=12 name="max_weeks" label="Nombre de semaines réservables pour les événements hebdomadaires" help="Par exemple, pour un événement tous les vendredis, inscrire le chiffre 2 ici permettra de réserver pour ce vendredi, et le vendredi suivant." source=$event default=1}}
+			{{:input type="number" min=1 step=1 max=26 name="max_weeks" label="Nombre de semaines réservables" help="Par exemple, pour un événement tous les vendredis, inscrire le chiffre 2 ici permettra de réserver pour ce vendredi, et le vendredi suivant." source=$event default=1 required=true}}
 			{{#module name="openings"}}
 				<dt><strong>Synchronisation avec les ouvertures</strong></dt>
 				{{:input type="checkbox" name="use_closings" value=1 source=$event label="Ne pas proposer de créneaux pendant les périodes de fermeture"}}
