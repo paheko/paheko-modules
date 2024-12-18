@@ -9,7 +9,7 @@
     content: attr(data-a) "\0040" attr(data-b) "." attr(data-c);
 }
 
-.web-content {
+.web-content p {
     overflow-wrap: break-word;
     word-wrap: break-word;
 
