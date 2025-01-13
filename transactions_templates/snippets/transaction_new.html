@@ -1,13 +1,16 @@
 {{if !$_POST}}
 
-<div style="display: grid; grid-template-columns: auto 1fr auto; gap: 1em; margin: 1em; align-items: center">
+<div id="templateSelector">
 	<div>
 		Saisir à partir d'un modèle&nbsp;:
 	</div>
-	<nav class="dropdown">
-		<ul>
-			<li><a></a></li>
-			<li{{if null === $_GET.tplid}} class="selected"{{/if}}><a href="?">Sélectionner un modèle</a></li>
+
+	{{:assign var="options."
+		class="default"
+		value=""
+		href="?"
+		label="Sélectionner un modèle"
+	}}
 	{{#load order="$$.name" assign="row"}}
 		{{if $_GET.tplid == $id}}
 			{{:assign tpl_help=$row.help}}
@@ -20,18 +23,29 @@
 			{{/if}}
 		{{/foreach}}
 		{{:assign qs=$qs|http_build_query}}
-			<li{{if $_GET.tplid == $id}} class="selected"{{/if}}>
-				<a href="?{{$qs}}">
-					<strong>{{$name}}</strong>
-				</a>
-			</li>
+		{{:assign var="options."
+			value=$id
+			href="?"|cat:$qs
+			label=$name
+		}}
 	{{/load}}
-		</ul>
-	</nav>
+
+	{{:dropdown options=$options value=$_GET.tplid|strval title="Sélectionner un modèle"}}
+
 	<div style="text-align: right">
 		{{:linkbutton shape="edit" href=$module.url label="Modifier les modèles"}}
 	</div>
 </div>
+
+<style type="text/css" media="screen and (min-width: 980px)">
+#templateSelector {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	gap: 1em;
+	margin: 1em;
+	align-items: center
+}
+</style>
 
 {{/if}}
 
