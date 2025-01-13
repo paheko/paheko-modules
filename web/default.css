@@ -205,6 +205,11 @@ body.bg-white {
     --bg-color: hsl(var(--first-color), 50%, 95%);
 }
 
+body.bg-all_white {
+    background: #fff;
+    --bg-color: #fff;
+}
+
 body.bg-dark {
     background: linear-gradient(-200deg, #333 10%, #000 30%, #333 70%);
     --bg-color: hsl(var(--first-color), 50%, 10%);
