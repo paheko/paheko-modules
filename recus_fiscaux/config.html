@@ -98,30 +98,30 @@
 <fieldset>
 	<legend>Détection automatique selon les comptes utilisés</legend>
 	<dl>
-		{{:input type="list" required=true name="comptes_don" label="Comptes correspondants aux dons" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
+		{{:input type="list" required=true name="comptes_don" label="Comptes correspondants aux dons" source=$module.config target="!acc/charts/accounts/selector.php?types=6&key=code" multiple=true}}
 		<dd class="help">
 			Généralement <tt>754</tt>. Utiliser pour identifier quelles écritures sont éligibles aux reçus.
 		</dd>
 	</dl>
 
 	<dl class="type-asso">
-		{{:input type="list" required=false name="comptes_don_abandon_frais" label="Comptes correspondants aux abandons de frais des bénévoles" source=$module.config target="!acc/charts/accounts/selector.php?targets=6&key=code" multiple=true}}
+		{{:input type="list" required=false name="comptes_don_abandon_frais" label="Comptes correspondants aux abandons de frais des bénévoles" source=$module.config target="!acc/charts/accounts/selector.php?types=6&key=code" multiple=true}}
 		<dd class="help">
 			Généralement <tt>75412</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
 		</dd>
 
-		{{:input type="list" required=false name="comptes_don_nature" label="Comptes correspondants aux dons en nature" source=$module.config target="!acc/charts/accounts/selector.php?targets=8&key=code" multiple=true}}
+		{{:input type="list" required=false name="comptes_don_nature" label="Comptes correspondants aux dons en nature" source=$module.config target="!acc/charts/accounts/selector.php?types=8&key=code" multiple=true}}
 		<dd class="help">
 			Généralement <tt>870</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
 		</dd>
 	</dl>
 
 	<dl>
-		{{:input required=true name="comptes_especes" type="list" multiple=true label="Comptes de caisse" source=$module.config target="!acc/charts/accounts/selector.php?targets=2&key=code"}}
+		{{:input required=true name="comptes_especes" type="list" multiple=true label="Comptes de caisse" source=$module.config target="!acc/charts/accounts/selector.php?types=2&key=code"}}
 		<dd class="help">
 			Par exemple <tt>530</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
 		</dd>
-		{{:input required=true name="comptes_cheques" type="list" multiple=true label="Comptes pour les chèques" source=$module.config target="!acc/charts/accounts/selector.php?targets=3&key=code"}}
+		{{:input required=true name="comptes_cheques" type="list" multiple=true label="Comptes pour les chèques" source=$module.config target="!acc/charts/accounts/selector.php?types=3&key=code"}}
 		<dd class="help">
 			Par exemple <tt>5112</tt>. Utilisé pour cocher automatiquement la bonne case dans le reçu.
 		</dd>

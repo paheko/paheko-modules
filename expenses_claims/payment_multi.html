@@ -98,7 +98,7 @@
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default="Remboursement des notes de frais N°%s"|args:$claims_numbers_str name="label" label="Libellé" required=true}}
 			{{:input type="money" name="amount" label="Montant" default=$total readonly=true required=true}}
-			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?targets=1:2:3&key=code&year=%d"|args:$default_year}}
+			{{:input type="list" name="account" label="Compte de paiement" required=true target="!acc/charts/accounts/selector.php?types=1|2|3&key=code&id_year=%d"|args:$default_year}}
 		</dl>
 	</fieldset>
 	<p class="submit">

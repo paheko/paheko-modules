@@ -27,7 +27,7 @@
 	<legend>Configuration</legend>
 	<dl>
 		{{:assign var="default_account.5112" value="5112 — Chèques en attente de dépôt"}}
-		{{:input required=true name="accounts" multiple=true target="!acc/charts/accounts/selector.php?targets=3&key=code" type="list" label="Comptes liés aux remises de chèques" source=$module.config default=$default_account}}
+		{{:input required=true name="accounts" multiple=true target="!acc/charts/accounts/selector.php?types=3&key=code" type="list" label="Comptes liés aux remises de chèques" source=$module.config default=$default_account}}
 		<dd class="help">
 			Pour chaque compte indiqué dans ce champ, le formulaire de remise de chèque sera proposé (en dessous de la fiche de l'écriture).
 		</dd>

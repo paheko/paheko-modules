@@ -86,7 +86,7 @@
 			{{:input type="select" default=$best_year name="id_year" label="Exercice" required=true options=$open_years}}
 			{{:input type="date" default=$now name="date" label="Date" required=true}}
 			{{:input type="text" default=$claim.label|or:$default_label name="label" label="Libellé" required=true}}
-			{{:input type="list" name="account" label="Compte de tiers" required=true target="!acc/charts/accounts/selector.php?targets=4&key=code&year=%d"|args:$best_year default=$default_account}}
+			{{:input type="list" name="account" label="Compte de tiers" required=true target="!acc/charts/accounts/selector.php?types=4&key=code&id_year=%d"|args:$best_year default=$default_account}}
 			{{:input type="textarea" name="notes" label="Remarques" default=$notes|trim cols=50 rows=5}}
 		</dl>
 	</fieldset>
@@ -116,7 +116,7 @@
 					{{/if}}
 					{{:assign var="default_account.%s"|args:$account value=$account}}
 					<tr>
-						<td class="account">{{:input type="list" name="lines[account][]" required=true target="!acc/charts/accounts/selector.php?targets=5&key=code&year=%d"|args:$best_year default=$default_account}}</td>
+						<td class="account">{{:input type="list" name="lines[account][]" required=true target="!acc/charts/accounts/selector.php?types=5&key=code&id_year=%d"|args:$best_year default=$default_account}}</td>
 						<td>{{:input type="text" name="lines[label][]" default=$default_label required=false}}</td>
 						<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
 						<td class="money">{{:input type="money" name="lines[amount][]" default=$amount required=true}}</td>

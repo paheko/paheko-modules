@@ -50,7 +50,7 @@
 	<dl>
 		{{:input type="text" name="label" label="Nom de la catégorie" required=true source=$cat}}
 		{{:input type="textarea" cols=50 rows=5 name="notes" label="Instructions" required=false source=$cat help="Ces instructions seront affichées en dessous du champ description.\nUtile par exemple pour indiquer quelles sont les informations supplémentaires que le membre doit renseigner."}}
-		{{:input type="list" required=false name="account" label="Compte de dépense" source=$cat target="!acc/charts/accounts/selector.php?targets=5&key=code"}}
+		{{:input type="list" required=false name="account" label="Compte de dépense" source=$cat target="!acc/charts/accounts/selector.php?types=5&key=code"}}
 		{{if $projects|count}}
 			{{:input type="select" required=false name="id_project" label="Projet analytique" source=$cat options=$projects default_empty="— Aucun —"}}
 		{{/if}}
