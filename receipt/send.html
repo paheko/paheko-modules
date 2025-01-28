@@ -4,7 +4,7 @@
 {{/transaction_users}}
 
 {{#form on="send"}}
-	{{:assign var="name" value=$_POST.name|urlencode}}
+	{{:assign var="name" value=$_POST.name|url_encode}}
 	{{:mail
 		to=$_POST.email_to|trim
 		subject=$_POST.email_subject|trim
