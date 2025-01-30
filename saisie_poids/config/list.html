@@ -10,9 +10,10 @@
 
 {{:include file="../_nav.html" current="config" config=$type}}
 
-{{#list type=$type schema="../%s.schema.json"|args:$type columns="label" order="label" disable_user_ordering=true}}
+{{#list type=$type schema="../%s.schema.json"|args:$type columns="label,target" order="label" disable_user_ordering=true}}
 	<tr>
 		<th>{{$label}}</th>
+		<td>{{if $target === 'entry'}}Entrée{{else}}Sortie{{/if}}</td>
 		<td class="actions">
 			{{:linkbutton shape="edit" href="edit.html?key=%s&type=%s"|args:$key:$type label="Modifier"}}
 			{{:linkbutton shape="delete" href="delete.html?key=%s&type=%s"|args:$key:$type label="Supprimer" target="_dialog"}}

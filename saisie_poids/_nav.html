@@ -10,7 +10,7 @@
 	</aside>
 	<ul>
 		<li{{if $current === 'entry'}} class="current"{{/if}}><a href="{{$module.url}}">Entrée</a></li>
-		{{*<li{{if $type === 'exit'}} class="current"{{/if}}><a href="./?type=exit">Sortie</a></li>*}}
+		<li{{if $current === 'exit'}} class="current"{{/if}}><a href="./?type=exit">Sortie</a></li>
 		<li{{if $current === 'history'}} class="current"{{/if}}><a href="{{$module.url}}history.html">Historique</a></li>
 		<li{{if $current === 'stats'}} class="current"{{/if}}><a href="{{$module.url}}stats.html">Statistiques</a></li>
 	{{#restrict section="config" level="admin"}}

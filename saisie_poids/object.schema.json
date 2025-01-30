@@ -16,6 +16,7 @@
 			"type": "integer"
 		},
 		"target": {
+			"description": "Mouvement",
 			"type": "string",
 			"enum": ["entry", "exit"]
 		}

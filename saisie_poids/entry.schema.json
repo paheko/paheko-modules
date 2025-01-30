@@ -21,16 +21,22 @@
 		},
 		"weight": {
 			"description": "Poids unitaire",
-			"type": ["integer"]
+			"type": "integer"
 		},
 		"qty": {
 			"description": "Quantité",
-			"type": ["integer"]
+			"type": "integer"
 		},
 		"total_weight": {
 			"description": "Poids total",
-			"type": ["integer"]
+			"type": "integer"
+		},
+		"date": {
+			"type": "string"
+		},
+		"velo_id": {
+			"type": ["integer", "null"]
 		}
 	},
-	"required": ["type", "object", "category", "ecologic", "weight", "qty", "total_weight"]
+	"required": ["type", "object", "category", "ecologic", "weight", "qty", "total_weight", "date"]
 }

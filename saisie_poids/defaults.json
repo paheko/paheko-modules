@@ -19,20 +19,14 @@
 	},
 	{
 		"type": "category",
-		"label": "Vente de vélo",
-		"ecologic": "DEC_REE",
-		"target": "exit"
-	},
-	{
-		"type": "category",
-		"label": "Vente de pièce détachée",
-		"ecologic": "DEC_REE",
-		"target": "exit"
-	},
-	{
-		"type": "category",
 		"label": "Destruction",
 		"ecologic": null,
+		"target": "exit"
+	},
+	{
+		"type": "category",
+		"label": "Vente",
+		"ecologic": "DEC_REE",
 		"target": "exit"
 	},
 	{
@@ -64,5 +58,17 @@
 		"label": "Trottinette, skateboard, roller",
 		"weight": 4000,
 		"target": "entry"
+	},
+	{
+		"type": "object",
+		"label": "Pièce ou accessoire vélo",
+		"weight": null,
+		"target": "exit"
+	},
+	{
+		"type": "object",
+		"label": "Vélo",
+		"weight": null,
+		"target": "exit"
 	}
 ]

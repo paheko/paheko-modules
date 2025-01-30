@@ -4,4 +4,5 @@
 {{else}}
 	{{:read file="defaults.json" assign="defaults"}}
 	{{:save key="uuid" from=$defaults|json_decode}}
+	{{:redirect to=$request_url}}
 {{/load}}

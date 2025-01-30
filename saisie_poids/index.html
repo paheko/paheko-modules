@@ -33,7 +33,7 @@
 		{{:assign var="object" from="objects.%s"|args:$row.object}}
 
 		{{if !$category}}
-			{{:error message="La provenance ne peut rester vide."}}
+			{{:error message="La catégorie ne peut rester vide."}}
 		{{elseif !$object}}
 			{{:error message="Le type d'objet ne peut rester vide."}}
 		{{elseif $total <= 0}}
@@ -53,7 +53,17 @@
 				date=$now|date:'Y-m-d H:i:s'
 			}}
 		{{else}}
-			{{:error message="Not implemented"}}
+			{{:save key="uuid"
+				validate_schema="./exit.schema.json"
+				type=$type
+				object=$object.label
+				category=$category.label
+				ecologic=$category.ecologic
+				weight=$weight
+				qty=$row.qty|intval
+				total_weight=$total
+				date=$now|date:'Y-m-d H:i:s'
+			}}
 		{{/if}}
 	{{/foreach}}
 
@@ -62,7 +72,7 @@
 
 {{:admin_header title="Saisie au poids"}}
 
-{{:include file="_nav.html" current="entry"}}
+{{:include file="_nav.html" current=$type}}
 
 {{if $_GET.saved}}
 	<p class="block confirm">La saisie a été enregistrée.</p>
@@ -74,113 +84,54 @@
 	{{:assign var="rows." weight=0}}
 {{/if}}
 
-<form method="post" action="" data-focus="1">
+{{if !$objects|count}}
+	<p class="block error">Aucun type d'objet n'a été configuré.</p>
+{{elseif !$categories|count}}
+	<p class="block error">Aucune catégorie n'a été configurée.</p>
+{{else}}
+	<form method="post" action="" data-focus="1">
 
-<table class="list">
-	<thead>
-		<tr>
-			<td>Catégorie</td>
-			<td>Poids unitaire (kg)</td>
-			<td>Quantité</td>
-			<td>Poids total (kg)</td>
-			<td>Provenance</td>
-			<td class="actions"></td>
-		</tr>
-	</thead>
-	<tbody>
-		{{#foreach from=$rows item="row"}}
-		<tr>
-			<td>{{:input type="select" name="new[object][]" options=$objects default=$row.object required=true}}</td>
-			<td>{{:input type="number" class="weight" name="new[weight][]" default=$row.weight step="0.001" required=true min=0}}</td>
-			<td>{{:input type="number" step=1 name="new[qty][]" default=$row.qty|or:1 required=true size=2}}</td>
-			<td class="num total"></td>
-			<td>{{:input type="select" name="new[category][]" default=$row.category options=$categories required=true}}</td>
-			<td class="actions">
-				{{:button shape="minus" label="Enlever" class="remove"}}
-			</td>
-		</tr>
-		{{/foreach}}
-	</tbody>
-</table>
+	<table class="list">
+		<thead>
+			<tr>
+				<td>Objet</td>
+				<td>Poids unitaire (kg)</td>
+				<td>Quantité</td>
+				<td>Poids total (kg)</td>
+				<td>Provenance</td>
+				<td class="actions"></td>
+			</tr>
+		</thead>
+		<tbody>
+			{{#foreach from=$rows item="row"}}
+			<tr>
+				<td>{{:input type="select" name="new[object][]" options=$objects default=$row.object required=true}}</td>
+				<td>{{:input type="number" class="weight" name="new[weight][]" default=$row.weight step="0.001" required=true min=0}}</td>
+				<td>{{:input type="number" step=1 name="new[qty][]" default=$row.qty|or:1 required=true size=2}}</td>
+				<td class="num total"></td>
+				<td>{{:input type="select" name="new[category][]" default=$row.category options=$categories required=true}}</td>
+				<td class="actions">
+					{{:button shape="minus" label="Enlever" class="remove"}}
+				</td>
+			</tr>
+			{{/foreach}}
+		</tbody>
+	</table>
 
-<p class="actions">
-	{{:button shape="plus" label="Ajouter une ligne" class="add"}}
-</p>
+	<p class="actions">
+		{{:button shape="plus" label="Ajouter une ligne" class="add"}}
+	</p>
 
-<p class="submit">
-	{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
-</p>
+	<p class="submit">
+		{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
+	</p>
 
-</form>
+	</form>
+{{/if}}
 
 <script type="text/javascript">
 var objects = {{$objects|json_encode|raw}};
-var b = document.querySelector('tbody');
-
-function selectObject(s) {
-	var el = s;
-
-	while (el.tagName.toLowerCase() != 'tr') {
-		el = el.parentNode;
-	}
-
-	Object.entries(objects).forEach((obj) => {
-		const [key, o] = obj;
-
-		if (key !== s.value) {
-			return;
-		}
-
-		var w = el.querySelector('input[name*=weight]');
-		w.value = o.weight / 1000;
-		updateTotal(w);
-	});
-}
-
-function addEvents(row) {
-	row.querySelectorAll('input[name*=weight], input[name*=qty]').forEach(e => e.onkeyup = () => updateTotal(e));
-	row.querySelectorAll('select[name*=object]').forEach(e => e.onchange = () => selectObject(e));
-	row.querySelector('button').onclick = removeLine;
-}
-
-function updateTotal (el) {
-	while (el.tagName.toLowerCase() != 'tr') {
-		el = el.parentNode;
-	}
-
-	var total = el.querySelector('input[name*=weight]').value * el.querySelector('input[name*=qty]').value;
-	el.querySelector('.total').innerText = ('' + total).replace('.', ',');
-}
-
-function removeLine (e) {
-	var el = e.target;
-
-	while (el.tagName.toLowerCase() != 'tr') {
-		el = el.parentNode;
-	}
-
-	if (b.querySelectorAll('tr').length <= 1) {
-		el.querySelector('input[name*=weight]').value = '0';
-		el.querySelector('input[name*=qty]').value = '1';
-	}
-	else {
-		el.remove();
-	}
-
-	b.querySelector('tr:last-child select').focus();
-}
-
-document.querySelector('button.add').onclick = () => {
-	var el = b.querySelector('tr').cloneNode(true);
-	el.querySelector('input[name*=weight]').value = '0';
-	el.querySelector('input[name*=qty]').value = '1';
-	addEvents(el);
-	b.appendChild(el);
-	b.querySelector('tr:last-child select').focus();
-};
-
-b.querySelectorAll('tr').forEach(e => addEvents(e));
-b.querySelectorAll('select[name*=object]').forEach(e => selectObject(e));
 </script>
+<script type="text/javascript" src="table.js"></script>
 
 {{:admin_footer}}

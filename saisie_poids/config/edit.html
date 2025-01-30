@@ -68,7 +68,7 @@
 	<legend>Informations</legend>
 	<dl>
 		{{:input type="text" name="label" label="Libellé" required=true source=$item}}
-		{{:input type="select" name="target" label="Cible" required=true source=$item options=$targets}}
+		{{:input type="select" name="target" label="Mouvement" required=true source=$item options=$targets}}
 		{{if $type === 'object'}}
 			{{:input type="weight" name="weight" label="Poids unitaire par défaut" required=false source=$item}}
 		{{else}}
