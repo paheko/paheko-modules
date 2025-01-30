@@ -1,0 +1,31 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["exit"]
+		},
+		"category": {
+			"description": "Catégorie",
+			"type": "string"
+		},
+		"weight": {
+			"description": "Poids unitaire",
+			"type": ["integer"]
+		},
+		"qty": {
+			"description": "Quantité",
+			"type": ["integer"]
+		},
+		"total_weight": {
+			"description": "Poids total",
+			"type": ["integer"]
+		},
+		"reason": {
+			"description": "Motif",
+			"type": "string"
+		}
+	},
+	"required": ["type", "category", "weight", "qty", "total_weight", "reason"]
+}

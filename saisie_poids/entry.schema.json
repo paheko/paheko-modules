@@ -1,0 +1,35 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["entry"]
+		},
+		"category": {
+			"description": "Catégorie",
+			"type": "string"
+		},
+		"weight": {
+			"description": "Poids unitaire",
+			"type": ["integer"]
+		},
+		"qty": {
+			"description": "Quantité",
+			"type": ["integer"]
+		},
+		"total_weight": {
+			"description": "Poids total",
+			"type": ["integer"]
+		},
+		"source": {
+			"description": "Provenance",
+			"type": "string"
+		},
+		"ecologic": {
+			"description": "Position Ecologic",
+			"type": ["string", "null"]
+		}
+	},
+	"required": ["type", "category", "weight", "qty", "total_weight", "source", "ecologic"]
+}

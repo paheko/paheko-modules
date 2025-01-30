@@ -1,0 +1,192 @@
+{{if $module.config.disable_input}}
+	{{:redirect to="stats.html"}}
+{{/if}}
+
+{{if $_GET.type === 'exit'}}
+	{{:assign type="exit"}}
+{{else}}
+	{{:assign type="entry"}}
+{{/if}}
+
+{{#form on="save"}}
+	{{:assign var="rows" value=$_POST.new|array_transpose}}
+
+	{{if !$rows|count}}
+		{{:error message="Aucune ligne fournie"}}
+	{{/if}}
+
+	{{#foreach from=$rows item="row"}}
+		{{if $type === "entry"}}
+			{{:assign weight=$row.weight|weightval}}
+			{{:assign total="%d*%d"|math:$weight:$row.qty}}
+			{{if !$row.category|trim}}
+				{{:error message="La catégorie ne peut rester vide."}}
+			{{elseif !$row.source|trim}}
+				{{:error message="La provenance ne peut rester vide."}}
+			{{elseif !$row.weight || $row.weight < 0}}
+				{{:error message="Le poids doit être renseigné."}}
+			{{elseif !$row.qty|intval || $row.qty < 0}}
+				{{:error message="La quantité doit être renseignée."}}
+			{{elseif !$total}}
+				{{:error message="Le total est invalide."}}
+			{{/if}}
+			{{:save uuid="new"
+				type=$type
+				category=$row.category|strval
+				weight=$weight
+				qty=$row.qty|intval
+				total_weight=$total
+				source=$row.source|strval
+				date=$now|date:'Y-m-d H:i:s'
+			}}
+		{{else}}
+			{{:error message="Not implemented"}}
+		{{/if}}
+	{{/foreach}}
+
+	{{:redirect to="./?saved=1"}}
+{{/form}}
+
+{{:admin_header title="Saisie au poids"}}
+
+{{:include file="_nav.html" current="entry"}}
+
+{{if $_GET.saved}}
+	<p class="block confirm">La saisie a été enregistrée.</p>
+{{/if}}
+
+{{:form_errors}}
+
+{{if !$module.config.categories}}
+	{{:assign var="module.config.categories." label="Accessoire" weight="0.6"}}
+	{{:assign var="module.config.categories." label="Vélo enfant" weight="10"}}
+	{{:assign var="module.config.categories." label="Vélo adulte" weight="12.5"}}
+	{{:assign var="module.config.categories." label="Trottinette, skateboard, roller" weight="4"}}
+{{/if}}
+
+{{if !$module.config.sources}}
+	{{:assign var="module.config.sources." label="Autre (particulier, déchètterie non conventionnée, etc.)"}}
+	{{:assign var="module.config.sources." label="Déchètterie conventionnée Ecologic"}}
+	{{:assign var="module.config.sources." label="Vendeur cycles"}}
+{{/if}}
+
+{{#foreach from=$module.config.categories item="cat"}}
+	{{:assign var="categories[%s]"|args:$cat.label value=$cat.label}}
+{{/foreach}}
+
+{{#foreach from=$module.config.sources item="src"}}
+	{{:assign var="sources[%s]"|args:$src.label value=$src.label}}
+{{/foreach}}
+
+{{if !$_POST}}
+	{{:assign var="rows." weight=0}}
+{{/if}}
+
+<form method="post" action="" data-focus="1">
+
+<table class="list">
+	<thead>
+		<tr>
+			<td>Catégorie</td>
+			<td>Poids unitaire (kg)</td>
+			<td>Quantité</td>
+			<td>Poids total (kg)</td>
+			<td>Provenance</td>
+			<td class="actions"></td>
+		</tr>
+	</thead>
+	<tbody>
+		{{#foreach from=$rows item="row"}}
+		<tr>
+			<td>{{:input type="select" name="new[category][]" options=$categories default=$row.category required=true}}</td>
+			<td>{{:input type="number" class="weight" name="new[weight][]" default=$row.weight step="0.001" required=true min=0}}</td>
+			<td>{{:input type="number" step=1 name="new[qty][]" default=$row.qty|or:1 required=true size=2}}</td>
+			<td class="num total"></td>
+			<td>{{:input type="select" name="new[source][]" default=$row.source options=$sources required=true}}</td>
+			<td class="actions">
+				{{:button shape="minus" label="Enlever" class="remove"}}
+			</td>
+		</tr>
+		{{/foreach}}
+	</tbody>
+</table>
+
+<p class="actions">
+	{{:button shape="plus" label="Ajouter une ligne" class="add"}}
+</p>
+
+<p class="submit">
+	{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
+</p>
+
+</form>
+
+<script type="text/javascript">
+var categories = {{$module.config.categories|json_encode|raw}};
+var b = document.querySelector('tbody');
+
+function selectCategory(s) {
+	var el = s;
+
+	while (el.tagName.toLowerCase() != 'tr') {
+		el = el.parentNode;
+	}
+
+	categories.forEach(c => {
+		if (c.label !== s.value) {
+			return;
+		}
+
+		var w = el.querySelector('input[name*=weight]');
+		w.value = c.weight;
+		updateTotal(w);
+	});
+}
+
+function addEvents(row) {
+	row.querySelectorAll('input[name*=weight], input[name*=qty]').forEach(e => e.onkeyup = () => updateTotal(e));
+	row.querySelectorAll('select[name*=category]').forEach(e => e.onchange = () => selectCategory(e));
+	row.querySelector('button').onclick = removeLine;
+}
+
+function updateTotal (el) {
+	while (el.tagName.toLowerCase() != 'tr') {
+		el = el.parentNode;
+	}
+
+	var total = el.querySelector('input[name*=weight]').value * el.querySelector('input[name*=qty]').value;
+	el.querySelector('.total').innerText = ('' + total).replace('.', ',');
+}
+
+function removeLine (e) {
+	var el = e.target;
+
+	while (el.tagName.toLowerCase() != 'tr') {
+		el = el.parentNode;
+	}
+
+	if (b.querySelectorAll('tr').length <= 1) {
+		el.querySelector('input[name*=weight]').value = '0';
+		el.querySelector('input[name*=qty]').value = '1';
+	}
+	else {
+		el.remove();
+	}
+
+	b.querySelector('tr:last-child select').focus();
+}
+
+document.querySelector('button.add').onclick = () => {
+	var el = b.querySelector('tr').cloneNode(true);
+	el.querySelector('input[name*=weight]').value = '0';
+	el.querySelector('input[name*=qty]').value = '1';
+	addEvents(el);
+	b.appendChild(el);
+	b.querySelector('tr:last-child select').focus();
+};
+
+b.querySelectorAll('tr').forEach(e => addEvents(e));
+b.querySelectorAll('select[name*=category]').forEach(e => selectCategory(e));
+</script>
+
+{{:admin_footer}}

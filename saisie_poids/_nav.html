@@ -1,0 +1,31 @@
+<nav class="tabs">
+	<aside>
+	{{if $current === 'stats'}}
+		{{:exportmenu right=true}}
+	{{/if}}
+	{{#restrict section="users" level="admin"}}
+		{{:linkbutton href="config.html" label="Configuration" shape="settings"}}
+	{{/restrict}}
+	</aside>
+	<ul>
+		<li{{if $current === 'entry'}} class="current"{{/if}}><a href="./">Entrée</a></li>
+		{{*<li{{if $type === 'exit'}} class="current"{{/if}}><a href="./?type=exit">Sortie</a></li>*}}
+		<li{{if $current === 'history'}} class="current"{{/if}}><a href="history.html">Historique</a></li>
+		<li{{if $current === 'stats'}} class="current"{{/if}}><a href="stats.html">Statistiques</a></li>
+	</ul>
+
+	{{if $current === 'stats'}}
+
+		<ul class="sub">
+			<li{{if $type === 'entry'}} class="current"{{/if}}>{{:link href="?period=%s&type=entry"|args:$period label="Entrées"}}</li>
+			<li{{if $type === 'exit'}} class="current"{{/if}}>{{:link href="?period=%s&type=exit"|args:$period label="Sorties"}}</li>
+			<li{{if $type === 'declare'}} class="current"{{/if}}>{{:link href="?type=declare" label="Déclaration Ecologic"}}</li>
+		</ul>
+		{{if $type !== 'declare'}}
+		<ul class="sub">
+			<li{{if $period === 'quarter'}} class="current"{{/if}}>{{:link href="?period=quarter&type=%s"|args:$type label="Par trimestre"}}</li>
+			<li{{if $period === 'year'}} class="current"{{/if}}>{{:link href="?period=year&type=%s"|args:$type label="Par année"}}</li>
+		</ul>
+		{{/if}}
+	{{/if}}
+</nav>
