@@ -3,7 +3,7 @@
 {{:include file="_nav.html" current="history"}}
 
 {{#list
-	select="$$.date AS 'Date'; $$.category AS 'Catégorie'; $$.weight AS 'Poids'; $$.qty AS 'Qté'; $$.total_weight AS 'Poids total'; $$.source AS 'Provenance'"
+	select="$$.date AS 'Date'; $$.category AS 'Catégorie'; $$.weight AS 'Poids'; $$.qty AS 'Qté'; $$.total_weight AS 'Poids total'; $$.object AS 'Provenance'"
 	order=1
 	desc=true
 	where="$$.type = 'entry'"}}
@@ -13,7 +13,7 @@
 		<td class="money">{{$weight|weight:true:true}}</td>
 		<td class="num">{{$qty}}</td>
 		<td class="money">{{$total_weight|weight:true:true}}</td>
-		<td>{{$source}}</td>
+		<td>{{$object}}</td>
 		<td class="actions">
 			{{:linkbutton shape="delete" href="delete.html?id=%d"|args:$id label="Supprimer" target="_dialog"}}
 		</td>

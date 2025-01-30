@@ -28,12 +28,12 @@
 	{{:assign
 		group="$$.ecologic"
 		group_label="Type opé"
-		where="$$.ecologic IS NOT NULL AND ($$.type = 'exit' || $$.type = 'entry')"
+		where="$$.ecologic IS NOT NULL AND ($$.type = 'exit' OR $$.type = 'entry')"
 	}}
 {{elseif $type === 'entry'}}
-	{{:assign group="$$.source" group_label="Provenance" where="$$.type = 'entry'"}}
+	{{:assign group="$$.object" group_label="Provenance" where="$$.type = 'entry'"}}
 {{else}}
-	{{:assign group="$$.reason" group_label="Motif" where="$$.type = 'exit'"}}
+	{{:assign group="$$.object" group_label="Motif" where="$$.type = 'exit'"}}
 {{/if}}
 
 {{#list

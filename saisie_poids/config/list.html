@@ -1,0 +1,23 @@
+{{#restrict section="config" level="admin" block=true}}{{/restrict}}
+
+{{if $_GET.type === 'object'}}
+	{{:assign type="object" title="Types d'objets"}}
+{{else}}
+	{{:assign type="category" title="Catégories"}}
+{{/if}}
+
+{{:admin_header title=$title}}
+
+{{:include file="../_nav.html" current="config" config=$type}}
+
+{{#list type=$type schema="../%s.schema.json"|args:$type columns="label" order="label" disable_user_ordering=true}}
+	<tr>
+		<th>{{$label}}</th>
+		<td class="actions">
+			{{:linkbutton shape="edit" href="edit.html?key=%s&type=%s"|args:$key:$type label="Modifier"}}
+			{{:linkbutton shape="delete" href="delete.html?key=%s&type=%s"|args:$key:$type label="Supprimer" target="_dialog"}}
+		</td>
+	</tr>
+{{/list}}
+
+{{:admin_footer}}

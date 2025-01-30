@@ -1,0 +1,122 @@
+{{#form on="save"}}
+	{{:save key="config"
+		velos_entry=$_POST.velos_entry|arrayval
+		velos_exit=$_POST.velos_exit|arrayval
+		caisse_exit=$_POST.caisse_exit|arrayval
+	}}
+	{{:redirect to="?saved=1"}}
+{{/form}}
+
+{{:admin_header title="Configuration"}}
+
+{{:include file="_nav.html" current="config" config="main"}}
+
+{{if $_GET.saved}}
+	<p class="block confirm">La configuration a été enregistrée.</p>
+{{/if}}
+
+{{#load type="category" order="$$.label COLLATE U_NOCASE" target="entry"}}
+	{{:assign var="entry_categories."|cat:$key value=$label}}
+{{/load}}
+
+{{#load type="category" order="$$.label COLLATE U_NOCASE" target="exit"}}
+	{{:assign var="exit_categories."|cat:$key value=$label}}
+{{/load}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+
+{{#extension name="stock_velos"}}
+<fieldset>
+	<legend>Import automatique du stock de vélos</legend>
+	<p class="help">
+		Si les options suivantes sont sélectionnées, le poids indiqué dans le stock de vélo sera automatiquement
+		importé dans cette extension.
+	</p>
+	{{:assign var="defaults" 0='Achat' 1='Don' 2='Rachat' 3='Récupération' 4='Partenariat'}}
+	{{:assign list=$config.source|or:$defaults}}
+	<table class="list auto">
+		<caption>Entrées</caption>
+		<thead>
+			<tr>
+				<th>Provenance</th>
+				<td>Catégorie</td>
+			</tr>
+		</thead>
+		<tbody>
+		{{#foreach from=$list item="option"}}
+			{{:assign key=$option|md5}}
+			{{:assign var="selected" from="module.config.velos_entry.%s"|args:$key}}
+			<tr>
+				<th>{{$option}}</th>
+				<td>{{:input type="select" options=$entry_categories default_empty="— Ne pas importer —" required=false name="velos_entry[%s]"|args:$key default=$selected}}</td>
+			</tr>
+		{{/foreach}}
+		</tbody>
+	</table>
+	{{if $exit_categories|count}}
+		{{:assign var="defaults" 0='Démonté' 1='Vendu' 2='Vendu en bourse' 3='Jeté'}}
+		{{:assign list=$config.raison_sortie|or:$defaults}}
+		<table class="list auto">
+			<caption>Sorties</caption>
+			<thead>
+				<tr>
+					<th>Motif de sortie</th>
+					<td>Catégorie</td>
+				</tr>
+			</thead>
+			<tbody>
+			{{#foreach from=$list item="option"}}
+				{{:assign key=$option|md5}}
+				{{:assign var="selected" from="module.config.velos_exit.%s"|args:$key}}
+				<tr>
+					<th>{{$option}}</th>
+					<td>{{:input type="select" options=$exit_categories default_empty="— Ne pas importer —" required=false name="velos_exit[%s]"|args:$key default=$selected}}</td>
+				</tr>
+			{{/foreach}}
+			</tbody>
+		</table>
+	{{/if}}
+</fieldset>
+{{/extension}}
+
+{{if $exit_categories|count}}
+	{{#extension name="caisse"}}
+	<fieldset>
+		<legend>Import automatique des ventes de la caisse</legend>
+		<p class="help">
+			Si les options suivantes sont sélectionnées, le poids indiqué lors de la vente sera automatiquement importé
+			dans cette extension.
+		</p>
+		{{#extension name="stock_velos"}}
+		<p class="alert block">Attention à ne pas créer de doublon avec les sorties de la gestion de stock de vélo.</p>
+		{{/extension}}
+		<table class="list auto">
+			<thead>
+				<tr>
+					<th>Catégorie de produit</th>
+					<td>Catégorie de sortie</td>
+				</tr>
+			</thead>
+			<tbody>
+			{{#select id, name FROM plugin_pos_categories ORDER BY name COLLATE U_NOCASE}}
+				{{:assign var="selected" from="module.config.caisse_exit.%s"|args:$id}}
+				<tr>
+					<th>{{$name}}</th>
+					<td>{{:input type="select" options=$exit_categories default_empty="— Ne pas importer —" required=false name="caisse_exit[%s]"|args:$id default=$selected}}</td>
+				</tr>
+			{{/select}}
+			</tbody>
+		</table>
+	</fieldset>
+	{{/extension}}
+{{/if}}
+
+<p class="submit">
+	{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
+</p>
+
+</form>
+
+{{:admin_footer}}

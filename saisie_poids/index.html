@@ -8,6 +8,16 @@
 	{{:assign type="entry"}}
 {{/if}}
 
+{{:include file="./_init.tpl"}}
+
+{{#load type="category" order="$$.label COLLATE U_NOCASE" target=$type}}
+	{{:assign var="categories."|cat:$key label=$label ecologic=$ecologic}}
+{{/load}}
+
+{{#load type="object" order="$$.label COLLATE U_NOCASE" target=$type}}
+	{{:assign var="objects."|cat:$key label=$label weight=$weight}}
+{{/load}}
+
 {{#form on="save"}}
 	{{:assign var="rows" value=$_POST.new|array_transpose}}
 
@@ -16,27 +26,30 @@
 	{{/if}}
 
 	{{#foreach from=$rows item="row"}}
+		{{:assign weight=$row.weight|weightval}}
+		{{:assign total="%d*%d"|math:$weight:$row.qty}}
+
+		{{:assign var="category" from="categories.%s"|args:$row.category}}
+		{{:assign var="object" from="objects.%s"|args:$row.object}}
+
+		{{if !$category}}
+			{{:error message="La provenance ne peut rester vide."}}
+		{{elseif !$object}}
+			{{:error message="Le type d'objet ne peut rester vide."}}
+		{{elseif $total <= 0}}
+			{{:error message="Le poids ou la quantité sont invalides."}}
+		{{/if}}
+
 		{{if $type === "entry"}}
-			{{:assign weight=$row.weight|weightval}}
-			{{:assign total="%d*%d"|math:$weight:$row.qty}}
-			{{if !$row.category|trim}}
-				{{:error message="La catégorie ne peut rester vide."}}
-			{{elseif !$row.source|trim}}
-				{{:error message="La provenance ne peut rester vide."}}
-			{{elseif !$row.weight || $row.weight < 0}}
-				{{:error message="Le poids doit être renseigné."}}
-			{{elseif !$row.qty|intval || $row.qty < 0}}
-				{{:error message="La quantité doit être renseignée."}}
-			{{elseif !$total}}
-				{{:error message="Le total est invalide."}}
-			{{/if}}
-			{{:save uuid="new"
+			{{:save key="uuid"
+				validate_schema="./entry.schema.json"
 				type=$type
-				category=$row.category|strval
+				object=$object.label
+				category=$category.label
+				ecologic=$category.ecologic
 				weight=$weight
 				qty=$row.qty|intval
 				total_weight=$total
-				source=$row.source|strval
 				date=$now|date:'Y-m-d H:i:s'
 			}}
 		{{else}}
@@ -56,27 +69,6 @@
 {{/if}}
 
 {{:form_errors}}
-
-{{if !$module.config.categories}}
-	{{:assign var="module.config.categories." label="Accessoire" weight="0.6"}}
-	{{:assign var="module.config.categories." label="Vélo enfant" weight="10"}}
-	{{:assign var="module.config.categories." label="Vélo adulte" weight="12.5"}}
-	{{:assign var="module.config.categories." label="Trottinette, skateboard, roller" weight="4"}}
-{{/if}}
-
-{{if !$module.config.sources}}
-	{{:assign var="module.config.sources." label="Autre (particulier, déchètterie non conventionnée, etc.)"}}
-	{{:assign var="module.config.sources." label="Déchètterie conventionnée Ecologic"}}
-	{{:assign var="module.config.sources." label="Vendeur cycles"}}
-{{/if}}
-
-{{#foreach from=$module.config.categories item="cat"}}
-	{{:assign var="categories[%s]"|args:$cat.label value=$cat.label}}
-{{/foreach}}
-
-{{#foreach from=$module.config.sources item="src"}}
-	{{:assign var="sources[%s]"|args:$src.label value=$src.label}}
-{{/foreach}}
 
 {{if !$_POST}}
 	{{:assign var="rows." weight=0}}
@@ -98,11 +90,11 @@
 	<tbody>
 		{{#foreach from=$rows item="row"}}
 		<tr>
-			<td>{{:input type="select" name="new[category][]" options=$categories default=$row.category required=true}}</td>
+			<td>{{:input type="select" name="new[object][]" options=$objects default=$row.object required=true}}</td>
 			<td>{{:input type="number" class="weight" name="new[weight][]" default=$row.weight step="0.001" required=true min=0}}</td>
 			<td>{{:input type="number" step=1 name="new[qty][]" default=$row.qty|or:1 required=true size=2}}</td>
 			<td class="num total"></td>
-			<td>{{:input type="select" name="new[source][]" default=$row.source options=$sources required=true}}</td>
+			<td>{{:input type="select" name="new[category][]" default=$row.category options=$categories required=true}}</td>
 			<td class="actions">
 				{{:button shape="minus" label="Enlever" class="remove"}}
 			</td>
@@ -122,30 +114,32 @@
 </form>
 
 <script type="text/javascript">
-var categories = {{$module.config.categories|json_encode|raw}};
+var objects = {{$objects|json_encode|raw}};
 var b = document.querySelector('tbody');
 
-function selectCategory(s) {
+function selectObject(s) {
 	var el = s;
 
 	while (el.tagName.toLowerCase() != 'tr') {
 		el = el.parentNode;
 	}
 
-	categories.forEach(c => {
-		if (c.label !== s.value) {
+	Object.entries(objects).forEach((obj) => {
+		const [key, o] = obj;
+
+		if (key !== s.value) {
 			return;
 		}
 
 		var w = el.querySelector('input[name*=weight]');
-		w.value = c.weight;
+		w.value = o.weight / 1000;
 		updateTotal(w);
 	});
 }
 
 function addEvents(row) {
 	row.querySelectorAll('input[name*=weight], input[name*=qty]').forEach(e => e.onkeyup = () => updateTotal(e));
-	row.querySelectorAll('select[name*=category]').forEach(e => e.onchange = () => selectCategory(e));
+	row.querySelectorAll('select[name*=object]').forEach(e => e.onchange = () => selectObject(e));
 	row.querySelector('button').onclick = removeLine;
 }
 
@@ -186,7 +180,7 @@ document.querySelector('button.add').onclick = () => {
 };
 
 b.querySelectorAll('tr').forEach(e => addEvents(e));
-b.querySelectorAll('select[name*=category]').forEach(e => selectCategory(e));
+b.querySelectorAll('select[name*=object]').forEach(e => selectObject(e));
 </script>
 
 {{:admin_footer}}

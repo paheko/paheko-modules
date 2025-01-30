@@ -1,0 +1,86 @@
+{{#restrict block=true section="config" level="admin"}}{{/restrict}}
+
+{{:assign var="targets" entry="Entrée" exit="Sortie"}}
+{{:assign var="ecologic_options"
+	LIV="LIV — Entrées sur votre site (hors déchètterie et rachat)"
+	PRE="PRE — Prélèvement en déchetterie conventionnée Ecologic"
+	DEC_REE="DEC_REE — Déclaration du réemploi effectué (sortie uniquement)"
+}}
+
+{{if $_GET.type === 'object'}}
+	{{:assign type="object" title="Type d'objet"}}
+{{else}}
+	{{:assign type="category" title="Catégorie"}}
+{{/if}}
+
+{{if $_GET.key !== 'new'}}
+	{{#load key=$_GET.key assign="item" type=$type}}
+		{{:assign key=$key}}
+	{{else}}
+		{{:error message="L'élément demandé n'existe pas"}}
+	{{/load}}
+{{else}}
+	{{:assign key=""|uuid}}
+{{/if}}
+
+{{#form on="save"}}
+	{{if !$_POST.label|trim}}
+		{{:error message="Le libellé ne peut être laissé vide."}}
+	{{/if}}
+
+	{{if $_POST.target === 'entry' && $_POST.ecologic === 'DEC_REE'}}
+		{{:error message="La valeur DEC_REE n'est pas permise pour une catégorie d'entrée."}}
+	{{elseif $_POST.target === 'exit' && $_POST.ecologic === 'PRE'}}
+		{{:error message="La valeur PRE n'est pas permise pour une catégorie de sortie."}}
+	{{elseif $_POST.target === 'exit' && $_POST.ecologic === 'LIV'}}
+		{{:error message="La valeur LIV n'est pas permise pour une catégorie de sortie."}}
+	{{/if}}
+
+	{{if $type === 'category'}}
+		{{:save type=$type
+			validate_schema="../%s.schema.json"|args:$type
+			key=$key
+			label=$_POST.label|trim
+			target=$_POST.target|trim
+			ecologic=$_POST.ecologic|trim
+		}}
+	{{else}}
+		{{:save type=$type
+			validate_schema="../%s.schema.json"|args:$type
+			key=$key
+			label=$_POST.label|trim
+			target=$_POST.target|trim
+			weight=$_POST.weight|weightval
+		}}
+	{{/if}}
+
+	{{:redirect to="./list.html?type="|cat:$type}}
+
+{{/form}}
+
+{{:admin_header title=$title}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+
+<fieldset>
+	<legend>Informations</legend>
+	<dl>
+		{{:input type="text" name="label" label="Libellé" required=true source=$item}}
+		{{:input type="select" name="target" label="Cible" required=true source=$item options=$targets}}
+		{{if $type === 'object'}}
+			{{:input type="weight" name="weight" label="Poids unitaire par défaut" required=false source=$item}}
+		{{else}}
+			{{:input type="select" name="target" label="Type opération Ecologic" required=false source=$item options=$ecologic_options default_empty="— Aucune —"}}
+		{{/if}}
+	</dl>
+</fieldset>
+
+<p class="submit">
+	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+</p>
+
+</form>
+
+{{:admin_footer}}

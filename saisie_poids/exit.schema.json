@@ -25,7 +25,11 @@
 		"reason": {
 			"description": "Motif",
 			"type": "string"
+		},
+		"ecologic": {
+			"description": "Position Ecologic",
+			"type": ["string", "null"]
 		}
 	},
-	"required": ["type", "category", "weight", "qty", "total_weight", "reason"]
+	"required": ["type", "category", "weight", "qty", "total_weight", "reason", "ecologic"]
 }
