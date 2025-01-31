@@ -1,10 +1,11 @@
-{{:admin_header title="Historique des saisies"}}
+{{:admin_header title="Historique des saisies" current="module_saisie_poids"}}
 
 {{:include file="_nav.html" current="history"}}
 
 {{#list
 	select="$$.date AS 'Date'; $$.type AS 'Mouvement'; $$.category AS 'Catégorie'; $$.weight AS 'Poids'; $$.qty AS 'Qté'; $$.total_weight AS 'Poids total'; $$.object AS 'Provenance'"
 	order=1
+	where="$$.type IN ('exit', 'entry')"
 	desc=true}}
 	<tr>
 		<th>{{$date|date_short:true}}</th>

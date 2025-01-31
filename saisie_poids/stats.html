@@ -14,7 +14,7 @@
 	{{/if}}
 {{/if}}
 
-{{:admin_header title="Statistiques"}}
+{{:admin_header title="Statistiques" current="module_saisie_poids"}}
 
 {{:include file="_nav.html" current="stats"}}
 
@@ -31,9 +31,9 @@
 		where="$$.ecologic IS NOT NULL AND ($$.type = 'exit' OR $$.type = 'entry')"
 	}}
 {{elseif $type === 'entry'}}
-	{{:assign group="$$.object" group_label="Provenance" where="$$.type = 'entry'"}}
+	{{:assign group="$$.category" group_label="Provenance" where="$$.type = 'entry'"}}
 {{else}}
-	{{:assign group="$$.object" group_label="Motif" where="$$.type = 'exit'"}}
+	{{:assign group="$$.category" group_label="Motif" where="$$.type = 'exit'"}}
 {{/if}}
 
 {{#list
@@ -42,6 +42,7 @@
 	desc=true
 	group="%s, %s"|args:$period:$group
 	where=$where
+	count="COUNT(DISTINCT %s)"|args:$group
 	}}
 	<tr>
 		<th>

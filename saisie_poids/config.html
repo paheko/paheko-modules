@@ -2,14 +2,14 @@
 
 {{#form on="save"}}
 	{{:save key="config"
-		velos_entry=$_POST.velos_entry|arrayval
-		velos_exit=$_POST.velos_exit|arrayval
-		caisse_exit=$_POST.caisse_exit|arrayval
+		velos_entry=$_POST.velos_entry|arrayval|filter
+		velos_exit=$_POST.velos_exit|arrayval|filter
+		caisse_exit=$_POST.caisse_exit|arrayval|filter
 	}}
 	{{:redirect to="?saved=1"}}
 {{/form}}
 
-{{:admin_header title="Configuration"}}
+{{:admin_header title="Configuration" current="module_saisie_poids"}}
 
 {{:include file="_nav.html" current="config" config="main"}}
 
@@ -31,9 +31,9 @@
 
 {{#extension name="stock_velos"}}
 <fieldset>
-	<legend>Import automatique du stock de vélos</legend>
+	<legend>Import du stock de vélos</legend>
 	<p class="help">
-		Si les options suivantes sont sélectionnées, le poids indiqué dans le stock de vélo sera automatiquement
+		Si les options suivantes sont sélectionnées, le poids indiqué dans le stock de vélo pourra être
 		importé dans cette extension.
 	</p>
 	{{:assign var="defaults" 0='Achat' 1='Don' 2='Rachat' 3='Récupération' 4='Partenariat'}}
@@ -86,9 +86,9 @@
 {{if $exit_categories|count}}
 	{{#extension name="caisse"}}
 	<fieldset>
-		<legend>Import automatique des ventes de la caisse</legend>
+		<legend>Import des ventes de la caisse</legend>
 		<p class="help">
-			Si les options suivantes sont sélectionnées, le poids indiqué lors de la vente sera automatiquement importé
+			Si les options suivantes sont sélectionnées, le poids indiqué lors de la vente pourra être importé
 			dans cette extension.
 		</p>
 		{{#extension name="stock_velos"}}
