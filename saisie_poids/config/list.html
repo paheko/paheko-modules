@@ -10,7 +10,7 @@
 
 {{:include file="../_nav.html" current="config" config=$type}}
 
-{{#list type=$type schema="../%s.schema.json"|args:$type columns="label,target" order="label" disable_user_ordering=true}}
+{{#list type=$type schema="../%s.schema.json"|args:$type columns="label,target" order="label"}}
 	<tr>
 		<th>{{$label}}</th>
 		<td>{{if $target === 'entry'}}Entrée{{else}}Sortie{{/if}}</td>
