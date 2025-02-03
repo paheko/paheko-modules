@@ -72,7 +72,7 @@
 		{{if $type === 'object'}}
 			{{:input type="weight" name="weight" label="Poids unitaire par défaut" required=false source=$item}}
 		{{else}}
-			{{:input type="select" name="target" label="Type opération Ecologic" required=false source=$item options=$ecologic_options default_empty="— Aucune —"}}
+			{{:input type="select" name="ecologic" label="Type opération Ecologic" required=false source=$item options=$ecologic_options default_empty="— Aucune —"}}
 		{{/if}}
 	</dl>
 </fieldset>
