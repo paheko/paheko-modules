@@ -51,7 +51,7 @@
 	{{:redirect to="./"}}
 {{/if}}
 
-{{#select id, CASE WHEN code IS NOT NULL THEN code || ' — ' || label ELSE label END AS label FROM acc_projects ORDER BY code, label}}
+{{#select id, CASE WHEN code IS NOT NULL THEN code || ' — ' || label ELSE label END AS label FROM acc_projects WHERE archived = 0 ORDER BY code, label}}
 	{{:assign var="projects.%d"|args:$id value=$label}}
 {{/select}}
 
