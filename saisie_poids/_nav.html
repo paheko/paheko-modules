@@ -1,6 +1,6 @@
 <nav class="tabs">
 	<aside>
-	{{if $current === 'stats'}}
+	{{if $current === 'stats' || $current === 'history'}}
 		{{:exportmenu right=true}}
 	{{elseif $current === 'config' && $config === 'category'}}
 		{{:linkbutton shape="plus" href="edit.html?key=new" label="Ajouter une catégorie"}}
