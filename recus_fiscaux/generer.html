@@ -125,10 +125,10 @@
 		{{:error message="Aucun exercice n'est coché"}}
 	{{/if}}
 
-	{{:assign var="years" from="years.%d"|args:$_POST.year}}
+	{{:assign var="years_available" from="years.%d"|args:$_POST.year}}
 
 	{{#foreach from=$selected_years item="sy"}}
-		{{if !$sy|key_in:$years}}
+		{{if !$sy|key_in:$years_available}}
 			{{:error message="L'exercice sélectionné %d ne correspond pas à l'année %d"|args:$sy:$year}}
 		{{/if}}
 		{{:assign var="selected_years_ids." value=$sy|intval}}
