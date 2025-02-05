@@ -53,7 +53,7 @@
 				{{else}}
 					{{:assign value=null}}
 				{{/if}}
-				{{:input name="fields[%d]"|args:$i label=$field.label type=$field.type help=$field.help required=$field.required value=$value}}
+				{{:input name="fields[%d]"|args:$i label=$field.label type=$field.type help=$field.help required=$field.required value=$value boolean_text_value=true}}
 
 			{{/foreach}}
 		</dl>

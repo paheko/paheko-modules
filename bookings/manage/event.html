@@ -23,6 +23,7 @@
 
 {{:assign var="types"
 	checkbox="Case à cocher"
+	boolean="Sélecteur booléen (oui/non)"
 	date="Date"
 	datetime="Date et heure"
 	number="Nombre"
@@ -145,7 +146,7 @@
 			{{:assign var="select" 0="Facultatif" 1="Obligatoire"}}
 			{{#foreach from=$event.fields item="field"}}
 				<tr>
-					<td>{{:input type="select" name="fields[type][]" default=$field.type options=$types}}</td>
+					<td>{{:input type="select" name="fields[type][]" default=$field.type options=$types required=true}}</td>
 					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
 					<td>{{:input type="select" name="fields[required][]" default=$field.required options=$select required=true}}</td>
@@ -153,7 +154,7 @@
 				</tr>
 			{{else}}
 				<tr>
-					<td>{{:input type="select" name="fields[type][]" options=$types default="text"}}</td>
+					<td>{{:input type="select" name="fields[type][]" options=$types default="text" required=true}}</td>
 					<td>{{:input type="text" name="fields[label][]" default=$field.label}}</td>
 					<td>{{:input type="text" name="fields[help][]" default=$field.help}}</td>
 					<td>{{:input type="select" name="fields[required][]" default=$field.required options=$select required=true}}</td>
