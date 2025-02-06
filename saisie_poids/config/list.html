@@ -6,14 +6,19 @@
 	{{:assign type="category" title="Catégories"}}
 {{/if}}
 
+{{if $_GET.target === 'exit'}}
+	{{:assign target="exit" title=$title|cat:" — "|cat:"Sorties"}}
+{{else}}
+	{{:assign target="entry" title=$title|cat:" — "|cat:"Entrées"}}
+{{/if}}
+
 {{:admin_header title=$title current="module_saisie_poids"}}
 
-{{:include file="../_nav.html" current="config" config=$type}}
+{{:include file="../_nav.html" current="config" type=$type target=$target}}
 
-{{#list type=$type schema="../%s.schema.json"|args:$type columns="label,target" order="label"}}
+{{#list type=$type target=$target schema="../%s.schema.json"|args:$type columns="label" order="label"}}
 	<tr>
 		<th>{{$label}}</th>
-		<td>{{if $target === 'entry'}}Entrée{{else}}Sortie{{/if}}</td>
 		<td class="actions">
 			{{:linkbutton shape="edit" href="edit.html?key=%s&type=%s"|args:$key:$type label="Modifier"}}
 			{{:linkbutton shape="delete" href="delete.html?key=%s&type=%s"|args:$key:$type label="Supprimer" target="_dialog"}}

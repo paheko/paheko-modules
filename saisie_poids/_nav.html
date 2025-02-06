@@ -2,10 +2,10 @@
 	<aside>
 	{{if $current === 'stats' || $current === 'history'}}
 		{{:exportmenu right=true}}
-	{{elseif $current === 'config' && $config === 'category'}}
-		{{:linkbutton shape="plus" href="edit.html?key=new" label="Ajouter une catégorie"}}
-	{{elseif $current === 'config' && $config === 'object'}}
-		{{:linkbutton shape="plus" href="edit.html?key=new" label="Ajouter un type d'objet"}}
+	{{elseif $current === 'config' && $type === 'category'}}
+		{{:linkbutton shape="plus" href="edit.html?key=new&target=%s"|args:$target label="Ajouter une catégorie"}}
+	{{elseif $current === 'config' && $type === 'object'}}
+		{{:linkbutton shape="plus" href="edit.html?key=new&target=%s"|args:$target label="Ajouter un type d'objet"}}
 	{{/if}}
 	</aside>
 	<ul>
@@ -35,9 +35,16 @@
 		{{/if}}
 	{{elseif $current === 'config'}}
 		<ul class="sub">
-			<li{{if $config === 'main'}} class="current"{{/if}}><a href="{{$module.url}}config.html">Configuration</a></li>
-			<li{{if $config === 'category'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=category">Catégories</a></li>
-			<li{{if $config === 'object'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=object">Types d'objets</a></li>
+			<li{{if !$type}} class="current"{{/if}}><a href="{{$module.url}}config.html">Configuration</a></li>
+			<li{{if $type === 'category'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=category">Catégories</a></li>
+			<li{{if $type === 'object'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=object">Types d'objets</a></li>
 		</ul>
+
+		{{if $type === 'category' || $type === 'object'}}
+		<ul class="sub">
+			<li{{if $target === 'entry'}} class="current"{{/if}}><a href="?type={{$type}}">Entrées</a></li>
+			<li{{if $target === 'exit'}} class="current"{{/if}}><a href="?type={{$type}}&amp;target=exit">Sorties</a></li>
+		</ul>
+		{{/if}}
 	{{/if}}
 </nav>

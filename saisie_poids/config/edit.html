@@ -1,26 +1,30 @@
 {{#restrict block=true section="config" level="admin"}}{{/restrict}}
 
-{{:assign var="targets" entry="Entrée" exit="Sortie"}}
-{{:assign var="ecologic_options"
-	LIV="LIV — Entrées sur votre site (hors déchetterie et rachat)"
-	PRE="PRE — Prélèvement en déchetterie conventionnée Ecologic"
-	DEC_REE="DEC_REE — Déclaration du réemploi effectué (sortie uniquement)"
-}}
-
 {{if $_GET.type === 'object'}}
 	{{:assign type="object" title="Type d'objet"}}
 {{else}}
 	{{:assign type="category" title="Catégorie"}}
+
+	{{if $target === 'entry'}}
+		{{:assign var="ecologic_options"
+			PRE="PRE — Prélèvement en déchetterie conventionnée Ecologic"
+			DEC_REE="DEC_REE — Déclaration du réemploi effectué (sortie uniquement)"
+		}}
+	{{else}}
+		{{:assign var="ecologic_options"
+			LIV="LIV — Entrées sur votre site (hors déchetterie et rachat)"
+		}}
+	{{/if}}
 {{/if}}
 
 {{if $_GET.key !== 'new'}}
 	{{#load key=$_GET.key assign="item" type=$type}}
-		{{:assign key=$key}}
+		{{:assign key=$key target=$target}}
 	{{else}}
 		{{:error message="L'élément demandé n'existe pas"}}
 	{{/load}}
 {{else}}
-	{{:assign key=""|uuid}}
+	{{:assign key=""|uuid target=$_GET.target}}
 {{/if}}
 
 {{#form on="save"}}
@@ -28,12 +32,12 @@
 		{{:error message="Le libellé ne peut être laissé vide."}}
 	{{/if}}
 
-	{{if $_POST.target === 'entry' && $_POST.ecologic === 'DEC_REE'}}
-		{{:error message="La valeur DEC_REE n'est pas permise pour une catégorie d'entrée."}}
-	{{elseif $_POST.target === 'exit' && $_POST.ecologic === 'PRE'}}
-		{{:error message="La valeur PRE n'est pas permise pour une catégorie de sortie."}}
-	{{elseif $_POST.target === 'exit' && $_POST.ecologic === 'LIV'}}
-		{{:error message="La valeur LIV n'est pas permise pour une catégorie de sortie."}}
+	{{if $_GET.target === 'entry' && $_POST.ecologic === 'DEC_REE'}}
+		{{:error message="La valeur DEC_REE n'est pas permise pour une entrée."}}
+	{{elseif $_GET.target === 'exit' && $_POST.ecologic === 'PRE'}}
+		{{:error message="La valeur PRE n'est pas permise pour une sortie."}}
+	{{elseif $_GET.target === 'exit' && $_POST.ecologic === 'LIV'}}
+		{{:error message="La valeur LIV n'est pas permise pour une sortie."}}
 	{{/if}}
 
 	{{if $type === 'category'}}
@@ -41,15 +45,15 @@
 			validate_schema="../%s.schema.json"|args:$type
 			key=$key
 			label=$_POST.label|trim
-			target=$_POST.target|trim
-			ecologic=$_POST.ecologic|trim
+			target=$target
+			ecologic=$_POST.ecologic|or:null
 		}}
 	{{else}}
 		{{:save type=$type
 			validate_schema="../%s.schema.json"|args:$type
 			key=$key
 			label=$_POST.label|trim
-			target=$_POST.target|trim
+			target=$target
 			weight=$_POST.weight|weightval
 		}}
 	{{/if}}
@@ -68,7 +72,6 @@
 	<legend>Informations</legend>
 	<dl>
 		{{:input type="text" name="label" label="Libellé" required=true source=$item}}
-		{{:input type="select" name="target" label="Mouvement" required=true source=$item options=$targets}}
 		{{if $type === 'object'}}
 			{{:input type="weight" name="weight" label="Poids unitaire par défaut" required=false source=$item}}
 		{{else}}
