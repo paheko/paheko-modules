@@ -1,9 +1,9 @@
 {{#restrict block=true section="config" level="admin"}}{{/restrict}}
 
 {{if $_GET.type === 'object'}}
-	{{:assign type="object" title="Type d'objet"}}
+	{{:assign type="object"}}
 {{else}}
-	{{:assign type="category" title="Catégorie"}}
+	{{:assign type="category"}}
 
 	{{if $target === 'entry'}}
 		{{:assign var="ecologic_options"
@@ -62,7 +62,7 @@
 
 {{/form}}
 
-{{:admin_header title=$title}}
+{{:admin_header title="Modifier"}}
 
 {{:form_errors}}
 

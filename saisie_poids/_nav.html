@@ -17,7 +17,7 @@
 		<li{{if $current === 'sync'}} class="current"{{/if}}><a href="{{$module.url}}sync.html">Import extensions</a></li>
 	{{/if}}
 	{{#restrict section="config" level="admin"}}
-		<li{{if $current === 'config'}} class="current"{{/if}}><a href="{{$module.url}}config.html">Configuration</a></li>
+		<li{{if $current === 'config'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=category">Configuration</a></li>
 	{{/restrict}}
 	</ul>
 
@@ -35,15 +35,15 @@
 		{{/if}}
 	{{elseif $current === 'config'}}
 		<ul class="sub">
-			<li{{if !$type}} class="current"{{/if}}><a href="{{$module.url}}config.html">Configuration</a></li>
-			<li{{if $type === 'category'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=category">Catégories</a></li>
-			<li{{if $type === 'object'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=object">Types d'objets</a></li>
+			<li{{if $target === 'entry'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type={{$type|or:"category"}}&target=entry">Entrées</a></li>
+			<li{{if $target === 'exit'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type={{$type|or:"category"}}&target=exit">Sorties</a></li>
+			<li{{if !$target}} class="current"{{/if}}><a href="{{$module.url}}config.html">Connexion avec les autres extensions</a></li>
 		</ul>
 
-		{{if $type === 'category' || $type === 'object'}}
+		{{if $target}}
 		<ul class="sub">
-			<li{{if $target === 'entry'}} class="current"{{/if}}><a href="?type={{$type}}">Entrées</a></li>
-			<li{{if $target === 'exit'}} class="current"{{/if}}><a href="?type={{$type}}&amp;target=exit">Sorties</a></li>
+			<li{{if $type === 'category'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=category&target={{$target}}">{{if $target == 'entry'}}Provenances{{else}}Motifs de sortie{{/if}}</a></li>
+			<li{{if $type === 'object'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=object&target={{$target}}">Types d'objets</a></li>
 		</ul>
 		{{/if}}
 	{{/if}}

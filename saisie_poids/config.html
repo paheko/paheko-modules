@@ -9,9 +9,9 @@
 	{{:redirect to="?saved=1"}}
 {{/form}}
 
-{{:admin_header title="Configuration" current="module_saisie_poids"}}
+{{:admin_header title="Connexion avec les extensions" current="module_saisie_poids"}}
 
-{{:include file="_nav.html" current="config" config="main"}}
+{{:include file="_nav.html" current="config"}}
 
 {{if $_GET.saved}}
 	<p class="block confirm">La configuration a été enregistrée.</p>
@@ -32,19 +32,19 @@
 {{#extension name="stock_velos"}}
 {{:assign has_config=true}}
 <fieldset>
-	<legend>Import du stock de vélos</legend>
+	<legend>Import : {{$label}}</legend>
 	<p class="help">
-		Si les options suivantes sont sélectionnées, le poids indiqué dans le stock de vélo pourra être
-		importé dans cette extension.
+		Associer ici une provenance de l'extension <em>"{{$label}}"</em> (colonne de gauche) à une provenance de l'extension <em>"Saisie au poids"</em> (colonne de droite).<br />
+		Pour chaque association indiquée, le poids du vélo dans le stock de vélo pourra être importé dans cette extension.
 	</p>
 	{{:assign var="defaults" 0='Achat' 1='Don' 2='Rachat' 3='Récupération' 4='Partenariat'}}
 	{{:assign list=$config.source|or:$defaults}}
 	<table class="list auto">
-		<caption>Entrées</caption>
+		<caption>Association de la provenance</caption>
 		<thead>
 			<tr>
-				<th>Provenance</th>
-				<td>Catégorie</td>
+				<th>{{$label}}</th>
+				<td>Saisie au poids</td>
 			</tr>
 		</thead>
 		<tbody>
@@ -59,14 +59,18 @@
 		</tbody>
 	</table>
 	{{if $exit_categories|count}}
+		<p class="help">
+			Associer ici un motif de sortie de l'extension <em>"{{$label}}"</em> (colonne de gauche) à un motif de sortie de l'extension <em>"Saisie au poids"</em> (colonne de droite).<br />
+			Pour chaque association indiquée, le poids du vélo dans le stock de vélo pourra être importé dans cette extension.
+		</p>
 		{{:assign var="defaults" 0='Démonté' 1='Vendu' 2='Vendu en bourse' 3='Jeté'}}
 		{{:assign list=$config.raison_sortie|or:$defaults}}
 		<table class="list auto">
-			<caption>Sorties</caption>
+			<caption>Association du motif de sortie</caption>
 			<thead>
 				<tr>
-					<th>Motif de sortie</th>
-					<td>Catégorie</td>
+					<th>{{$label}}</th>
+					<td>Saisie au poids</td>
 				</tr>
 			</thead>
 			<tbody>
@@ -90,9 +94,10 @@
 	<fieldset>
 		<legend>Import des ventes de la caisse</legend>
 		<p class="help">
-			Si les options suivantes sont sélectionnées, le poids indiqué lors de la vente pourra être importé
-			dans cette extension.
+			Associer ici une catégorie de l'extension <em>"{{$label}}"</em> (colonne de gauche) à un motif de sortie de l'extension <em>"Saisie au poids"</em> (colonne de droite).<br />
+			Pour chaque association indiquée, le poids indiqué lors de la vente pourra être importé dans cette extension.
 		</p>
+
 		{{#extension name="stock_velos"}}
 		<p class="alert block">Attention à ne pas créer de doublon avec les sorties de la gestion de stock de vélo.</p>
 		{{/extension}}
@@ -100,7 +105,7 @@
 			<thead>
 				<tr>
 					<th>Catégorie de produit</th>
-					<td>Catégorie de sortie</td>
+					<td>Motif de sortie</td>
 				</tr>
 			</thead>
 			<tbody>
