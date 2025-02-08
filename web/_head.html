@@ -6,10 +6,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi" />
 	<style type="text/css">
 	:root {
-		{{:assign color1=$module.config.color1|or:$config.color1|or:"#999999"|css_hex_extract_hsv}}
-		{{:assign color2=$module.config.color2|or:$config.color2|or:"#333333"|css_hex_extract_hsv}}
-		--first-color: {{$color1.h}};
-		--second-color: {{$color2.h}};
+		{{if $module.config.hue1 === null}}
+			{{:assign color1=$module.config.color1|or:$config.color1|or:"#999999"|css_hex_extract_hsv}}
+			{{:assign color2=$module.config.color2|or:$config.color2|or:"#333333"|css_hex_extract_hsv}}
+			{{:assign var="module.config.hue1" from="color1.h"}}
+			{{:assign var="module.config.hue2" from="color2.h"}}
+		{{/if}}
+
+		--first-color: {{$module.config.hue1}};
+		--second-color: {{$module.config.hue2}};
 	}
 	</style>
 	<link rel="stylesheet" type="text/css" href="{{$root_uri}}default.css?h={{$version_hash}}" media="screen,projection,handheld" />

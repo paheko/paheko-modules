@@ -29,8 +29,10 @@
 	{{/foreach}}
 
 	{{:save key="config"
-		color1=$_POST.color1|trim|or:null
-		color2=$_POST.color2|trim|or:null
+		color1=null
+		color2=null
+		hue1=$_POST.hue1|intval
+		hue2=$_POST.hue2|intval
 		layout=$_POST.layout|trim|or:null
 		background=$_POST.background|trim|or:null
 		show_search=$checkboxes.show_search
@@ -100,12 +102,20 @@ iframe {
 </div>
 {{/if}}
 
+{{if $module.config.hue1 === null}}
+	{{:assign color1=$module.config.color1|or:$config.color1|or:"#999999"|css_hex_extract_hsv}}
+	{{:assign color2=$module.config.color2|or:$config.color2|or:"#333333"|css_hex_extract_hsv}}
+	{{:assign var="module.config.hue1" from="color1.h"}}
+	{{:assign var="module.config.hue2" from="color2.h"}}
+{{/if}}
+
+
 <fieldset>
 	<legend>Configuration du site web</legend>
 	<dl>
 		{{:input type="select" name="layout" label="Disposition sur grand écran" required=true default="2col" options=$layouts help="Sur petit écran (mobile), la disposition reste sur une colonne" source=$module.config}}
-		{{:input type="color" name="color1" default=$config.color1 label="Couleur primaire" required=false source=$module.config}}
-		{{:input type="color" name="color2" default=$config.color2 label="Couleur secondaire" required=false source=$module.config}}
+		{{:input type="hue" name="hue1" label="Couleur primaire" required=false source=$module.config}}
+		{{:input type="hue" name="hue2" label="Couleur secondaire" required=false source=$module.config}}
 		{{:input type="select" name="background" options=$backgrounds label="Couleur de fond" required=true source=$module.config}}
 		<dt>Éléments à afficher sur le site</dt>
 		{{:input type="checkbox" name="show_login" value=1 label="Lien de connexion" source=$module.config default=1 help="Si coché, affiche un lien pour se connecter à la gestion de l'association."}}
@@ -136,61 +146,29 @@ iframe {
 </p>
 
 <script type="text/javascript">
-function rgbToHsl(r, g, b){
-    r /= 255, g /= 255, b /= 255;
-    var max = Math.max(r, g, b), min = Math.min(r, g, b);
-    var h, s, l = (max + min) / 2;
+g.onload(() => {
+	function updateColors() {
+		var color1 = $('#f_hue1').value;
+		var color2 = $('#f_hue2').value;
+		var doc = $('#preview iframe')[0].contentWindow.document;
+		doc.body.style = `--first-color: ${color1}; --second-color: ${color2};`;
+	}
 
-    if(max == min){
-        h = s = 0; // achromatic
-    }else{
-        var d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch(max){
-            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-            case g: h = (b - r) / d + 2; break;
-            case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-    }
+	$('#f_layout').onchange = (e) => {
+		var layout = e.target.value;
+		var doc = $('#preview iframe')[0].contentWindow.document;
+		doc.body.className = doc.body.className.replace(/\s*layout-\w+|$/, ' layout-' + layout);
+	}
 
-    return [h, s, l];
-}
+	$('#f_background').onchange = (e) => {
+		var bg = e.target.value;
+		var doc = $('#preview iframe')[0].contentWindow.document;
+		doc.body.className = doc.body.className.replace(/\s*bg-\w+|$/, ' bg-' + bg);
+	}
 
-function getHue(color) {
-	var r = parseInt(color.substr(1,2), 16);
-	var g = parseInt(color.substr(3,2), 16);
-	var b = parseInt(color.substr(5,2), 16);
-	return Math.floor(rgbToHsl(r, g, b)[0] * 360);
-}
-
-function updateColors() {
-	var color1 = $('#f_color1').value;
-	var color2 = $('#f_color2').value;
-	console.log(color1, color2);
-	color1 = getHue(color1);
-	color2 = getHue(color2);
-	console.log(color1, color2);
-
-	var doc = $('#preview iframe')[0].contentWindow.document;
-	doc.body.style = `--first-color: ${color1}; --second-color: ${color2};`;
-}
-
-$('#f_layout').onchange = (e) => {
-	var layout = e.target.value;
-	var doc = $('#preview iframe')[0].contentWindow.document;
-	doc.body.className = doc.body.className.replace(/\s*layout-\w+|$/, ' layout-' + layout);
-}
-
-$('#f_background').onchange = (e) => {
-	var bg = e.target.value;
-	var doc = $('#preview iframe')[0].contentWindow.document;
-	doc.body.className = doc.body.className.replace(/\s*bg-\w+|$/, ' bg-' + bg);
-}
-
-$('#f_color1').oninput = updateColors;
-$('#f_color2').oninput = updateColors;
-
+	$('#f_hue1').addEventListener('input', updateColors);
+	$('#f_hue2').addEventListener('input', updateColors);
+});
 </script>
 
 </form>
