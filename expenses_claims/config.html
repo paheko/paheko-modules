@@ -21,7 +21,7 @@
 	{{:linkbutton shape="left" href="./" label="Liste des notes de frais"}}
 </nav>
 
-{{#list type="category" schema="./category.schema.json" columns="label" order="label" disable_user_ordering=true}}
+{{#list type="category" schema="./category.schema.json" columns="label" order="label" disable_user_sort=true}}
 	<tr>
 		<th>{{$label}}</th>
 		<td class="actions">
