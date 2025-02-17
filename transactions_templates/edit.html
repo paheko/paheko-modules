@@ -107,7 +107,7 @@
 				<td>Compte</td>
 				<td>Débit</td>
 				<td>Crédit</td>
-				<td>Bloquer saisie</td>
+				<td>Verrouiller saisie</td>
 				<td>Libellé ligne</td>
 				<td>Réf. ligne</td>
 				{{if $projects}}
@@ -133,7 +133,11 @@
 				{{if $projects}}
 				<td>{{:input type="select" options=$projects name="ll[p][]" default=$line.p}}</td>
 				{{/if}}
-				<td>{{:button label="Enlever" title="Enlever la ligne" shape="minus" class="line_del"}}</td>
+				<td class="acions">
+					{{:button shape="up" title="Déplacer vers le haut" class="up"}}
+					{{:button shape="down" title="Déplacer vers le bas" class="down"}}
+					{{:button label="Enlever" title="Enlever la ligne" shape="minus" class="line_del"}}
+				</td>
 			</tr>
 		{{/foreach}}
 		</tbody>
@@ -146,6 +150,7 @@
 </p>
 </form>
 
+<script type="text/javascript" src="{{$admin_url}}static/scripts/dragdrop-table.js"></script>
 <script type="text/javascript">
 function toggleType()
 {
