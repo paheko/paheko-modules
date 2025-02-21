@@ -28,6 +28,10 @@
 		{{:assign row=$row|json_decode}}
 		{{:assign skip=false}}
 
+		{{if !$row.id_year}}
+			{{:error message="Identifiant d'exercice manquant" admin=true}}
+		{{/if}}
+
 		{{if $row.id_transaction|trim|strlen}}
 			{{:assign id_transaction=$row.id_transaction|explode:','|map:intval}}
 			{{:assign in_transaction="value"|sql_where:'IN':$id_transaction}}
