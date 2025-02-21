@@ -147,7 +147,7 @@
 		strftime('%d/%m/%Y', date) AS date
 		FROM (
 			SELECT
-			t.id AS id,
+			t.id_year AS id,
 			t.date,
 			SUM(l1.credit) AS total,
 			strftime('%Y', t.date) AS year,
