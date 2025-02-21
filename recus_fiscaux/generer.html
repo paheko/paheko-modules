@@ -54,7 +54,7 @@
 			linked_user=$row.id_user
 			linked_transactions=$row.id_transaction|explode:','|map:intval
 			annule=false
-			id_year=$row.id_year|intval
+			id_year=$row.id_year|intval|or:null
 			recu=$recu
 		}}
 	{{/foreach}}
