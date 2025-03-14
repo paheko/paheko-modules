@@ -138,11 +138,34 @@
 
 	{{if $has_checks}}
 		<p class="actions">
-			{{:button type="submit" name="check" label="Marquer les reçus cochés comme envoyés" shape="check"}}
-			{{:button type="submit" name="send" label="Envoyer les reçus cochés" shape="mail"}}
+			Pour les reçus cochés :
+			{{:button type="button" name="download" label="Télécharger" shape="download"}}
+			{{:button type="submit" name="check" label="Marquer comme envoyés" shape="check"}}
+			{{:button type="submit" name="send" label="Envoyer" shape="mail"}}
 		</p>
 	{{/if}}
 	</form>
+
+	<script type="text/javascript">
+	document.querySelector('button[name="download"]').onclick = (e) => {
+		e.preventDefault();
+		g.script('scripts/zip.js', () => {
+			var files = [];
+
+			document.querySelectorAll('table input[type=checkbox]:checked').forEach((f) => {
+				var row = f.parentNode.parentNode;
+				files.push({extension: 'pdf', url: row.querySelector('a[href*="recu.html"]').href + '&print=pdf', name: row.querySelector('th').innerText});
+			});
+
+			if (!files.length) {
+				alert("Aucun reçu coché");
+			}
+
+			g.downloadAsZip('Reçus fiscaux', files);
+		});
+		return false;
+	};
+	</script>
 
 	{{:admin_footer}}
 {{else}}
