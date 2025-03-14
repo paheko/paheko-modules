@@ -136,7 +136,7 @@
 	{{#select
 		*,
 		COUNT(DISTINCT id) AS nombre,
-		GROUP_CONCAT(DISTINCT id) AS id_transaction,
+		GROUP_CONCAT(id_transaction) AS id_transaction,
 		SUM(total) AS total,
 		SUM(total_especes) AS total_especes,
 		SUM(total_cheques) AS total_cheques,
@@ -148,6 +148,7 @@
 		FROM (
 			SELECT
 			t.id_year AS id,
+			GROUP_CONCAT(DISTINCT t.id) AS id_transaction,
 			t.date,
 			SUM(l1.credit) AS total,
 			strftime('%Y', t.date) AS year,
