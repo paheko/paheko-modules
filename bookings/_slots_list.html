@@ -10,7 +10,12 @@
 <article class="event">
 	<header class="booking_header">
 		{{if $event_selected}}
-			<p class="back">{{:linkbutton shape="left" label="Liste des événements" href="./"}}</p>
+			<p class="back">
+				{{:linkbutton shape="left" label="Liste des événements" href="./"}}
+				{{#restrict section="users" level=$module.config.access|or:'write'}}
+					{{:linkbutton shape="menu" label="Voir la liste des inscrits" href="bookings.html?event=%s"|args:$event.key}}
+				{{/restrict}}
+			</p>
 		{{/if}}
 	</header>
 
