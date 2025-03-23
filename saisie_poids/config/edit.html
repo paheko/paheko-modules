@@ -4,17 +4,6 @@
 	{{:assign type="object"}}
 {{else}}
 	{{:assign type="category"}}
-
-	{{if $target === 'entry'}}
-		{{:assign var="ecologic_options"
-			PRE="PRE — Prélèvement en déchetterie conventionnée Ecologic"
-			DEC_REE="DEC_REE — Déclaration du réemploi effectué (sortie uniquement)"
-		}}
-	{{else}}
-		{{:assign var="ecologic_options"
-			LIV="LIV — Entrées sur votre site (hors déchetterie et rachat)"
-		}}
-	{{/if}}
 {{/if}}
 
 {{if $_GET.key !== 'new'}}
@@ -25,6 +14,17 @@
 	{{/load}}
 {{else}}
 	{{:assign key=""|uuid target=$_GET.target}}
+{{/if}}
+
+{{if $target === 'entry'}}
+	{{:assign var="ecologic_options"
+		LIV="LIV — Entrées sur votre site (hors déchetterie et rachat)"
+		PRE="PRE — Prélèvement en déchetterie conventionnée Ecologic"
+	}}
+{{else}}
+	{{:assign var="ecologic_options"
+		DEC_REE="DEC_REE — Déclaration du réemploi effectué"
+	}}
 {{/if}}
 
 {{#form on="save"}}
