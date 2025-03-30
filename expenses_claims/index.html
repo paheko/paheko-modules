@@ -8,7 +8,7 @@
 		{{:linkbutton href="new.html" label="Nouvelle note de frais" shape="plus"}}
 	</aside>
 
-	{{#restrict section="accounting" level="write"}}
+	{{#restrict section="accounting" level="read"}}
 	<ul>
 		<li{{if $_GET.status === 'all'}} class="current"{{/if}}><a href="./?status=all">Toutes les notes de frais</a></li>
 		<li{{if $_GET.status === 'waiting'}} class="current"{{/if}}><a href="./?status=waiting">À accepter</a></li>
@@ -23,7 +23,7 @@
 
 {{:assign where="$$.user_id = %d"|args:$logged_user.id}}
 
-{{#restrict section="accounting" level="write"}}
+{{#restrict section="accounting" level="read"}}
 	{{if $_GET.status === 'all'}}
 		{{:assign where="1"}}
 	{{elseif $_GET.status}}

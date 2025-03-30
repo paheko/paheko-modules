@@ -3,6 +3,15 @@
 	{{:error message="Cette note de frais n'existe pas"}}
 {{/load}}
 
+{{#restrict section="accounting" level="write"}}
+	{{:assign is_admin=true}}
+{{else}}
+	{{if $claim.user_id !== $logged_user.id}}
+		{{:error message="L'accès à cette note de frais est interdit"}}
+	{{/if}}
+	{{:assign is_admin=false}}
+{{/restrict}}
+
 {{if $claim.status !== 'draft'}}
 	{{:error message="Cette note de frais n'est pas un brouillon, il n'est pas possible de la modifier."}}
 {{/if}}

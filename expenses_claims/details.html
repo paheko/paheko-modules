@@ -12,9 +12,12 @@
 	{{:assign is_admin=true}}
 {{else}}
 	{{:assign is_admin=false}}
-	{{if $claim.user_id !== $logged_user.id}}
-		{{:error message="L'accès à cette note de frais est interdit"}}
-	{{/if}}
+	{{#restrict section="accounting" level="read"}}
+	{{else}}
+		{{if $claim.user_id !== $logged_user.id}}
+			{{:error message="L'accès à cette note de frais est interdit"}}
+		{{/if}}
+	{{/restrict}}
 {{/restrict}}
 
 {{:assign var="upload_path" value=$claim.key}}
@@ -66,7 +69,9 @@
 <nav class="tabs">
 	<aside>
 		{{:linkbutton shape="pdf" label="Télécharger en PDF" href="?key=%s&print=pdf"|args:$claim.key}}
+{{if $is_admin || $claim.user_id === $logged_user.id}}}}
 		{{:linkbutton shape="plus" label="Dupliquer" href="./duplicate.html?claim=%s"|args:$claim.key}}
+{{/if}}
 {{if $is_admin || $claim.status === 'draft' || $claim.status === 'cancelled'}}
 		{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?claim=%s"|args:$claim.key}}
 {{/if}}
