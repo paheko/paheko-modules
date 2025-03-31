@@ -14,6 +14,18 @@
 			<h2>{{$e.label}}</h2>
 			<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
 			<h5>(Au nom de&nbsp;: {{$name}})</h5>
+			{{if $fields}}
+				<ul>
+					{{#foreach from=$fields key="label" item="value"}}
+						<li>
+							{{if $value|gettype === 'array'}}
+								{{:assign value=$value.value label=$value.label}}
+							{{/if}}
+							<strong>{{$label}}&nbsp;:</strong> {{$value}}
+						</li>
+					{{/foreach}}
+				</ul>
+			{{/if}}
 			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
 			</form>
