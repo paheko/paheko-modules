@@ -1,7 +1,12 @@
 {{**keep_whitespaces**}}
 Bonjour,
 
-votre note de frais n°{{$claim.number}} a été refusée pour le motif suivant :
+Votre note de frais :
+
+Numéro : {{$claim.number}}
+{{if $claim.label}}Libellé : {{$claim.label|raw}}{{/if}}
+
+A été refusée pour le motif suivant :
 
 {{if !$message}}(aucun motif indiqué){{else}}{{$message|raw}}{{/if}}
 
