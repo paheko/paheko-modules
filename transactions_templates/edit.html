@@ -123,7 +123,7 @@
 				<td class="account">
 					{{:assign var="account" value=null}}
 					{{:assign var="account.%s"|args:$line.a value=$line.a}}
-					{{:input type="list" name="ll[a][]" default=$account target="!acc/charts/accounts/selector.php?targets=4&key=code" multiple=false can_delete=true}}
+					{{:input type="list" name="ll[a][]" default=$account target="!acc/charts/accounts/selector.php?targets=4&key=code" multiple=false can_delete=false required=true}}
 				</td>
 				<td class="money">{{:input type="text" name="ll[d][]" default=$line.d size=5}}</td>
 				<td class="money">{{:input type="text" name="ll[c][]" default=$line.c size=5}}</td>
@@ -182,6 +182,8 @@ function addLine()
 	var n = t.lastElementChild.cloneNode(true);
 	t.appendChild(n);
 	n.querySelector('.line_del').onclick = deleteLine;
+	n.querySelector('.input-list button').onclick = g.listSelectorButtonClicked;
+	enableTableDragAndDrop(n);
 }
 
 document.querySelectorAll('.line_del').forEach(e => e.onclick = deleteLine);
