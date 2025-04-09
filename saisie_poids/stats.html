@@ -1,18 +1,4 @@
-{{if $_GET.type === 'declare'}}
-	{{:assign type="declare" period="quarter"}}
-{{else}}
-	{{if $_GET.type === 'exit'}}
-		{{:assign type="exit"}}
-	{{else}}
-		{{:assign type="entry"}}
-	{{/if}}
-
-	{{if $_GET.period === 'year'}}
-		{{:assign period="year"}}
-	{{else}}
-		{{:assign period="quarter"}}
-	{{/if}}
-{{/if}}
+{{:assign type=$_GET.type|or:'entry' period=$_GET.period|or:'quarter'}}
 
 {{:admin_header title="Statistiques" current="module_saisie_poids"}}
 
@@ -20,8 +6,10 @@
 
 {{if $period === 'year'}}
 	{{:assign period="strftime('%Y', $$.date)"}}
-{{else}}
+{{elseif $period === 'quarter'}}
 	{{:assign period="strftime('%Y-Q', $$.date) || CAST((strftime('%m', $$.date) + 2) / 3 AS string)"}}
+{{else}}
+	{{:assign period="strftime('%Y-%m', $$.date)"}}
 {{/if}}
 
 {{if $type === 'declare'}}

@@ -27,12 +27,11 @@
 			<li{{if $type === 'exit'}} class="current"{{/if}}>{{:link href="?period=%s&type=exit"|args:$period label="Sorties"}}</li>
 			<li{{if $type === 'declare'}} class="current"{{/if}}>{{:link href="?type=declare" label="Déclaration Ecologic"}}</li>
 		</ul>
-		{{if $type !== 'declare'}}
 		<ul class="sub">
+			<li{{if $period === 'month'}} class="current"{{/if}}>{{:link href="?period=month&type=%s"|args:$type label="Par mois"}}</li>
 			<li{{if $period === 'quarter'}} class="current"{{/if}}>{{:link href="?period=quarter&type=%s"|args:$type label="Par trimestre"}}</li>
 			<li{{if $period === 'year'}} class="current"{{/if}}>{{:link href="?period=year&type=%s"|args:$type label="Par année"}}</li>
 		</ul>
-		{{/if}}
 	{{elseif $current === 'config'}}
 		<ul class="sub">
 			<li{{if $target === 'entry'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type={{$type|or:"category"}}&target=entry">Entrées</a></li>
