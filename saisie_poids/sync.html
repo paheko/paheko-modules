@@ -16,7 +16,7 @@
 		{{/load}}
 		{{:assign ids=$ids|arrayval}}
 
-		{{#select SUM(ti.weight) AS weight, COUNT(ti.id) AS count, s.id, c.id AS id_category,
+		{{#select SUM(ti.qty * ti.weight) AS weight, SUM(ti.qty) AS count, s.id, c.id AS id_category,
 			c.name AS cat_name, s.closed AS date
 			FROM plugin_pos_sessions s
 			INNER JOIN plugin_pos_tabs t ON t.session = s.id
@@ -30,7 +30,7 @@
 			AND s.id NOT IN (SELECT json_extract(document, '$.pos_session_id') FROM !table
 				WHERE json_extract(document, '$.pos_session_id') IS NOT NULL
 				AND json_extract(document, '$.type') = 'exit')
-			GROUP BY s.id
+			GROUP BY s.id, c.id
 			LIMIT 5000;
 			!table=$module.table
 			!categories='id'|sql_where:'IN':$pos_categories
@@ -44,7 +44,7 @@
 			{{/if}}
 
 			{{:assign var="exits."
-				pos_session_id=$id|intval
+				pos_session_id=$id
 				total_weight=$weight
 				weight=0
 				qty=$count

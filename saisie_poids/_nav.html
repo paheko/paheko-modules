@@ -25,7 +25,7 @@
 		<ul class="sub">
 			<li{{if $type === 'entry'}} class="current"{{/if}}>{{:link href="?period=%s&type=entry"|args:$period label="Entrées"}}</li>
 			<li{{if $type === 'exit'}} class="current"{{/if}}>{{:link href="?period=%s&type=exit"|args:$period label="Sorties"}}</li>
-			<li{{if $type === 'declare'}} class="current"{{/if}}>{{:link href="?type=declare" label="Déclaration Ecologic"}}</li>
+			<li{{if $type === 'declare'}} class="current"{{/if}}>{{:link href="?period=%s&type=declare"|args:$period label="Déclaration Ecologic"}}</li>
 		</ul>
 		<ul class="sub">
 			<li{{if $period === 'month'}} class="current"{{/if}}>{{:link href="?period=month&type=%s"|args:$type label="Par mois"}}</li>
