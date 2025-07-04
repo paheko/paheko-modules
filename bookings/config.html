@@ -3,6 +3,7 @@
 	{{:save key="config"
 		access=$_POST.access
 		manage_access=$_POST.manage_access
+		list_access=$_POST.list_access
 	}}
 	{{:redirect to="./manage/?ok=1"}}
 {{/form}}
@@ -25,6 +26,14 @@
 		<dl>
 			{{:input type="radio" name="manage_access" source=$module.config value="write" label="Les membres pouvant ajouter et modifier des membres"}}
 			{{:input type="radio" name="manage_access" source=$module.config default="admin" value="admin" label="Les membres administrateurs de la gestion des membres"}}
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>Qui peut voir la liste des événements ?</legend>
+		<dl>
+			{{:input type="radio" name="list_access" source=$module.config value="all" default="all" label="Tout le monde"}}
+			{{:input type="radio" name="list_access" source=$module.config value="users" default="all" label="Seuls les membres connectés"}}
+			{{:input type="radio" name="list_access" source=$module.config value="admins" label="Seules les personnes gérant les réservations"}}
 		</dl>
 	</fieldset>
 	<p class="submit">

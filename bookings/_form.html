@@ -84,7 +84,17 @@
 	{{/if}}
 {{/if}}
 
-{{if !$event}}
+{{if $module.config.list_access === 'all'}}
+	{{:assign can_list=true}}
+{{elseif $module.config.list_access === 'users' && $logged_user}}
+	{{:assign can_list=true}}
+{{elseif $module.config.list_access === 'admins'}}
+	{{#restrict section="users" level=$module.config.access}}
+		{{:assign can_list=true}}
+	{{/restrict}}
+{{/if}}
+
+{{if !$event && $can_list}}
 	<header class="booking_header">
 		{{if $event_selected}}
 			<p class="back">{{:linkbutton shape="left" label="Liste des événements" href="./"}}</p>
@@ -103,7 +113,7 @@
 		{{/load}}
 	</section>
 
-{{else}}
+{{elseif $event}}
 	{{#form on="book"}}
 		{{if !$_GET.slot_time || !$_GET.slot_time|parse_datetime}}
 			{{:error message="Date invalide"}}
@@ -192,4 +202,6 @@
 
 	{{/if}}
 
+{{else}}
+	<p>La liste des événements est désactivée.</p>
 {{/if}}
