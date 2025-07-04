@@ -60,6 +60,8 @@
 		archived=$_POST.archived|boolval
 		fields=$fields|arrayval
 		notify_email=$_POST.notify_email|strval|or:null
+		not_open_before=$_POST.not_open_before|parse_datetime:"LOCAL"|or:null
+		not_open_after=$_POST.not_open_after|parse_datetime:"LOCAL"|or:null
 	}}
 
 	{{if $_GET.copy}}
@@ -103,6 +105,13 @@
 				{{:input type="checkbox" name="use_openings" value=1 source=$event label="Utiliser les horaires d'ouverture comme créneaux"}}
 				<dd class="help">Si cette case est cochée, les créneaux seront automatiquement configurés à partir des informations indiquées dans l'extension {{:link href="%sconfig.html"|args:$url label="Horaires d'ouverture"}}.<br />Sinon, il faudra configurer les créneaux manuellement.</dd>
 				<dd class="help">{{:linkbutton shape="settings" href="%sconfig.html"|args:$url label="Configurer les ouvertures et fermetures"}}</dd>
+			</dl>
+		</fieldset>
+		<fieldset>
+			<legend>Restrictions</legend>
+			<dl>
+				{{:input type="datetime-local" name="not_open_before" label="Ne pas ouvrir les réservations avant le…" help="Il ne sera pas possible d'enregistrer une réservation avant la date et heure indiquée." source=$event}}
+				{{:input type="datetime-local" name="not_open_after" label="Fermer les inscriptions après le…" help="Il ne sera plus possible d'enregistrer une réservation après la date et heure indiquée." source=$event}}
 			</dl>
 		</fieldset>
 		<fieldset class="openings_options">

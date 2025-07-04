@@ -195,6 +195,15 @@
 
 		{{:include file="./_confirm_slot_form.html"}}
 
+	{{elseif $event.not_open_before && $now < $event.not_open_before|strtotime}}
+
+		<p class="block error">Désolé, cet événement n'est pas encore ouvert aux réservations.<br />
+			Merci de revenir le {{$event.not_open_before|date_long:true}}.</p>
+
+	{{elseif $event.not_open_after && $now > $event.not_open_after|strtotime}}
+
+		<p class="block error">Désolé, les réservations ne sont plus acceptées pour cet événement.</p>
+
 	{{else}}
 
 		{{:include file="./_create_slots_list.tpl" event=$event keep="slots"}}

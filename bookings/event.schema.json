@@ -59,6 +59,12 @@
 		},
 		"notify_email": {
 			"type": ["string", "null"]
+		},
+		"not_open_before": {
+			"type": ["string", "null"]
+		},
+		"not_open_after": {
+			"type": ["string", "null"]
 		}
 	},
 	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_slots", "openings_delay", "use_closings", "fields", "email", "archived", "notify_email"]
