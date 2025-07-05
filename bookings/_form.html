@@ -7,6 +7,10 @@
 	{{:assign var="module.config.access" value="write"}}
 {{/if}}
 
+{{if !$module.config.list_access}}
+	{{:assign var="module.config.list_access" value="all"}}
+{{/if}}
+
 {{#form on="cancel"}}
 	{{#load key=$_POST.cancel type="booking" limit=1 assign="booking"}}
 		{{:delete id=$id}}
