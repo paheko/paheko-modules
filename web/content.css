@@ -271,6 +271,7 @@
 
 .web-content figure.video {
     position: relative;
+    min-height: 200px;
 }
 
 .web-content figure.video iframe {
