@@ -1,0 +1,46 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["movement"]
+		},
+		"direction" : {
+			"description": "Entrée ou sortie",
+			"type": "string",
+			"enum": ["input", "output"]
+		},
+		"operation": {
+			"description": "clé de l'opération",
+			"type": "string"
+		},
+		"amount": {
+			"description": "Quantité ajoutée ou retirée",
+			"type": "integer",
+			"minimum": 1
+		},
+		"equipment": {
+			"description": "Clé du matériel",
+			"type": "string"
+		},
+		"date" : {
+			"description": "Date de l'opération",
+			"type": "string",
+			"format": "date"
+		},
+		"comment": {
+			"description": "Commentaire additionnel",
+			"type": ["null", "string"]
+		},
+		"user": {
+			"description": "identifiant membre dépositaire",
+			"type": ["integer", "null"]
+		},
+		"storage": {
+			"description": "clé du lieu de stockage",
+			"type": ["string", "null"]
+		}
+	},
+	"required": ["type", "direction", "operation", "amount", "equipment", "date", "comment"]
+}

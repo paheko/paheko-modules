@@ -1,0 +1,39 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["equipment"]
+		},
+		"category" : {
+			"description": "Clé de la catégorie",
+			"type": "string"
+		},
+		"name": {
+			"description": "Désignation du matériel",
+			"type": "string"
+		},
+		"status": {
+			"description": "État du matériel",
+			"type": "string",
+			"enum": ["available", "archived"]
+		},
+		"stock": {
+			"description": "Quantité en stock",
+			"type" : ["integer", "null"],
+			"minimum": 0
+		},
+		"out": {
+			"description": "Quantité sortie temporairement",
+			"type" : ["integer", "null"],
+			"minimum": 0
+		},
+		"notowned": {
+			"description": "Quantité présente temporairement",
+			"type" : ["integer", "null"],
+			"minimum": 0
+		}
+	},
+	"required": ["type", "category", "name", "status", "stock", "out", "notowned"]
+}

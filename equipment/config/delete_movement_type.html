@@ -1,0 +1,49 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	paramètres :
+	- dir : input ou output
+	- op_key : clé du type de mouvement à supprimer
+*}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="config" subcurrent="typesES"}}
+{{/if}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="../_get_config.html" keep="config, directions"}}
+
+{{#form on="delete"}}
+	{{#foreach from=$directions key="direction"}}
+		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
+		{{#foreach from=$nature key="key"}}
+			{{if $_GET.dir == $direction && $key != $_GET.op_key || $_GET.dir != $direction}}
+				{{:assign var="%s_nature.key"|args:$direction value=$key}}
+				{{:assign var="%s_nature.label"|args:$direction value=$label}}
+				{{:assign var="%s_nature.type"|args:$direction value=$type}}
+				{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
+			{{/if}}
+		{{/foreach}}
+	{{/foreach}}
+
+	{{:save
+		key="config"
+		validate_schema="../config.schema.json"
+		input_nature=$input_natures
+		output_nature=$output_natures
+	}}
+	{{:redirect to="./config.html?ok=1"}}
+{{/form}}
+
+{{:admin_header title="Gestion des matériels" current="module_equipment"}}
+{{:form_errors}}
+
+{{:assign var="mvt_label" from="config.%s_nature.%s.label"|args:$_GET.dir:$_GET.op_key}}
+{{:assign var="dir_label" from="directions.%s"|args:$_GET.dir}}
+{{:delete_form
+	legend="Supprimer cette %s ?"|args:$dir_label
+	warning="Supprimer « %s » ?"|args:$mvt_label
+}}
+
+{{:admin_footer}}

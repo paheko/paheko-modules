@@ -1,0 +1,52 @@
+{{* -*- brindille -*- *}}
+
+{{:admin_header title="Configuration" current="module_equipment"}}
+
+{{* barre de navigation *}}
+{{:include file="_nav.html" current="config" subcurrent="typesES"}}
+
+{{if $_GET.ok}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="./_get_config.html" keep="config, directions"}}
+
+{{#foreach from=$directions key="direction" item="item"}}
+
+	{{* types de mouvements qui ne peuvent être supprimés *}}
+	{{#load type="movement" where="$$.direction='%s'"|args:$direction group="$$.operation"}}
+		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+		{{:assign var="locked_%ss."|args:$direction value=$op_label}}
+	{{/load}}
+
+	<h2 class="ruler">{{$item|ucfirst}}s</h2>
+	<table class="list">
+		<thead>
+			<tr>
+				<th>Libellé</th>
+				<th>Type</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			{{:assign var="nature" from="config.%s_nature"|args:$direction}}
+			{{#foreach from=$nature key=key}}
+				<tr>
+					<td>{{$label}}</td>
+					<td>{{$type}}</td>
+					<td class="actions">
+						{{:assign var="locked" from="locked_%ss"|args:$direction}}
+						{{if ! $locked|has:$label}}
+							{{:linkbutton label="Supprimer" shape="delete" href="config/delete_movement_type.html?dir=%s&op_key=%s"|args:$direction:$key target="_dialog"}}
+						{{/if}}
+							{{:linkbutton label="Modifier" shape="edit" href="config/modify_movement_type.html?dir=%s&op_key=%s"|args:$direction:$key target="_dialog"}}
+					</td>
+				</tr>
+			{{/foreach}}
+		</tbody>
+	</table>
+
+{{/foreach}}
+
+{{:admin_footer}}

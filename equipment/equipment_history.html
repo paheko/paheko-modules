@@ -1,0 +1,341 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Afficher l'historique des mouvements d'un matériel
+	paramètres
+	- key : clé du matériel
+	- prop : = 1 si matériel appartient à l'asso
+	- ok : vrai si opération terminée avec succès
+	- err : vrai si opération terminée en erreur (ça fait doublon avec ok, non ?)
+	- msg : message de retour
+*}}
+
+
+{{* barre de navigation *}}
+{{if $_GET.prop == 1}}
+	{{:assign proprio="proprio"}}
+{{else}}
+	{{:assign proprio="nonproprio"}}
+{{/if}}
+
+{{:assign equipment_key=$_GET.key|trim}}
+{{#load key=$equipment_key assign="equipment"}}
+{{else}}
+	{{:error message="Pas de matériel avec la clé %s"|args:$equipment_key}}
+{{/load}}
+
+{{#load type="category" where="key = :cle" :cle=$equipment.category assign="category"}}
+{{else}}
+	{{:error message="Le matériel %s n'appartient à aucune catégorie"|args:$equipment.name}}
+{{/load}}
+{{:admin_header title="Gestion des matériels" custom_css="./style.css" current="module_equipment"}}
+
+{{if $_GET.current != null}}
+	{{:assign current=$_GET.current}}
+{{else}}
+	{{:assign current="inventaire"}}
+{{/if}}
+{{:include file="./_nav.html" current=$current subcurrent=$proprio subsubcurrent="historique" eqpmt=$equipment.name category=$category.name}}
+
+{{if $_GET.ok}}
+	{{if $_GET.msg == "modification"}}
+		<p class="block confirm">Modification enregistrée</p>
+	{{elseif $_GET.msg == "copie"}}
+		<p class="block confirm">Mouvement copié</p>
+	{{elseif $_GET.msg == "retour"}}
+		<p class="block confirm">Retour enregistré</p>
+	{{elseif $_GET.msg == "suppression"}}
+		<p class="block confirm">Mouvement supprimé</p>
+	{{else}}
+		<p class="block confirm">Mouvement enregistré</p>
+	{{/if}}
+{{elseif $_GET.err}}
+	{{if $_GET.msg == "suppression"}}
+		<p class="block error">Ce mouvement ne peut être supprimé</p>
+	{{/if}}
+{{/if}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="./_get_config.html" keep="config"}}
+
+{{* déterminer les types de mouvements selon l'affection du matériel *}}
+{{#foreach from=$config.input_nature}}
+	{{if $_GET.prop}}
+		{{* matériel propriété de l'asso *}}
+		{{if $type != 'temporaire'}}
+			{{:assign var="input_types." value=$label}}
+		{{/if}}
+	{{else}}
+		{{* matériel non propriété de l'asso *}}
+		{{if $type == 'temporaire'}}
+			{{:assign var="input_types." value=$label}}
+		{{/if}}
+	{{/if}}
+{{/foreach}}
+
+{{#foreach from=$config.output_nature}}
+	{{if $_GET.prop}}
+		{{* matériel propriété de l'asso *}}
+		{{if $type != 'retour'}}
+			{{:assign var="output_types." value=$label}}
+		{{/if}}
+	{{else}}
+		{{* matériel non propriété de l'asso *}}
+		{{if $type == 'retour'}}
+			{{:assign var="output_types." value=$label}}
+		{{/if}}
+	{{/if}}
+{{/foreach}}
+
+{{* calculer et mémoriser les quantités pour que le tri de la liste affiche les valeurs correctes *}}
+{{:assign stock=0}}
+{{:assign exterieur=0}}
+{{:assign nonproprio=0}}
+
+{{#load type="movement" where="$$.equipment = :key" :key=$equipment_key order="$$.date"}}
+ 	{{if $direction == 'input'}}
+		{{:assign var="type_mvt" from="config.input_nature.%s.type"|args:$operation}}
+		{{if $type_mvt == 'définitif'}}
+			{{:assign stock="%d+%d"|math:$stock:$amount}}
+		{{elseif $type_mvt == 'retour'}}
+			{{:assign exterieur="%d-%d"|math:$exterieur:$amount}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign nonproprio="%d+%d"|math:$nonproprio:$amount}}
+		{{/if}}
+	{{else}}
+		{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$operation}}
+		{{if $type_mvt == 'définitif'}}
+			{{:assign stock="%d-%d"|math:$stock:$amount}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign exterieur="%d+%d"|math:$exterieur:$amount}}
+		{{elseif $type_mvt == 'retour'}}
+			{{:assign nonproprio="%d-%d"|math:$nonproprio:$amount}}
+		{{/if}}
+	{{/if}}
+	{{:assign dispo="%d-%d"|math:$stock:$exterieur}}
+	{{:assign var="quantites.%s.stock"|args:$id value=$stock}}
+	{{:assign var="quantites.%s.exterieur"|args:$id value=$exterieur}}
+	{{:assign var="quantites.%s.dispo"|args:$id value=$dispo}}
+	{{:assign var="quantites.%s.nonproprio"|args:$id value=$nonproprio}}
+{{/load}}
+
+{{if $current != "archives"}}
+	<nav class="tabs">
+		<aside>
+			{{if $_GET.prop}}
+				{{if $equipment.stock > 0}}
+					{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+				{{/if}}
+				{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+		{{else}}
+			{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+		{{/if}}
+		</aside>
+	</nav>
+{{/if}}
+
+{{* lister tous les mouvements du matériel passé en paramètre *}}
+{{if $_GET.prop}}
+	{{* calculer la quantité temporairement l'extérieur de chaque matériel *}}
+	{{#foreach from=$config.output_nature key=key}}
+		{{if $type == "temporaire"}}
+			{{:assign var="temp_outputs." value=$key|quote_sql}}
+		{{/if}}
+	{{/foreach}}
+	{{:assign operations=$temp_outputs|implode:","}}
+	{{:assign operations="("|cat:$operations|cat:")"}}
+
+	{{#select
+		mvt.key AS mvt_key,
+		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS reste
+		FROM module_data_equipment AS mvt
+		LEFT JOIN module_data_equipment AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+		LEFT JOIN module_data_equipment AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+		WHERE
+			json_extract(mvt.document, '$.operation') IN !op
+		AND json_extract(mvt.document, '$.equipment') = :eqpmt_key
+		GROUP by mvt.key
+		;
+		!op = $operations
+		:eqpmt_key = $_GET.key
+	}}
+		{{:assign var="reste.%s"|args:$mvt_key value=$reste}}
+	{{/select}}
+
+	{{#list
+		type="movement"
+		select="
+			($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
+			CASE $$.direction WHEN 'input' THEN 'Entrée' WHEN 'output' THEN 'Sortie' END AS 'Mouvement';
+			$$.operation AS 'Opération';
+			$$.amount AS 'Quantité';
+			'' AS 'Stock';
+			'' AS 'Sorti';
+			'' AS 'Disponible';
+			CASE WHEN $$.user NOT NULL
+				THEN (SELECT %s AS nom FROM users WHERE id = $$.user)
+				ELSE ''
+			END AS 'Dépositaire';
+			CASE WHEN $$.storage NOT NULL
+				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
+				ELSE ''
+			END AS 'Stockage';
+		$$.comment AS 'Commentaire'
+		"|args:$config.user_fields.name_sql
+		equipment=$equipment_key
+		order=1
+	}}
+		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
+		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+
+		{{if $direction === "input" && $op_label|in:$input_types ||
+			 $direction === "output"&& $op_label|in:$output_types
+		}}
+			{{:assign var="stock" from="quantites.%s.stock"|args:$id}}
+			{{:assign var="exterieur" from="quantites.%s.exterieur"|args:$id}}
+			{{:assign var="dispo" from="quantites.%s.dispo"|args:$id}}
+			<tr>
+				<td>{{$date|date_short}}</td>
+				<td>{{$col2}}</td>
+				<td>{{$op_label}}</td>
+				<td class="num">{{$amount}}</td>
+				<td class="num nosort">{{$stock}}</td>
+				<td class="num nosort">{{$exterieur}}</td>
+				<td class="num nosort">{{$dispo}}</td>
+				<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$col8}}</td>
+				<td>{{$col9}}</td>
+				<td>{{$comment}}</td>
+				<td class="actions">
+					{{if $current != "archives"}}
+						{{if $direction == "output" && $type_mvt == "temporaire"}}
+							{{:assign var="temp_ext" from="reste.%s"|args:$key}}
+							{{if $temp_ext != null && $temp_ext > 0}}
+								{{:linkbutton
+								label="Retour"
+								href="movements/output_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
+								shape="reset"
+								target="_dialog"}}
+							{{/if}}
+						{{/if}}
+						{{if $direction == "input" && $type_mvt == "retour"}}
+							{{* interdire dupliquer *}}
+						{{else}}
+							{{:linkbutton
+								label="Dupliquer"
+								href="movements/copy_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
+								shape="plus"
+								target="_dialog"}}
+						{{/if}}
+						{{:linkbutton
+							label="Modifier"
+							href="movements/modify_movement.html?key=%s"|args:$key
+							shape="edit"
+							target="_dialog"}}
+						{{:linkbutton
+							label="Supprimer"
+							href="movements/delete_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
+							shape="delete"
+							target="_dialog"}}
+					{{/if}}
+				</td>
+			</tr>
+		{{/if}}
+	{{/list}}
+
+{{else}}
+	{{* calculer la quantité présente temporairement de chaque matériel *}}
+	{{#foreach from=$config.input_nature key=key}}
+		{{if $type == "temporaire"}}
+			{{:assign var="temp_inputs." value=$key|quote_sql}}
+		{{/if}}
+	{{/foreach}}
+	{{:assign operations=$temp_inputs|implode:","}}
+	{{:assign operations="("|cat:$operations|cat:")"}}
+
+	{{#select
+		mvt.key AS mvt_key,
+		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS present
+		FROM module_data_equipment AS mvt
+		LEFT JOIN module_data_equipment AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+		LEFT JOIN module_data_equipment AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+		WHERE
+			json_extract(mvt.document, '$.operation') IN !op
+		AND json_extract(mvt.document, '$.equipment') = :eqpmt_key
+		GROUP by mvt.key
+		;
+		!op = $operations
+		:eqpmt_key = $_GET.key
+	}}
+		{{:assign var="present.%s"|args:$mvt_key value=$present}}
+	{{/select}}
+
+	{{#list
+		type="movement"
+		select="($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
+			CASE $$.direction WHEN 'input' THEN 'Entrée' WHEN 'output' THEN 'Sortie' END AS 'Mouvement';
+			$$.operation AS 'Opération';
+			$$.amount AS 'Quantité';
+			"" as 'Présent';
+			CASE WHEN $$.storage NOT NULL
+				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
+				ELSE ''
+			END as 'Stockage';
+			$$.comment AS 'Commentaire'"
+		equipment=$equipment_key
+		order=1
+	}}
+		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$col3}}
+		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+
+		{{if $direction === "input" && $op_label|in:$input_types ||
+			 $direction === "output"&& $op_label|in:$output_types
+		}}
+			{{:assign var="stock" from="quantites.%s.nonproprio"|args:$id}}
+			<tr>
+				<td>{{$date|date_short}}</td>
+				<td>{{$col2}}</td>
+				<td>{{$op_label}}</td>
+				<td class="num">{{$amount}}</td>
+				<td class="num nosort">{{$stock}}</td>
+				<td>{{$col6}}</td>
+				<td>{{$comment}}</td>
+				<td class="actions">
+					{{if $direction == "input" && $type_mvt == "temporaire"}}
+						{{:assign var="temp_in" from="present.%s"|args:$key}}
+						{{if $temp_in != null && $temp_in > 0}}
+							{{:linkbutton
+							label="Retour"
+							href="movements/input_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
+							shape="reset"
+							target="_dialog"}}
+						{{/if}}
+					{{/if}}
+					{{:linkbutton
+						label="Dupliquer"
+						href="movements/copy_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
+						shape="plus"
+						target="_dialog"}}
+					{{:linkbutton
+						label="Modifier"
+						href="movements/modify_movement.html?key=%s"|args:$key
+						shape="edit"
+						target="_dialog"}}
+					{{:linkbutton
+						label="Supprimer"
+						href="movements/delete_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
+						shape="delete"
+						target="_dialog"}}
+				</td>
+			</tr>
+		{{/if}}
+	{{/list}}
+{{/if}}
+
+{{:admin_footer}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript">
+	(function () {
+		disableColumSort(document.querySelector("table[class=list]"));
+	})();
+</script>

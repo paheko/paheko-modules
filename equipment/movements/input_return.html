@@ -1,0 +1,205 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer un retour d'entrée temporaire
+	paramètres :
+	- key		: clé de l'entrée temporaire
+*}}
+
+{{* infos du mouvement *}}
+{{#load key=$_GET.key assign="mvt_new"}}
+{{else}}
+	{{:error message="Aucun mouvement avec la clé %s"|args:$_GET.key}}
+{{/load}}
+
+{{* infos du matériel associé *}}
+{{#load key=$mvt_new.equipment assign="equipment"}}
+{{else}}
+	{{:error message="Aucun matériel avec la clé « %s »"|args:$key}}
+{{/load}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config"}}
+
+{{* calculer la quantité entrée temporairement *}}
+{{#foreach from=$config.input_nature key=key}}
+	{{if $type == "temporaire"}}
+		{{:assign var="temp_inputs." value=$key|quote_sql}}
+	{{/if}}
+{{/foreach}}
+{{:assign operations=$temp_inputs|implode:","}}
+{{:assign operations="("|cat:$operations|cat:")"}}
+
+{{#select
+	json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS present
+	FROM module_data_equipment AS mvt
+	LEFT JOIN module_data_equipment AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+	LEFT JOIN module_data_equipment AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+	WHERE
+	json_extract(mvt.document, '$.operation') IN !op
+	AND mvt.key = :mvt_key
+	GROUP by mvt.key
+	;
+	!op = $operations
+	:mvt_key = $_GET.key
+	}}
+	{{:assign present=$present}}
+{{/select}}
+
+{{*
+	-------------------- Traiter la saisie --------------------
+*}}
+{{#form on="save"}}
+	{{* vérifier validité des données *}}
+	{{if $_POST.amount <= 0}}
+		{{:error message="La quantité (%s) doit être strictement positive !!"|args:$_POST.amount}}
+	{{/if}}
+
+	{{if $_POST.amount > $present}}
+		{{:error message="La quantité (%s) doit être inférieure à la quantité présente (%s) !!"|args:$_POST.amount:$present}}
+	{{/if}}
+
+	{{if $_POST.date|parse_date|strtotime > $now}}
+		{{:error message="Impossible de saisir une date dans le futur (%s)"|args:$_POST.date}}
+	{{/if}}
+
+	{{* préparer le nouveau mouvement *}}
+	{{:assign var="mvt_new.key" value=""|uuid}}
+	{{:assign var="mvt_new.direction" value="output"}}
+	{{:assign var="mvt_new.date" value=$_POST.date|parse_date}}
+	{{:assign var="mvt_new.operation" value=$_POST.operation}}
+	{{:assign var="mvt_new.amount" value=$_POST.amount}}
+	{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_new.direction:$mvt_new.operation}}
+
+	{{*
+		lister les mouvements
+		- insérer le nouveau mvt à sa place par date croissante
+	*}}
+	{{:assign insere=false}}
+	{{#load
+		where="
+			$$.type = 'movement'
+		AND
+			$$.equipment = :eqpmt_key"
+		:eqpmt_key=$equipment.key
+		order="$$.date"
+		assign="movement"
+	}}
+		{{if ! $insere}}
+			{{if $mvt_new.date < $date}}
+				{{:assign var="movements_new." from=mvt_new}}
+				{{:assign insere=true}}
+			{{elseif $mvt_new.date == $date}}
+				{{if $mvt_new.direction == "input" && $type_mvt != "retour"}}
+					{{:assign var="movements_new." from=mvt_new}}
+					{{:assign insere=true}}
+				{{elseif $mvt_new.direction == "output" && $type_mvt == "temporaire"}}
+					{{:assign var="movements_new." from=mvt_new}}
+					{{:assign insere=true}}
+				{{/if}}
+			{{/if}}
+		{{/if}}
+		{{:assign var="movements_new." from=movement}}
+	{{/load}}
+	{{if ! $insere}}
+		{{:assign var="movements_new." from=mvt_new}}
+	{{/if}}
+
+	{{* Vérifier la cohérence des mouvements du matériel *}}
+	{{:include
+		file="./_validate_modification.html"
+		keep="erreur, pb"
+		movements=$movements_new
+	}}
+
+	{{if $erreur}}
+		{{:assign message="Impossible d'enregistrer ce mouvement."}}
+		{{if $pb.mvt.key != $mvt_new.key}}
+			{{:assign var="err_mvt_label" from="config.output_nature.%s.label"|args:$pb.mvt.operation}}
+			{{:assign date_pb=$pb.mvt.date|date_short}}
+			{{:assign var=message2 value=" Mouvement incompatible avec « %s » : « %s (qté : %s) en date du %s »."|args:$err_mvt_label:$equipment.name:$pb.mvt.amount:$date_pb}}
+			{{:assign message=$message|cat:$message2}}
+		{{/if}}
+		{{:error message=$message}}
+	{{/if}}
+
+	{{* calculer la nouvelle quantité du matériel *}}
+	{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$_POST.operation}}
+	{{:assign var="equipment.notowned" value="%d-%d"|math:$equipment.notowned:$_POST.amount|intval}}
+
+	{{:save
+		key=$equipment.key
+		validate_schema="../equipment.schema.json"
+		type="equipment"
+		category=$equipment.category
+		name=$equipment.name
+		status="available"
+		stock=$equipment.stock
+		out=$equipment.out
+		notowned=$equipment.notowned
+	}}
+
+	{{* vérification réussie : enregistrer le mouvement modifié *}}
+	{{:assign mvt_key=""|uuid}}
+	{{:save
+		key=$mvt_key
+		validate_schema="movement.schema.json"
+		type="movement"
+		direction="output"
+		operation=$_POST.operation
+		amount=$_POST.amount|intval
+		equipment=$equipment.key
+		date=$_POST.date|parse_date
+		comment=$_POST.comment|trim
+	}}
+	{{* enregistrer la liaison entre le retour et la sortie temporaire *}}
+	{{:save
+		key=""|uuid
+		validate_schema="link.schema.json"
+		type="link"
+		direction="input"
+		temp_key=$_GET.key
+		return=$mvt_key
+	}}
+	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=0&msg=retour"|args:$mvt_new.equipment}}
+{{/form}}
+
+{{:admin_header title="Retour de matériel" custom_css="../style.css" current="module_equipment"}}
+{{:form_errors}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="entrees"}}
+{{/if}}
+
+{{*
+	-------------------- Préparer la saisie --------------------
+*}}
+
+{{#foreach from=$config.output_nature key=key}}
+	{{if $type == "retour"}}
+		{{:assign var="return_label.%s"|args:$key value=$label}}
+		{{:break}}
+	{{/if}}
+{{/foreach}}
+
+{{* infos de la catégorie *}}
+{{#load key=$equipment.category assign="category"}}{{/load}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Retour de « {{$equipment.name}} (Catégorie : {{$category.name}}) »</legend>
+		<dl>
+			{{:input type="select" name="operation" label="Type" required=true options=$return_label}}
+			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
+			{{:input type="number" name="amount" label="Quantité" min=1 max=$present required=true default=$present}}
+			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

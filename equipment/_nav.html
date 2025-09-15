@@ -1,0 +1,59 @@
+{{* -*- brindille -*- *}}
+
+<nav class="tabs">
+	{{if $current == 'inventaire'}}
+		<aside>
+			{{if $subsubcurrent == null && $cat == 0}}
+				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
+			{{else}}
+				{{:linkbutton label="Ajouter un nouveau matériel" shape="plus" href="movements/add_new_equipment.html" target="_dialog"}}
+			{{/if}}
+		</aside>
+	{{/if}}
+
+	<ul>
+		<li {{if $current == 'inventaire'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=1">Inventaire</a></li>
+		<li {{if $current == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}global_history.html">Historique</a></li>
+		<li {{if $current == 'archives'}} class="current"{{/if}}><a href="{{$module.url}}archives.html">Archives</a></li>
+		<li {{if $current == 'config'}} class="current"{{/if}}><a href="{{$module.url}}categories/index.html">Configuration</a></li>
+	</ul>
+
+	{{if $current == 'inventaire'}}
+		<ul class="sub">
+			<li {{if $subcurrent == 'proprio'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=1">Matériels permanents</a></li>
+			<li {{if $subcurrent == 'nonproprio'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=0">Matériels temporaires</a></li>
+		</ul>
+
+		{{if $subsubcurrent == 'historique'}}
+			<ul class="sub">
+				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
+			</ul>
+		{{/if}}
+	{{elseif $current == 'archives'}}
+		{{if $subsubcurrent == 'historique'}}
+			<ul class="sub">
+				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
+			</ul>
+		{{/if}}
+	{{elseif $current == 'config'}}
+		{{if $subcurrent == 'categories'}}
+			<aside>
+				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="add_category.html" target="_dialog"}}
+			</aside>
+		{{elseif $subcurrent == 'storage'}}
+			<aside>
+				{{:linkbutton label="Ajouter un lieu de stockage" shape="plus" href="add_storage.html" target="_dialog"}}
+			</aside>
+		{{elseif $subcurrent == 'typesES'}}
+			<aside>
+				{{:linkbutton label="Ajouter un type d'entrée" shape="plus" href="config/add_movement_type.html?dir=input" target="_dialog"}}
+				{{:linkbutton label="Ajouter un type de sortie" shape="plus" href="config/add_movement_type.html?dir=output" target="_dialog"}}
+			</aside>
+		{{/if}}
+		<ul class="sub">
+			<li {{if $subcurrent == 'categories'}} class="current"{{/if}}><a href="{{$module.url}}categories/index.html">Catégories</a></li>
+			<li {{if $subcurrent == 'storage'}} class="current"{{/if}}><a href="{{$module.url}}storage/index.html">Lieux de stockage</a></li>
+			<li {{if $subcurrent == 'typesES'}} class="current"{{/if}}><a href="{{$module.url}}config.html">Types d'entrées/sorties</a></li>
+		</ul>
+	{{/if}}
+</nav>

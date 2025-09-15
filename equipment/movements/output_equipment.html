@@ -1,0 +1,199 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	paramètres :
+	- key		: clé du matériel à sortir
+*}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config"}}
+
+{{* types de sorties *}}
+{{#foreach from=$config.output_nature key=key}}
+	{{if $type != 'retour'}}
+		{{:assign var="output_labels.%s"|args:$key value=$label}}
+	{{/if}}
+{{/foreach}}
+
+{{* récupérer les infos du matériel *}}
+{{#load key=$_GET.key assign="equipment"}}{{/load}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{* interdire date dans le futur *}}
+	{{if $_POST.date|parse_date|strtotime > $now}}
+		{{:error message="Impossible de saisir une date dans le futur (%s)"|args:$_POST.date}}
+	{{/if}}
+
+	{{* vérifier les infos saisies *}}
+	{{if $_POST.operation == ""}}
+		{{:error message="Vous devez choisir un type de sortie"}}
+	{{/if}}
+
+	{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$_POST.operation}}
+	{{if $_POST.user|count > 1}}
+		{{:error message="Un membre au plus peut être associé à une sortie"}}
+	{{/if}}
+	{{#foreach from=$_POST.user key="id" item="name"}}
+		{{:assign var="user.id" value=$id}}
+		{{:assign var="user.name" value=$name}}
+	{{/foreach}}
+
+	{{:assign stock=0}}
+	{{:assign exterieur=0}}
+	{{:assign nonproprio=0}}
+	{{:assign insere=false}}
+
+	{{* lister tous les mouvements du matériel *}}
+	{{#load type="movement" where="$$.equipment = '%s'"|args:$_GET.key assign="mvt" order="$$.date ASC"}}
+		{{* traiter le nouveau mouvement *}}
+		{{if ! $insere && $mvt.date > $_POST.date|parse_date}}
+			{{:assign insere=true}}
+			{{:assign dispo_old="%d-%d"|math:$stock:$exterieur}}
+
+			{{if $type_mvt == 'définitif'}}
+				{{:assign stock="%d-%d"|math:$stock:$_POST.amount}}
+			{{elseif $type_mvt == 'temporaire'}}
+				{{:assign exterieur="%d+%d"|math:$exterieur:$_POST.amount}}
+			{{/if}}
+
+			{{:assign dispo="%d-%d"|math:$stock:$exterieur}}
+			{{if $dispo < 0 || $stock < 0 || $exterieur < 0}}
+				{{:assign date_err=$_POST.date|date:"d/m/Y"}}
+				{{:error message="Erreur : la quantité indiquée (%s) est supérieure à celle disponible (%d) à la date du %s"|args:$_POST.amount:$dispo_old:$date_err}}
+			{{/if}}
+		{{/if}}
+
+		{{* traiter le mouvement courant *}}
+		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt.direction:$mvt.operation}}
+
+		{{if $mvt.direction === 'input'}}
+			{{if $type_mvt == 'définitif'}}
+				{{:assign stock="%d+%d"|math:$stock:$mvt.amount}}
+			{{elseif $type_mvt == 'retour'}}
+				{{:assign exterieur="%d-%d"|math:$exterieur:$mvt.amount}}
+			{{elseif $type_mvt == 'temporaire'}}
+				{{:assign nonproprio="%d+%d"|math:$nonproprio:$mvt.amount}}
+			{{/if}}
+		{{elseif $mvt.direction === 'output'}}
+			{{if $type_mvt == 'définitif'}}
+				{{:assign stock="%d-%d"|math:$stock:$mvt.amount}}
+			{{elseif $type_mvt == 'temporaire'}}
+				{{:assign exterieur="%d+%d"|math:$exterieur:$mvt.amount}}
+			{{elseif $type_mvt == 'retour'}}
+				{{:assign nonproprio="%d-%d"|math:$nonproprio:$mvt.amount}}
+			{{/if}}
+		{{/if}}
+
+		{{:assign dispo="%d-%d"|math:$stock:$exterieur}}
+
+		{{if $dispo < 0 || $stock < 0 || $exterieur < 0 || $nonproprio < 0}}
+			{{:assign date_err=$mvt.date|date:"d/m/Y"}}
+			{{:error message="Erreur : la quantité indiquée (%s) est incompatible avec la sortie de %s unités à la date du %s"|args:$_POST.amount:$mvt.amount:$date_err}}
+		{{/if}}
+	{{/load}}
+	{{if ! $insere}}
+		{{:assign dispo_old="%d-%d"|math:$stock:$exterieur}}
+		{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$_POST.operation}}
+
+		{{if $type_mvt == 'définitif'}}
+			{{:assign stock="%d-%d"|math:$stock:$_POST.amount}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign exterieur="%d+%d"|math:$exterieur:$_POST.amount}}
+		{{/if}}
+
+		{{:assign dispo="%d-%d"|math:$stock:$exterieur}}
+		{{if $dispo < 0 || $stock < 0 || $exterieur < 0}}
+			{{:assign date_err=$_POST.date|date:"d/m/Y"}}
+			{{:error message="Erreur : la quantité indiquée (%s) est supérieure à celle disponible (%d) à la date du %s"|args:$_POST.amount:$dispo_old:$date_err}}
+		{{/if}}
+	{{/if}}
+
+	{{* calculer la nouvelle quantité du matériel *}}
+	{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$_POST.operation}}
+	{{if $type_mvt == 'définitif'}}
+		{{:assign var="equipment.stock" value="%d-%d"|math:$equipment.stock:$_POST.amount|intval}}
+	{{elseif $type_mvt == 'temporaire'}}
+		{{:assign var="equipment.out" value="%d+%d"|math:$equipment.out:$_POST.amount|intval}}
+	{{/if}}
+
+	{{:save
+		key=$equipment.key
+		validate_schema="../equipment.schema.json"
+		type="equipment"
+		category=$equipment.category
+		name=$equipment.name
+		status="available"
+		stock=$equipment.stock
+		out=$equipment.out
+		notowned=$equipment.notowned
+	}}
+
+	{{* Enregistrer le mouvement *}}
+	{{:assign mvt_key=""|uuid}}
+	{{:save
+		key=$mvt_key
+		validate_schema="./movement.schema.json"
+		type="movement"
+		direction="output"
+		operation=$_POST.operation
+		amount=$_POST.amount|intval
+		equipment=$equipment.key
+		date=$_POST.date|parse_date
+		comment=$_POST.remarques|trim
+		user=$user.id
+	}}
+	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=1&msg=sortie"|args:$_GET.key}}
+{{/form}}
+
+{{:admin_header title="Sortie de matériel" custom_css="./../style.css" current="module_equipment"}}
+{{if ! $dialog}}
+	{{* barre de navigation *}}
+	{{:include file="../_nav.html" current="sorties"}}
+{{/if}}
+
+{{#load key=$equipment.category assign="category"}}{{/load}}
+{{:assign dispo="%d-%d"|math:$equipment.stock:$equipment.out}}
+
+{{if $dispo > 0}}
+
+	{{* formulaire de sortie de matériel *}}
+	<form method="post" action="">
+		<fieldset class="informations">
+			<legend>Informations matériel</legend>
+			<dl class="describe">
+				<dt>Matériel</dt>
+				<dd>{{$equipment.name}}</dd>
+				<dt>Catégorie</dt>
+				<dd>{{$category.name}}</dd>
+				<dt>Quantité disponible</dt>
+				<dd class="num">{{$dispo}}</dd>
+			</dl>
+		</fieldset>
+		<fieldset class="sortie">
+			<legend>Enregistrer une sortie</legend>
+			<dl>
+				{{:input type="select" name="operation" label="Type" required=true default_empty="— Aucun —" options=$output_labels|sort}}
+				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
+				{{:input type="number" name="amount" label="Quantité" required=true default=$dispo min=1 max=$dispo}}
+				{{:input
+					type="list"
+					name="user"
+					label="Membre destinataire"
+					target="!users/selector.php"
+					multiple=true
+					max=1
+				}}
+				{{:input type="textarea" name="remarques" label="Remarques" cols="40" rows="3" required=false}}
+			</dl>
+		</fieldset>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</form>
+{{else}}
+	<p class="block error">Il n'y a aucune unité de ce matériel disponible à la date du {{$now|date_short}}</p>
+{{/if}}
+
+{{:form_errors}}
+{{:admin_footer}}

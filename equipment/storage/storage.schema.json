@@ -1,0 +1,19 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["storage"]
+		},
+		"name" : {
+			"description": "Nom du lieu de stockage",
+			"type": "string"
+		},
+		"location": {
+			"description": "Emplacement du lieu de stockage",
+			"type": "string"
+		}
+	},
+	"required": ["type", "name"]
+}

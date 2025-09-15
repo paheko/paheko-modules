@@ -1,0 +1,120 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer une entrée de matériel
+	paramètres :
+	- key : clé du matériel à ajouter
+*}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="entrees"}}
+{{/if}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config"}}
+
+{{* types d'entrées *}}
+{{#foreach from=$config.input_nature key=key}}
+	{{if $type != 'retour'}}
+		{{:assign var="input_labels.%s"|args:$key value=$label}}
+	{{/if}}
+{{/foreach}}
+
+{{* récupérer les informations du matériel et de sa catégorie *}}
+{{#load key=$_GET.key assign="equipment"}}
+{{/load}}
+{{#load where="key = :key" :key=$equipment.category assign="category"}}
+{{/load}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+
+	{{* vérifier la quantité saisie *}}
+	{{if $_POST.amount <= 0}}
+		{{:error message="La quantité (%s) doit être strictement positive !!"|args:$_POST.amount}}
+	{{/if}}
+
+	{{* interdire date dans le futur *}}
+	{{if $_POST.date|parse_date|strtotime > $now}}
+		{{:error message="Impossible de saisir une date dans le futur (%s)"|args:$_POST.date}}
+	{{/if}}
+
+	{{* calculer la nouvelle quantité du matériel *}}
+	{{:assign var="type_mvt" from="config.input_nature.%s.type"|args:$_POST.operation}}
+	{{if $type_mvt == 'définitif'}}
+		{{:assign var="equipment.stock" value="%d+%d"|math:$equipment.stock:$_POST.amount|intval}}
+	{{elseif $type_mvt == 'temporaire'}}
+		{{:assign var="equipment.notowned" value="%d+%d"|math:$equipment.notowned:$_POST.amount|intval}}
+	{{/if}}
+
+	{{:save
+		key=$equipment.key
+		validate_schema="../equipment.schema.json"
+		type="equipment"
+		category=$equipment.category
+		name=$equipment.name
+		status="available"
+		stock=$equipment.stock
+		out=$equipment.out
+		notowned=$equipment.notowned
+	}}
+
+	{{* Enregistrer le mouvement *}}
+	{{:assign mvt_key=""|uuid}}
+	{{:save
+		key=$mvt_key
+		validate_schema="./movement.schema.json"
+		type="movement"
+		direction="input"
+		operation=$_POST.operation
+		amount=$_POST.amount|intval
+		equipment=$equipment.key
+		date=$_POST.date|parse_date
+		comment=$_POST.remarques|trim
+		storage=$_POST.storage
+	}}
+	{{:assign var=type_entree from="config.input_nature.%s.type"|args:$_POST.operation}}
+	{{if $type_entree == "temporaire"}}
+		{{:assign prop=0}}
+	{{else}}
+		{{:assign prop=1}}
+	{{/if}}
+	{{:redirect force="../equipment_history.html?key=%s&ok=1&msg=entrée&prop=%s"|args:$equipment.key:$prop}}
+{{/form}}
+
+{{:admin_header title="Entrée de matériel" custom_css="./../style.css" current="module_equipment"}}
+{{:form_errors}}
+
+{{* formulaire de saisie d'une entrée de matériel *}}
+{{#load type="storage" order="$$.name"}}
+	{{:assign var="storage.%s"|args:$key value=$name}}
+{{/load}}
+<form method="post" action="">
+	<fieldset class="informations">
+		<legend>Informations matériel</legend>
+		<dl class="describe">
+			<dt>Matériel</dt>
+			<dd>{{$equipment.name}}</dd>
+			<dt>Catégorie</dt>
+			<dd>{{$category.name}}</dd>
+		</dl>
+	</fieldset>
+	<fieldset class="entree">
+		<legend>Enregistrer une entrée de matériel</legend>
+		<dl>
+			{{:input type="select" name="operation" label="Type" required=true default_empty="— Aucun —" options=$input_labels|sort}}
+			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
+			{{:input type="number" name="amount" label="Quantité" required=true min=1 default=1}}
+				{{if $storage != null}}
+					{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
+				{{/if}}
+			{{:input type="textarea" name="remarques" label="Remarques" cols="40" rows="3" required=false}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

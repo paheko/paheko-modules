@@ -1,0 +1,30 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Récupérer soit la config enregistrée, soit la config par défaut
+	résultat : config.input_nature et config.output_nature
+*}}
+
+{{* config par défaut *}}
+{{:read file="./default.json" assign="config_defaut"}}
+{{:assign config_defaut=$config_defaut|json_decode}}
+
+{{:assign var="directions.input" value="entrée"}}
+{{:assign var="directions.output" value="sortie"}}
+
+{{#foreach from=$directions key="direction"}}
+	{{:assign var="nature" from="module.config.%s_nature"|args:$direction}}
+	{{if $nature != null}}
+		{{#foreach from=$nature item="elem"}}
+			{{:assign var="item" label=$label type=$type}}
+			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$item}}
+		{{/foreach}}
+	{{else}}
+		{{* pas de config enregistrée : utiliser la config par défaut *}}
+		{{:assign var="nature" from="config_defaut.%ss"|args:$direction}}
+		{{#foreach from=$nature item="elem"}}
+			{{:assign var="item" label=$label type=$type}}
+			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$item}}
+		{{/foreach}}
+	{{/if}}
+{{/foreach}}

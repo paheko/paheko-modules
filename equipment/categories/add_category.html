@@ -1,0 +1,43 @@
+{{* -*- brindille -*- *}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="config" subcurrent="categories"}}
+{{/if}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+
+	{{* Vérifier s'il existe déjà une catégorie avec le même nom *}}
+	{{#load type="category" where="$$.name = :name COLLATE U_NOCASE" :name=$_POST.name|trim limit=1}}
+		{{:error message="Impossible d'ajouter la catégorie « %s » car elle existe déjà !"|args:$name|trim}}
+	{{/load}}
+
+	{{:assign key=""|uuid}}
+	{{:assign cat_name=$_POST.name|trim}}
+	{{:save
+		key=$key
+		validate_schema="./category.schema.json"
+		type="category"
+		name=$cat_name
+	}}
+	{{:redirect force="./index.html?ok=1&msg=ajout"}}
+{{/form}}
+
+{{:admin_header title="Gestion des matériels" current="module_equipment"}}
+{{:form_errors}}
+
+{{* formulaire d'ajout de catégorie *}}
+<form method="post" action="{{$self_url}}" data-focus="1">
+	<fieldset class="ajout_categorie">
+		<legend>Ajouter une catégorie</legend>
+		<dl>
+		{{:input type="text" name="name" label="Nom" autofocus=true required=true maxlength="100"}}
+		</dl>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Ajouter" shape="right" class="main"}}
+		</p>
+	</fieldset>
+</form>
+
+{{:admin_footer}}

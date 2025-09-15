@@ -1,0 +1,53 @@
+{{* -*- brindille -*- *}}
+
+{{* récupérer les infos du lieu de stockage *}}
+{{#load key=$_GET.key assign="storage"}}
+{{else}}
+	{{:error message="Lieu de stockage introuvable"}}
+{{/load}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{* voir si le nom a changé *}}
+	{{if $_POST.name|trim == $storage.name}}
+		{{* voir si l'emplacement a changé *}}
+		{{if $_POST.location|trim != $storage.location}}
+			{{:assign modif=true}}
+		{{/if}}
+	{{else}}
+		{{* voir s'il existe un lieu de stockage de même nom *}}
+		{{#load type="storage" where="$$.name = :name" :name=$_POST.name|trim limit=1}}
+			{{:error message="Modification impossible car ce nom (« %s ») est déjà utilisé !"|args:$name|trim}}
+		{{else}}
+			{{:assign modif=true}}
+		{{/load}}
+	{{/if}}
+
+	{{if $modif}}
+		{{:save
+			key=$storage.key
+			validate_schema="storage.schema.json"
+			type="storage"
+			name=$_POST.name|trim
+			location=$_POST.location|trim
+		}}
+	{{/if}}
+	{{:redirect force="./index.html?ok=1&msg=modification"}}
+{{/form}}
+
+{{:admin_header title="Modifier un lieu de stockage" current="module_equipment"}}
+{{:form_errors}}
+
+{{* formulaire de modification d'un lieu de stockage *}}
+<form method="post" action="" data-focus="1">
+	<fieldset class="modif_storage">
+		<legend>Modifier le lieu de stockage « {{$storage.name}} »</legend>
+		<dl>
+			{{:input type="text" name="name" label="Nom" default=$storage.name required=true maxlength="100"}}
+			{{:input type="textarea" name="location" label="Emplacement" default=$storage.location cols="40", rows="3" required=false}}
+		</dl>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</fieldset>
+</form>

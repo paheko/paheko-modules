@@ -1,0 +1,43 @@
+{{* -*- brindille -*- *}}
+
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+
+	{{* vérification *}}
+	{{if $_POST.name == null}}
+		{{:error message="Le nom du lieu de stockage est obligatoire"}}
+	{{/if}}
+	{{#load type="storage" where="$$.name = :name" :name=$_POST.name|trim limit=1}}
+		{{:error message="Ce nom est déjà utilisé"}}
+	{{/load}}
+
+	{{:save
+		key=""|uuid
+	    validate_schema="storage.schema.json"
+		type="storage"
+		name=$_POST.name|trim
+		location=$_POST.location|trim
+	}}
+	{{:redirect force="index.html?ok=1&msg=ajout"}}
+{{/form}}
+
+{{:admin_header title="Lieu de stockage" current="module_equipment"}}
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="storage"}}
+{{/if}}
+{{:form_errors}}
+
+<form method="post" action="" data-focus="1">
+	<fieldset class="storage">
+		<legend>Ajouter un lieu de stockage</legend>
+		<dl>
+			{{:input type="text" name="name" label="Nom" required=true}}
+			{{:input type="textarea" name="location" label="Emplacement" cols="40", rows="3" required=false}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>

@@ -1,0 +1,26 @@
+.informations {
+	margin-top : 0.5em;
+}
+
+.informations dt::after {
+	content: ' :';
+}
+
+.informations dl.describe {
+	margin : 0;
+}
+
+.informations dl.describe > dt {
+	flex: 0 0 10rem;
+	margin-right: 0;
+}
+
+.informations dl.describe > dd {
+	margin-top : 0;
+	margin-left : 0;
+}
+
+/* désactiver rétroaction pour colonnes non triables */
+table.list > thead td[class~=nosort] a:hover {
+	background-color : rgba(var(--gSecondColor), 0.);
+}

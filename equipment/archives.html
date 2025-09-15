@@ -1,0 +1,68 @@
+{{* -*- brindille -*- *}}
+
+{{:admin_header title="Matériels archivés" current="module_equipment"}}
+{{:include file="_nav.html" current="archives"}}
+
+{{if $_GET.ok}}
+	<p class="block confirm">Matériel remis en service</p>
+{{/if}}
+
+{{* Sélecteur catégories *}}
+{{:assign var="options." value="" label="Toutes les catégories" href="?prop=1"}}
+{{#load type="category" order="$$.name"}}
+	{{:assign
+		var="options."
+		value=$key
+		label=$name
+		href="?cat_key=%s"|args:$key
+	}}
+{{/load}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par catégorie</legend>
+	{{:dropdown
+		title="Filtrer par catégorie"
+		options=$options
+		value="%s"|args:$_GET.cat_key
+	}}
+</fieldset>
+
+{{* filtrer selon la catégorie *}}
+{{if $_GET.cat_key == null}}
+	{{:assign condition="1"}}
+{{else}}
+	{{:assign cat_key=$_GET.cat_key|quote_sql}}
+	{{:assign condition="$$.category == %s"|args:$cat_key}}
+{{/if}}
+
+{{* Liste des matériels archivés *}}
+{{#list
+	select="
+		$$.name AS "Matériel" ;
+		(SELECT $$.name
+			FROM @TABLE as cat
+			WHERE cat.key = @TABLE.$$.category) AS "Catégorie"
+	"
+	type="equipment"
+	where="$$.status='archived' AND %s"|args:$condition
+	order=1
+}}
+
+	<tr>
+		<td>{{$name}}</td>
+		<td>{{$col2}}</td>
+		<td class="actions">
+			{{:linkbutton
+				label="Historique"
+				href="equipment_history.html?key=%s&prop=1&current=archives"|args:$key
+				shape="table"}}
+			{{:linkbutton
+				label="Modifier"
+				href="unarchive_equipment.html?key=%s"|args:$key
+				shape="edit"
+				target="_dialog"}}
+		</td>
+	</tr>
+{{else}}
+	<p class="block alert">Aucun matériel.</p>
+{{/list}}

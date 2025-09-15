@@ -1,0 +1,27 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	paramètres :
+	- key : clé du stockage à supprimer
+*}}
+
+{{#form on="delete"}}
+
+	{{* vérifier s'il est possible de supprimer le lieu de stockage *}}
+	{{#load type="movement" where="$$.storage = :storage_key" :storage_key=$_GET.key limit=1}}
+		{{:redirect force="index.html?err=1&msg=suppression"}}
+	{{/load}}
+
+	{{:delete where="key = :key" :key=$_GET.key}}
+	{{:redirect force="index.html?ok=1&msg=suppression"}}
+{{/form}}
+
+
+{{:admin_header title="Lieux de stockage" custom_css="../style.css" current="module_equipment"}}
+{{:form_errors}}
+
+{{#load key=$_GET.key limit="1" assign="store"}}{{/load}}
+{{:delete_form
+	legend="Supprimer %s ?"|args:$store.name
+	warning="Confirmer la suppression de « %s »"|args:$store.name
+}}

@@ -1,0 +1,26 @@
+{{* -*- brindille -*- *}}
+
+{{#load key=$_GET.key assign="category"}}
+{{else}}
+	{{:error message="Catégorie introuvable"}}
+{{/load}}
+
+{{#form on="delete"}}
+	{{* Vérifier s'il reste des matériels dans cette catégorie *}}
+	{{#load type="equipment" category=$_GET.key assign="equipment"}}
+		{{:redirect force="./index.html?err=1&msg=suppression"}}
+	{{else}}
+		{{* supprimer la catégorie sélectionnée*}}
+		{{:delete where="key = :key" :key=$category.key}}
+		{{:redirect force="./index.html?ok=1&msg=suppression"|args:$msg}}
+	{{/load}}
+{{/form}}
+
+{{:admin_header title="Supprimer une catégorie" current="module_equipment"}}
+{{:form_errors}}
+
+{{:delete_form
+	legend="Supprimer une catégorie"
+	warning="Supprimer la catégorie « %s » ?"|args:$category.name
+	info="La suppression n'est possible que si la catégorie ne possède plus de matériel"
+}}

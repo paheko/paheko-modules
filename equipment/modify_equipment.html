@@ -1,0 +1,95 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Paramètres :
+	- key : clé du matériel à modifier
+	- prop : =1 si matériel propriété de l'association, 0 sinon
+*}}
+
+{{:assign equipment_key=$_GET.key|trim}}
+{{#load key=$_GET.key assign="equipment"}}
+{{else}}
+		{{:error message="Pas de matériel avec la clé %s"|args:$equipment_key}}
+{{/load}}
+{{:assign default_category=$equipment.category}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+
+	{{if $_POST.archive == 1}}
+		{{* vérifier les qunatités *}}
+		{{if $_GET.prop == 1 && $equipment.stock != 0}}
+			{{:error message="L'archivage n'est possible que si le stock est nul !"}}
+		{{elseif $_GET.prop == 0 && $equipment.notowned != 0}}
+			{{:error message="L'archivage n'est possible que s'il n'y a plus de matériel présent temporairement"}}
+		{{/if}}
+		{{* archiver le matériel *}}
+		{{:save
+			key=$equipment_key
+			status="archived"
+		}}
+	{{else}}
+
+		{{* récupérer les infos de la catégorie *}}
+		{{#load type="category" key=$_POST.category assign="category"}}{{/load}}
+
+		{{* vérifier la validité des changements demandés *}}
+		{{:assign chgt_ok=true}}
+		{{if $_POST.category != $default_category}}
+
+			{{* catégorie change : vérifier le nom *}}
+			{{#load key=$equipment_key}}
+				{{if $name|trim|tolower != $_POST.name|trim|tolower}}
+					{{* le nom change => vérifier l'existence d'un matériel du même nom *}}
+					{{#load type="equipment" where="$$.name = :name COLLATE U_NOCASE" :name=$_POST.name|trim limit=1}}
+						{{:assign chgt_ok=false}}
+					{{/load}}
+				{{else}}
+					{* le nom ne change pas : ok *}}
+				{{/if}}
+			{{/load}}
+
+		{{else}}
+			{{* catégorie ne change pas => vérifier le nom *}}
+			{{#load type="equipment" where="$$.name = :name COLLATE U_NOCASE" :name=$_POST.name|trim limit=1}}
+				{{:assign chgt_ok=false}}
+			{{/load}}
+		{{/if}}
+
+		{{if !$chgt_ok}}
+			{{:error message="Erreur : il existe déjà un matériel avec cette désignation"}}
+		{{/if}}
+
+		{{* enregistrer les modifications *}}
+		{{:save
+			key=$equipment_key
+			category=$category.key
+			name=$_POST.name|trim
+		}}
+	{{/if}}
+
+	{{:redirect force="index.html?ok=1&msg=modification&prop=%s"|args:$_GET.prop}}
+{{/form}}
+
+{{:admin_header title="Modifier matériel" current="module_equipment"}}
+{{:form_errors}}
+
+{{* lister les catégories disponibles *}}
+{{#load type="category" assign="category" order="$$.name"}}
+	{{:assign var="categories.%s"|args:$category.key value=$category.name}}
+{{/load}}
+
+<form method="post" action="">
+	<fieldset class="modification">
+		<legend>Modifier un matériel</legend>
+		<dl>
+			{{:input type="select" name="category" label="Catégorie" default=$default_category required=true options=$categories}}
+			{{:input type="text" name="name" label="Désignation" default=$equipment.name required=true}}
+			{{:input type="checkbox" value=1 name="archive" label="Archiver" help="cocher pour archiver le matériel ; possible uniquement si la quantité en stock est nulle"}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>

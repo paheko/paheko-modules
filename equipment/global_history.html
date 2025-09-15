@@ -1,0 +1,94 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Afficher l'historique de tous les mouvements
+*}}
+
+{{:admin_header title="Historique des mouvements" custom_css="./style.css" current="module_equipment"}}
+
+{{:include file="./_nav.html" current="historique"}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="./_get_config.html" keep="config"}}
+
+{{* Sélecteur catégories *}}
+{{:assign var="options." value="" label="Toutes les catégories" href="?"}}
+{{#load type="category" order="$$.name"}}
+	{{:assign var="categories.%s"|args:$key value=$name}}
+	{{:assign
+		var="options."
+		value=$key
+		label=$name
+		href="?cat_key=%s"|args:$key
+	}}
+{{/load}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par catégorie</legend>
+	{{:dropdown
+		title="Filtrer par catégorie"
+		options=$options
+		value="%s"|args:$_GET.cat_key
+	}}
+</fieldset>
+
+{{* condition de filtrage *}}
+{{if $_GET.cat_key != null}}
+	{{:assign condition="(SELECT key
+			FROM @TABLE AS cat
+			WHERE cat.key = (SELECT $$.category
+								FROM @TABLE AS mat
+								WHERE mat.key = @TABLE.$$.equipment)) = '%s'"|args:$_GET.cat_key}}
+{{else}}
+	{{:assign condition=1}}
+{{/if}}
+
+{{* lister tous les mouvements *}}
+{{#list
+	type="movement"
+	select="($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
+		CASE $$.direction WHEN 'input' THEN 'Entrée' WHEN 'output' THEN 'Sortie' END AS 'Mouvement';
+		$$.operation AS 'Opération';
+		(SELECT $$.name
+			FROM @TABLE AS mat
+			WHERE mat.key = @TABLE.$$.equipment) AS 'Matériel' ;
+		$$.amount AS 'Quantité';
+		CASE WHEN $$.user NOT NULL
+			THEN (SELECT %s AS nom FROM users WHERE id = $$.user)
+			ELSE ''
+		END as 'Dépositaire';
+		CASE WHEN $$.storage NOT NULL
+				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
+				ELSE ''
+			END as 'Stockage';
+		$$.comment AS 'Commentaire'
+	"|args:$config.user_fields.name_sql
+	where="%s"|args:$condition
+	order=1
+	max=50
+	desc=true
+}}
+	{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+	<tr>
+		<td>{{$date|date_short}}</td>
+		<td>{{$col2}}</td>
+		<td class="nosort">{{$op_label}}</td>
+		<td>{{$col4}}</td>
+		<td class="num">{{$amount}}</td>
+		<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$col6}}</td>
+		<td>{{$col7}}</td>
+		<td>{{$comment}}</td>
+		<td></td>
+	</tr>
+{{else}}
+	<p class="block alert">Aucun mouvement.</p>
+{{/list}}
+
+{{:admin_footer}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript">
+	(function () {
+		disableColumSort(document.querySelector("table[class=list]"));
+	})();
+</script>

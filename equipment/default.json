@@ -1,0 +1,37 @@
+
+{
+	"inputs": [
+		{
+			"key": "c3a955e3-4e6e-414e-90f4-ede7ac3e9e33",
+			"label": "Achat",
+			"type": "définitif"
+		},
+		{
+			"key": "9e909c25-14dc-4e02-b97e-73c34ab2ee9b",
+			"label" : "Location",
+			"type": "temporaire"
+		},
+		{
+			"key": "30eb854c-f89a-4c19-85e4-baa5e34a0317",
+			"label" : "Retour de Location/Prêt",
+			"type" : "retour"
+		}
+	],
+	"outputs": [
+		{
+			"key": "f0eb189b-0b72-46c7-8b48-c23eed7e9672",
+			"label" : "Vente",
+			"type" : "définitif"
+		},
+		{
+			"key" : "c9ba00d9-26ee-448b-9f02-73e479ec2980",
+			"label" : "Prêt",
+			"type" : "temporaire"
+		},
+		{
+			"key" : "fefefa51-1a85-46ca-ab78-b594b10390ff",
+			"label" : "Retour de Location/Emprunt",
+			"type" : "retour"
+		}
+	]
+}

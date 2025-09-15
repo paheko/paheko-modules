@@ -1,0 +1,23 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["link"]
+		},
+		"direction" : {
+			"type" : "string",
+			"enum" : ["input", "output"]
+		},
+		"temp_key" : {
+			"description": "clé d'une entrée ou sortie temporaire",
+			"type": "string"
+		},
+		"return": {
+			"description": "clé du retour associé",
+			"type": "string"
+		}
+	},
+	"required": ["type", "direction", "temp_key", "return"]
+}

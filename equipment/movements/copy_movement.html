@@ -1,0 +1,257 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Dupliquer un mouvement
+	paramètres :
+	- key : clé du mouvement à dupliquer
+	- prop = 1 si matériel appartient à l'asso
+*}}
+
+{{* récupérer les infos du mouvement à dupliquer *}}
+{{#load key=$_GET.key assign="mvt_new"}}
+{{else}}
+	{{:error message="Aucun mouvement avec la clé %s"|args:$_GET.key}}
+{{/load}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config, directions"}}
+{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_new.direction:$mvt_new.operation}}
+
+{{if $mvt_new.direction == "input"}}
+	{{if $type_mvt == "temporaire"}}
+		{{:assign prop=0}}
+	{{else}}
+		{{:assign prop=1}}
+	{{/if}}
+{{else}}
+	{{if $type_mvt == "retour"}}
+		{{:assign prop=0}}
+	{{else}}
+		{{:assign prop=1}}
+	{{/if}}
+{{/if}}
+
+{{* infos pour affichage *}}
+{{:assign amount_init=$mvt_new.amount}}
+{{:assign date_init=$mvt_new.date|date_short}}
+{{:assign eqpmt_key=$mvt_new.equipment}}
+
+{{* récupérer les infos du matériel associé *}}
+{{#load key=$eqpmt_key assign="equipment"}}
+{{else}}
+	{{:error message="Aucun matériel avec la clé « %s »"|args:$eqpmt_key}}
+{{/load}}
+
+{{* limiter les opérations possibles *}}
+{{if $mvt_new.direction == "input"}}
+	{{* types d'entrées *}}
+	{{#foreach from=$config.input_nature key=key}}
+		{{if $_GET.prop && $type != "temporaire" ||
+			 ! $_GET.prop && $type == "temporaire"
+		}}
+			{{:assign var="input_labels.%s"|args:$key value=$label}}
+		{{/if}}
+	{{/foreach}}
+{{else}}
+	{{* types de sorties *}}
+	{{#foreach from=$config.output_nature key=key}}
+		{{if $_GET.prop && $type != "retour" ||
+			! $_GET.prop && $type == "retour"
+		}}
+			{{:assign var="output_labels.%s"|args:$key value=$label}}
+		{{/if}}
+	{{/foreach}}
+{{/if}}
+{{*
+	-------------------- Traiter la saisie --------------------
+*}}
+{{#form on="save"}}
+	{{* vérifier la validité de la saisie *}}
+	{{if $_POST.amount <= 0}}
+		{{:error message="La quantité (%s) doit être strictement positive !!"|args:$_POST.amount}}
+	{{/if}}
+
+	{{if $_POST.date|parse_date|strtotime > $now}}
+		{{:error message="Impossible de saisir une date dans le futur (%s)"|args:$_POST.date}}
+	{{/if}}
+
+	{{if $mvt_new.direction == "input" && $_POST.user != null}}
+		{{:error message="Un membre ne peut être associé qu'à une sortie"}}
+	{{/if}}
+
+	{{if $_POST.user|count > 1}}
+		{{:error message="Un membre au plus peut être associé à une sortie"}}
+	{{/if}}
+
+	{{#foreach from=$_POST.user key="id" item="name"}}
+		{{:assign var="user.id" value=$id}}
+		{{:assign var="user.name" value=$name}}
+	{{/foreach}}
+
+	{{* préparer le mouvement copié *}}
+	{{:assign var="mvt_new.operation" value=$_POST.operation}}
+	{{:assign var="mvt_new.amount" value=$_POST.amount}}
+	{{:assign var="mvt_new.date" value=$_POST.date|parse_date}}
+	{{:assign var="mvt_new.comment" value=$_POST.comment}}
+
+	{{*
+		lister les mouvements
+		- insérer le mvt copié à sa place par date croissante
+	*}}
+	{{:assign insere=false}}
+	{{#load
+		where="
+			$$.type = 'movement'
+		AND
+			$$.equipment = :eqpmt_key"
+		:eqpmt_key=$eqpmt_key
+		order="$$.date"
+		assign="movement"
+	}}
+		{{if ! $insere}}
+			{{if $mvt_new.date < $date}}
+				{{:assign var="movements_new." from=mvt_new}}
+				{{:assign insere=true}}
+			{{elseif $mvt_new.date == $date}}
+				{{if $mvt_new.direction == "input" && $type_mvt != "retour"}}
+					{{:assign var="movements_new." from=mvt_new}}
+					{{:assign insere=true}}
+				{{elseif $mvt_new.direction == "output" && $type_mvt == "temporaire"}}
+					{{if $movement.direction == "input"}}
+						{{:assign var="type_mvt_crt" from="config.input_nature.%s.type"|args::$movement.operation}}
+						{{if $type_mvt_crt == "retour"}}
+							{{:assign var="movements_new." from=mvt_new}}
+							{{:assign insere=true}}
+						{{/if}}
+					{{/if}}
+				{{/if}}
+			{{/if}}
+		{{/if}}
+		{{:assign var="movements_new." from=movement}}
+	{{/load}}
+	{{if ! $insere}}
+		{{:assign var="movements_new." from=mvt_new}}
+	{{/if}}
+
+	{{* Vérifier la cohérence des mouvements du matériel *}}
+	{{:include
+		file="./_validate_modification.html"
+		keep="erreur"
+		movements=$movements_new
+	}}
+	{{if $erreur}}
+		{{:assign var="mvt_label" from="%s_labels.%s"|args:$mvt_new.direction:$mvt_new.operation}}
+		{{:assign new_date=$mvt_new.date|date_short}}
+		{{:error message="Impossible d'enregistrer ce mouvement : « %s de %s (qté : %s) à la date du %s »"|args:$mvt_label:$equipment.name:$mvt_new.amount:$new_date}}
+	{{/if}}
+
+	{{* calculer la nouvelle quantité du matériel *}}
+	{{if $mvt_new.direction == "input"}}
+		{{:assign var="type_mvt" from="config.input_nature.%s.type"|args:$_POST.operation}}
+		{{if $type_mvt == 'définitif'}}
+			{{:assign var="equipment.stock" value="%d+%d"|math:$equipment.stock:$_POST.amount|intval}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign var="equipment.notowned" value="%d+%d"|math:$equipment.notowned:$_POST.amount|intval}}
+		{{elseif $type_mvt == 'retour'}}
+			{{:assign var="equipment.out" value="%d-%d"|math:$equipment.out:$_POST.amount|intval}}
+		{{/if}}
+	{{else}}
+		{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$_POST.operation}}
+		{{if $type_mvt == 'définitif'}}
+			{{:assign var="equipment.stock" value="%d-%d"|math:$equipment.stock:$_POST.amount|intval}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign var="equipment.out" value="%d+%d"|math:$equipment.out:$_POST.amount|intval}}
+		{{elseif $type_mvt == 'retour'}}
+			{{:assign var="equipment.notowned" value="%d-%d"|math:$equipment.notowned:$_POST.amount|intval}}
+		{{/if}}
+	{{/if}}
+
+	{{:save
+		key=$equipment.key
+		validate_schema="../equipment.schema.json"
+		type="equipment"
+		category=$equipment.category
+		name=$equipment.name
+		status="available"
+		stock=$equipment.stock
+		out=$equipment.out
+		notowned=$equipment.notowned
+	}}
+	{{* vérification réussie : enregistrer le nouveau mouvement *}}
+	{{:assign mvt_key=""|uuid}}
+	{{:save
+		key=$mvt_key
+		validate_schema="movement.schema.json"
+		type="movement"
+		direction=$mvt_new.direction
+		operation=$_POST.operation
+		amount=$mvt_new.amount|intval
+		equipment=$eqpmt_key
+		date=$mvt_new.date
+		comment=$mvt_new.comment
+		user=$user.id
+		storage=$_POST.storage
+	}}
+	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=copie"|args:$eqpmt_key:$prop}}
+{{/form}}
+
+{{:admin_header title="Dupliquer un mouvement" current="module_equipment"}}
+{{:form_errors}}
+
+{{*
+	-------------------- Préparer la saisie --------------------
+*}}
+
+{{* récupérer les infos de la catégorie *}}
+{{#load key=$equipment.category assign="category"}}{{/load}}
+{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$mvt_new.direction:$mvt_new.operation}}
+
+{{if $mvt_new.user != null}}
+	{{#select id, !name as nom FROM users WHERE id=:id; !name=$config.user_fields.name_sql :id=$mvt_new.user}}
+		{{:assign var="user.%s"|args:$id value=$nom}}
+	{{/select}}
+{{/if}}
+
+{{#load type="storage" order="$$.name"}}
+	{{:assign var="storage.%s"|args:$key value=$name}}
+{{/load}}
+
+{{* formulaire de copie du mouvement *}}
+<form method="post" action="">
+	<fieldset>
+		<legend>Créer une copie de « {{$op_label}} {{$equipment.name}} (Catégorie : {{$category.name}}) »</legend>
+		<dl>
+			{{if $mvt_new.direction == "input"}}
+				{{:input type="select" name="operation" label="Type" required=true options=$input_labels|sort default=$mvt_new.operation}}
+			{{else}}
+				{{:input type="select" name="operation" label="Type" required=true options=$output_labels|sort default=$mvt_new.operation}}
+			{{/if}}
+			{{:input type="date" name="date" label="Date" required=true default=$mvt_new.date}}
+			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
+			{{if $prop == 1 && $mvt_new.direction == "output"}}
+				{{:input
+					type="list"
+					name="user"
+					label="Membre destinataire"
+					default=$user
+					target="!users/selector.php"
+					multiple=true
+					max=1
+				}}
+			{{/if}}
+			{{if $mvt_new.direction == "input"}}
+				{{if $storage != null}}
+					{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
+				{{/if}}
+			{{/if}}
+			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false default=$mvt_new.comment}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+
+</form>
+
+{{:admin_footer}}

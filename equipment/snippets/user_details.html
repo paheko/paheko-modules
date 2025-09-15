@@ -1,0 +1,149 @@
+{{* -*- brindille -*- *}}
+
+{{#restrict section="users" level="read"}}{{/restrict}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="../_get_config.html" keep="config, directions"}}
+
+{{#foreach from=$directions key="direction"}}
+	{{:assign var="nature" from="config.%s_nature"|args:$direction}}
+	{{#foreach from=$nature key=key}}
+		{{:assign var="types.%s.%s."|args:$direction:$type value=$key|quote_sql}}
+	{{/foreach}}
+	{{:assign var="io_types" from="types.%s"|args:$direction}}
+	{{#foreach from=$io_types key=key}}
+		{{:assign var=elem from="io_types.%s"|args:$key}}
+		{{:assign elem=$elem|implode:","}}
+		{{:assign elem="("|cat:$elem|cat:")"}}
+		{{:assign var="%s_types.%s"|args:$direction:$key value=$elem}}
+	{{/foreach}}
+{{/foreach}}
+
+{{#select
+	eqpmt.key as eqpmt_key,
+	json_extract(eqpmt.document, '$.name') as eqpmt_name,
+	mvt.key AS mvt_key,
+	json_extract(mvt.document, '$.direction') as direction,
+	json_extract(mvt.document, '$.operation') as operation,
+	json_extract(mvt.document, '$.date') as date,
+	json_extract(mvt.document, '$.amount') as amount
+	FROM module_data_equipment AS mvt
+	INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+	INNER JOIN module_data_equipment AS eqpmt
+	ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+	WHERE users.id = :user
+	AND (json_extract(mvt.document, '$.operation') IN !output_types
+		 OR json_extract(mvt.document, '$.operation') IN !input_types)
+	ORDER BY date
+	;
+	:user = $user.id
+	!output_types=$output_types.temporaire
+	!input_types=$input_types.retour
+	assign="temp_mat."
+}}
+{{/select}}
+
+{{if $temp_mat|count != 0}}
+	<h3 class="ruler">Matériels attribués temporairement</h3>
+	<table class="list">
+		<thead>
+			<tr>
+				<td>Date</td>
+				<td>Opération</td>
+				<td>Matériel</td>
+				<td>Quantité</td>
+				<td>Total</td>
+				<td class="actions"></td>
+			</tr>
+		</thead>
+		<tbody>
+			{{#foreach from=$temp_mat}}
+				{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
+				{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+				{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
+				{{if $total == null}}
+					{{:assign total=0}}
+				{{/if}}
+				{{if $direction == 'input' && $type_mvt == 'retour'}}
+					{{:assign var="reste.%s"|args:$eqpmt_key value="%d-%d"|math:$total:$amount}}
+				{{elseif $direction == 'output' && $type_mvt == 'temporaire'}}
+					{{:assign var="reste.%s"|args:$eqpmt_key value="%d+%d"|math:$total:$amount}}
+				{{/if}}
+				{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
+				<tr>
+					<td>{{$date|date_short}}</td>
+					<td>{{$op_label}}</td>
+					<td>{{$eqpmt_name}}</td>
+					<td>{{$amount}}</td>
+					<td>{{$total}}</td>
+					<td class="actions">
+						{{if $direction == "output" && $type_mvt == "temporaire"}}
+							{{:linkbutton
+							label="Retour"
+							href="%smovements/output_return.html?key=%s&prop=0&user=%s"|args:$module.url:$mvt_key:$user.id
+							shape="history"
+							target="_dialog"}}
+						{{/if}}
+					</td>
+				</tr>
+			{{/foreach}}
+		</tbody>
+	</table>
+{{/if}}
+
+{{#select
+	eqpmt.key as eqpmt_key,
+	json_extract(eqpmt.document, '$.name') as eqpmt_name,
+	json_extract(mvt.document, '$.direction') as direction,
+	json_extract(mvt.document, '$.operation') as operation,
+	json_extract(mvt.document, '$.date') as date,
+	json_extract(mvt.document, '$.amount') as amount
+	FROM module_data_equipment AS mvt
+	INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+	INNER JOIN module_data_equipment AS eqpmt
+	ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+	WHERE users.id = :user
+	AND json_extract(mvt.document, '$.operation') IN !output_types
+	ORDER BY date DESC
+	;
+	:user = $user.id
+	!output_types=$output_types.définitif
+	assign="def_mat."
+}}
+{{/select}}
+
+{{if $def_mat|count != 0}}
+	<h3 class="ruler">Matériels attribués définitivement</h3>
+	<table class="list">
+		<thead>
+			<tr>
+				<td>Date</td>
+				<td>Opération</td>
+				<td>Matériel</td>
+				<td>Quantité</td>
+				<td>Total</td>
+			</tr>
+		</thead>
+		<tbody>
+			{{#foreach from=$def_mat}}
+				{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
+				{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+				{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
+				{{if $total == null}}
+					{{:assign total=0}}
+				{{/if}}
+				{{if $direction == 'output' && $type_mvt == 'définitif'}}
+					{{:assign var="reste.%s"|args:$eqpmt_key value="%d+%d"|math:$total:$amount}}
+				{{/if}}
+				{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
+				<tr>
+					<td>{{$date|date_short}}</td>
+					<td>{{$op_label}}</td>
+					<td>{{$eqpmt_name}}</td>
+					<td>{{$amount}}</td>
+					<td>{{$total}}</td>
+				</tr>
+			{{/foreach}}
+		</tbody>
+	</table>
+{{/if}}

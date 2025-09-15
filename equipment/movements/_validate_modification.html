@@ -1,0 +1,44 @@
+{{* -*- brindille -*-
+
+	Vérifier la cohérence des E/S d'un matériel
+	- paramètres :
+		- movements : liste de mouvements d'un matériel
+*}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config"}}
+
+{{:assign erreur=false}}
+{{:assign stock=0}}
+{{:assign exterieur=0}}
+{{:assign nonprop=0}}
+
+{{#foreach from=$movements item="mvt"}}
+	{{* déterminer le type de mouvement *}}
+	{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt.direction:$mvt.operation}}
+
+	{{if $mvt.direction == 'input'}}
+		{{if $type_mvt == 'définitif'}}
+			{{:assign stock="%d+%d"|math:$stock:$mvt.amount}}
+		{{elseif $type_mvt == 'retour'}}
+			{{:assign exterieur="%d-%d"|math:$exterieur:$mvt.amount}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign nonprop="%d+%d"|math:$nonprop:$mvt.amount}}
+		{{/if}}
+	{{elseif $mvt.direction == 'output'}}
+		{{if $type_mvt == 'définitif'}}
+			{{:assign stock="%d-%d"|math:$stock:$mvt.amount}}
+		{{elseif $type_mvt == 'temporaire'}}
+			{{:assign exterieur="%d+%d"|math:$exterieur:$mvt.amount}}
+		{{elseif $type_mvt == 'retour'}}
+			{{:assign nonprop="%d-%d"|math:$nonprop:$mvt.amount}}
+		{{/if}}
+	{{/if}}
+
+	{{:assign dispo="%d-%d"|math:$stock:$exterieur}}
+	{{if $dispo < 0 || $stock < 0 || $exterieur < 0 || $nonprop < 0}}
+		{{:assign erreur=true}}
+		{{:assign var="pb.mvt" value=$mvt}}
+		{{:break}}
+	{{/if}}
+{{/foreach}}

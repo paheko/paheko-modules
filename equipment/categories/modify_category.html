@@ -1,0 +1,38 @@
+{{* -*- brindille -*- *}}
+
+{{#load key=$_GET.key assign="category"}}
+{{else}}
+	{{:error message="Catégorie introuvable"}}
+{{/load}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{* Vérifier s'il existe déjà une catégorie avec le même nom *}}
+	{{#load type="category" where="$$.name = :name COLLATE U_NOCASE" :name=$_POST.name|trim limit=1}}
+		{{:error message="Modification impossible car ce nom de catégorie (« %s ») existe déjà !"|args:$name|trim}}
+	{{/load}}
+
+	{{:save
+		key=$category.key
+		validate_schema="./category.schema.json"
+		type="category"
+		name=$_POST.name|trim
+	}}
+	{{:redirect force="./index.html?ok=1&msg=modification"}}
+{{/form}}
+
+{{:admin_header title="Modifier une catégorie" current="module_equipment"}}
+{{:form_errors}}
+
+{{* formulaire de modification de catégorie *}}
+<form method="post" action="" data-focus="1">
+	<fieldset class="modif_categorie">
+		<legend>Modifier la catégorie « {{$category.name}} »</legend>
+		<dl>
+		{{:input type="text" name="name" label="Nom" default=$category.name required=true maxlength="100"}}
+		</dl>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</fieldset>
+</form>

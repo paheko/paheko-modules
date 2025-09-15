@@ -1,0 +1,51 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Remettre le matériel en service
+	Paramètres :
+	- key : clé du matériel à modifier
+*}}
+
+{{:assign equipment_key=$_GET.key|trim}}
+{{#load key=$_GET.key assign="equipment"}}
+{{else}}
+	{{:error message="Pas de matériel avec la clé %s"|args:$equipment_key}}
+{{/load}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{if $_POST.unarchive != 1}}
+		{{:save
+			key=$equipment.key
+			status="available"
+		}}
+	{{:redirect force="archives.html?ok=1&msg=modification"}}
+	{{/if}}
+	{{:redirect force="archives.html"}}
+{{/form}}
+
+{{:admin_header title="Modifier matériel" custom_css="./style.css" current="module_equipment"}}
+{{:form_errors}}
+
+{{#load key=$equipment.category}}
+	{{:assign cat_name=$name}}
+{{/load}}
+
+<form method="post" action="">
+	<fieldset class="informations">
+		<legend>Désarchiver un matériel</legend>
+		<dl class="describe">
+			<dt>Matériel</dt>
+			<dd>{{$equipment.name}}</dd>
+			<dt>Catégorie</dt>
+			<dd>{{$cat_name}}</dd>
+		</dl>
+		<dl>
+			{{:input type="checkbox" value=1 name="unarchive" label="Archivé" checked="checked" help="décocher pour remettre le matériel en service"}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>

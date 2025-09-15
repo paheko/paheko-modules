@@ -1,0 +1,44 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Afficher les lieux de stockage
+*}}
+
+{{:admin_header title="Configuration" current="module_equipment"}}
+
+{{:include file="../_nav.html" current="config" subcurrent="storage"}}
+
+{{if $_GET.ok}}
+	{{if $_GET.msg == "ajout"}}
+		<p class="block confirm">Ajout effectué</p>
+	{{elseif $_GET.msg == "suppression"}}
+		<p class="block confirm">Suppression effectuée</p>
+	{{/if}}
+{{elseif $_GET.err}}
+	{{if $_GET.msg == "suppression"}}
+		<p class="block error">Impossible de supprimer ce lieu de stockage car il est utilisé !</p>
+	{{else}}
+		<p class="block error">Opération refusée</p>
+	{{/if}}
+{{/if}}
+
+{{#list
+	type="storage"
+	select="
+		$$.name AS 'Nom';
+		$$.location AS 'Emplacement'
+	"
+	}}
+	<tr>
+		<td>{{$name}}</td>
+		<td>{{$location}}</td>
+		<td class="actions">
+			{{:linkbutton label="Modifier" shape="edit" href="modify_storage.html?key=%s"|args:$key target="_dialog"}}
+			{{:linkbutton label="Supprimer" shape="delete" href="delete_storage.html?key=%s"|args:$key target="_dialog"}}
+		</td>
+	</tr>
+{{else}}
+	<p class="block alert">Aucun lieu de stockage.</p>
+{{/list}}
+
+{{:admin_footer}}

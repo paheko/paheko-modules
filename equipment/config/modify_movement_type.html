@@ -1,0 +1,58 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	paramètres :
+	- dir : input ou output
+	- op_key : clé du type de mouvement dont on veut modifier le libellé
+*}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="config" subcurrent="typesES"}}
+{{/if}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="../_get_config.html" keep="config, directions"}}
+
+{{#form on="save"}}
+	{{#foreach from=$directions key="direction"}}
+		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
+		{{#foreach from=$nature key="key"}}
+			{{:assign var="%s_nature.key"|args:$direction value=$key}}
+			{{if $_GET.dir == $direction}}
+				{{if $key == $_GET.op_key}}
+					{{:assign var="%s_nature.label"|args:$direction value=$_POST.name|trim}}
+				{{else}}
+					{{:assign var="%s_nature.label"|args:$direction value=$label}}
+				{{/if}}
+			{{else}}
+				{{:assign var="%s_nature.label"|args:$direction value=$label}}
+			{{/if}}
+			{{:assign var="%s_nature.type"|args:$direction value=$type}}
+			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
+		{{/foreach}}
+	{{/foreach}}
+
+	{{:save
+		key="config"
+		validate_schema="../config.schema.json"
+		input_nature=$input_natures
+		output_nature=$output_natures
+	}}
+	{{:redirect to="./config.html?ok=1"}}
+{{/form}}
+
+{{:admin_header title="Gestion des matériels" current="module_equipment"}}
+{{:form_errors}}
+{{:assign var="default_label" from="config.%s_nature.%s.label"|args:$_GET.dir:$_GET.op_key}}
+<form method="post" action="" data-focus="1">
+	<fieldset>
+		<legend>Modifier le libellé</legend>
+		<dl>
+		{{:input type="text" name="name" label="Libellé" default=$default_label required=true maxlength="100"}}
+		</dl>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</fieldset>
+</form>

@@ -1,0 +1,44 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"input_nature": {
+			"description": "Nature des entrées",
+			"type": ["array", "null"],
+			"items": {
+				"type": "object",
+				"properties": {
+					"key" : {
+						"type" : "string"
+					},
+					"label" : {
+						"type" : "string"
+					},
+					"type" : {
+						"type" : "string",
+						"enum" : ["définitif", "temporaire", "retour"]
+					}
+				}
+			}
+		},
+		"output_nature": {
+			"description": "Nature des sorties",
+			"type": ["array", "null"],
+			"items": {
+				"type": "object",
+				"properties": {
+					"key" : {
+						"type" : "string"
+					},
+					"label" : {
+						"type" : "string"
+					},
+					"type" : {
+						"type" : "string",
+						"enum" : ["définitif", "temporaire", "retour"]
+					}
+				}
+			}
+		}
+	}
+}

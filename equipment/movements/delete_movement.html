@@ -1,0 +1,171 @@
+{{* -*- brindille -*-}}
+
+{{*
+	paramètres GET :
+	- key : clé du mouvement à supprimer
+	- prop : = 1 si matériel propriété de l'asso
+*}}
+
+{{#load key=$_GET.key assign="mvt_suppr"}}
+{{else}}
+	{{:error message="Aucun mouvement avec la clé « %s »"|args:$_GET.key}}
+{{/load}}
+
+{{* trouver le matériel concerné par ce mouvement *}}
+{{#load type="equipment" where="key = :key" :key=$mvt_suppr.equipment assign="curr_eqpmt"}}
+{{else}}
+	{{:error message="Aucun matériel avec la clé « %s »"|args:$mvt_suppr.equipment}}
+{{/load}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config"}}
+
+{{#form on="delete"}}
+	{{* vérifier s'il est possible de supprimer le mouvement *}}
+	{{if $mvt_suppr.direction == 'input'}}
+		{{:assign var="type_operation" from="config.input_nature.%s.type"|args:$mvt_suppr.operation}}
+		{{if $type_operation == 'temporaire'}}
+			{{#load type="link" where="$$.temp_key = :key" :key=$_GET.key}}
+				{{:assign link_key=$key}}
+			{{/load}}
+			{{if $link_key != null}}
+				{{:redirect force="../equipment_history.html?key=%s&prop=%s&err=1&msg=suppression"|args:$mvt_suppr.equipment:$_GET.prop}}
+			{{/if}}
+		{{else}}
+			{{:assign dispo=0}}
+			{{:assign nonprop=0}}
+
+			{{#load
+				type="movement"
+				where="$$.equipment = :key" :key=$mvt_suppr.equipment
+				assign="mvt"
+				order="$$.date"}}
+
+				{{* déterminer le type de mouvement *}}
+				{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt.direction:$mvt.operation}}
+
+				{{if $key != $_GET.key}}
+					{{* ce n'est pas le mouvement à supprimer : cumuler les entrées/sorties *}}
+					{{if $mvt.direction == 'input'}}
+						{{if $type_mvt == 'temporaire'}}
+							{{:assign nonprop="%d+%d"|math:$nonprop:$mvt.amount}}
+						{{else}}
+							{{:assign dispo="%d+%d"|math:$dispo:$mvt.amount}}
+						{{/if}}
+					{{elseif $mvt.direction == 'output'}}
+						{{if $type_mvt == 'retour'}}
+							{{:assign nonprop="%d-%d"|math:$nonprop:$mvt.amount}}
+						{{else}}
+							{{:assign dispo="%d-%d"|math:$dispo:$mvt.amount}}
+						{{/if}}
+					{{/if}}
+
+					{{* problème ? *}}
+					{{if $dispo < 0 || $nonprop < 0}}
+						{{:redirect force="../equipment_history.html?key=%s&prop=%s&err=1&msg=suppression"|args:$mvt_suppr.equipment:$_GET.prop}}
+					{{/if}}
+				{{/if}}
+			{{/load}}
+
+			{{* suppression possible *}}
+			{{if $type_operation == 'retour'}}
+				{{#load type="link" where="$$.return = :key" :key=$_GET.key}}
+					{{:assign link_key=$key}}
+				{{/load}}
+			{{/if}}
+		{{/if}}
+	{{else}}
+		{{* sortie *}}
+		{{:assign var="type_operation" from="config.output_nature.%s.type"|args:$mvt_suppr.operation}}
+
+		{{if $type_operation == 'temporaire'}}
+			{{#load type="link" where="$$.temp_key = :key OR $$.return = :key" :key=$_GET.key}}
+				{{:assign link_key=$key}}
+			{{/load}}
+			{{if $link_key != null}}
+				{{:redirect force="../equipment_history.html?key=%s&prop=%s&err=1&msg=suppression"|args:$mvt_suppr.equipment:$_GET.prop}}
+			{{/if}}
+		{{elseif $type_operation == 'retour'}}
+			{{#load type="link" where="$$.return = :key" :key=$_GET.key}}
+				{{:assign link_key=$key}}
+			{{/load}}
+		{{/if}}
+	{{/if}}
+
+	{{* vérification réussie : supprimer le mouvement *}}
+	{{:delete key=$_GET.key}}
+	{{if $link_key != null}}
+		{{:delete key=$link_key}}
+	{{/if}}
+
+	{{* voir s'il reste des mouvements pour le matériel concerné par le mouvement supprimé *}}
+	{{#foreach from=$config.input_nature key=key}}
+		{{if $type == 'définitif'}}
+			{{:assign var="input_types." value=$key}}
+		{{/if}}
+	{{/foreach}}
+	{{#load type="movement" where="$$.equipment = :eqpmt_key" :eqpmt_key=$curr_eqpmt.key}}
+		{{:assign mvt_ok=true}}
+		{{if $operation|in:$input_types}}
+			{{:assign entree_def=true}}
+			{{:break}}
+		{{/if}}
+	{{/load}}
+
+	{{if $mvt_ok}}
+		{{* calculer et mettre à jour la nouvelle quantité du matériel *}}
+		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_suppr.direction:$mvt_suppr.operation}}
+		{{if $mvt_suppr.direction == 'input'}}
+			{{if $type_mvt == 'définitif'}}
+				{{:assign var="curr_eqpmt.stock" value="%d-%d"|math:$curr_eqpmt.stock:$mvt_suppr.amount|intval}}
+			{{elseif $type_mvt == 'temporaire'}}
+				{{:assign var="curr_eqpmt.notowned" value="%d-%d"|math:$curr_eqpmt.notowned:$mvt_suppr.amount|intval}}
+			{{elseif $type_mvt == 'retour'}}
+				{{:assign var="curr_eqpmt.out" value="%d+%d"|math:$curr_eqpmt.out:$mvt_suppr.amount|intval}}
+			{{/if}}
+		{{else}}
+			{{if $type_mvt == 'définitif'}}
+				{{:assign var="curr_eqpmt.stock" value="%d+%d"|math:$curr_eqpmt.stock:$mvt_suppr.amount|intval}}
+			{{elseif $type_mvt == 'temporaire'}}
+				{{:assign var="curr_eqpmt.out" value="%d-%d"|math:$curr_eqpmt.out:$mvt_suppr.amount|intval}}
+			{{elseif $type_mvt == 'retour'}}
+				{{:assign var="curr_eqpmt.notowned" value="%d+%d"|math:$curr_eqpmt.notowned:$mvt_suppr.amount|intval}}
+			{{/if}}
+		{{/if}}
+
+		{{if $curr_eqpmt.stock == 0 && ! $entree_def}}
+			{{:assign var="curr_eqpmt.stock" value=null}}
+		{{/if}}
+
+		{{:save
+			key=$curr_eqpmt.key
+			validate_schema="../equipment.schema.json"
+			type="equipment"
+			category=$curr_eqpmt.category
+			name=$curr_eqpmt.name
+			status="available"
+			stock=$curr_eqpmt.stock
+			out=$curr_eqpmt.out
+			notowned=$curr_eqpmt.notowned
+		}}
+		{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=suppression"|args:$mvt_suppr.equipment:$_GET.prop}}
+	{{else}}
+		{{* supprimer le matériel *}}
+		{{:delete key=$curr_eqpmt.key}}
+		{{:redirect force="../index.html?ok=1&msg=supprmvtmat"}}
+	{{/if}}
+{{/form}}
+
+{{:admin_header title="Supprimer un mouvement" current="module_equipment"}}
+{{:form_errors}}
+
+{{:assign var="date_suppr" value="%s"|args:$mvt_suppr.date|date_short}}
+{{:assign var="mvt_label" from="config.%s_nature.%s.label"|args:$mvt_suppr.direction:$mvt_suppr.operation}}
+
+{{:delete_form
+	legend="Supprimer ?"
+	warning="Supprimer le mouvement « %s de %s (quantité : %d) en date du %s » ?"|args:$mvt_label:$curr_eqpmt.name:$mvt_suppr.amount:$date_suppr
+}}
+
+
+{{:admin_footer}}

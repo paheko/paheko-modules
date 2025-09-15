@@ -1,0 +1,136 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	paramètres :
+	- dir : input ou output
+*}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="config" subcurrent="typesES"}}
+{{/if}}
+
+{{*	Traiter l'envoi du formulaire *}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="../_get_config.html" keep="config, directions"}}
+
+{{#form on="save"}}
+	{{* vérifier s'il existe un type de mouvement de même nom *}}
+	{{#foreach from=$directions key="direction"}}
+		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
+		{{#foreach from=$nature key="key"}}
+			{{:assign var="fields" from="_POST.%s_fields"|args:$_GET.dir}}
+			{{if $label|trim|tolower == $fields.label|trim|tolower}}
+				{{:error message="Ce libellé est déjà présent"}}
+			{{/if}}
+			{{:assign var="%s_nature.key"|args:$direction value=$key}}
+			{{:assign var="%s_nature.label"|args:$direction value=$label}}
+			{{:assign var="%s_nature.type"|args:$direction value=$type}}
+			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
+		{{/foreach}}
+
+		{{* ajouter le nouveau type de mouvement *}}
+		{{if $_GET.dir == $direction}}
+			{{:assign var="newlabel" from="_POST.%s_fields.label"|args:$direction}}
+			{{:assign newlabel=$newlabel|trim}}
+			{{:assign var="%s_nature.key"|args:$direction value=""|uuid}}
+			{{:assign var="%s_nature.label"|args:$direction value=$newlabel}}
+			{{:assign var="%s_nature.type"|args:$direction from="_POST.%s_fields.type"|args:$direction}}
+			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
+		{{/if}}
+
+	{{/foreach}}
+
+	{{:save
+		key="config"
+		validate_schema="../config.schema.json"
+		input_nature=$input_natures
+		output_nature=$output_natures
+	}}
+	{{:redirect to="./config.html?ok=1"}}
+{{/form}}
+
+{{:admin_header title="Gestion des matériels" current="module_equipment"}}
+{{:form_errors}}
+
+{{if $_GET.dir == 'input'}}
+	{{* types d'entrées *}}
+	{{#foreach from=$config.input_nature}}
+		{{:assign var='input_types.%s'|args:$type value=$type}}
+	{{/foreach}}
+	<form method="post" action="">
+		<fieldset>
+			<legend>Type d'entrée</legend>
+			<dl>
+				<td>
+					{{:input type="select"
+						label="Type d'entrée"
+						name="input_fields[type]"
+						options=$input_types
+						default=$type
+						required=true
+						default_empty="— Choisir un type —"}}
+				</td>
+				<td>
+					{{:input
+						type="text"
+						label="Libellé de l'entrée"
+						name="input_fields[label]"
+					required=true}}
+				</td>
+			</dl>
+			<div class="help block">
+				<h3>Signification du type d'entrée</h3>
+				<ul>
+					<li><b>définitif</b> : l'asso devient propriétaire du matériel (ex : achat, don)</li>
+					<li><b>temporaire</b> : l'asso ne devient <strong>pas</strong> propriétaire du matériel (ex : location, emprunt)</li>
+					<li><b>retour</b> : matériel qui revient après une sortie temporaire (ex : retour de location ou de prêt)</li>
+				</ul>
+			</div>
+		</fieldset>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</form>
+{{else}}
+	{{* types de sorties *}}
+	{{#foreach from=$config.output_nature}}
+		{{:assign var='output_types.%s'|args:$type value=$type}}
+	{{/foreach}}
+
+	<form method="post" action="">
+		<fieldset>
+			<legend>Type de sortie</legend>
+			<dl>
+				<td>
+					{{:input type="select"
+						label="Type de sortie"
+						name="output_fields[type]"
+						options=$output_types
+						default=$type
+						required=true
+						default_empty="— Choisir un type —"}}
+				</td>
+				<td>
+					{{:input
+						type="text"
+						label="Libellé de la sortie"
+						name="output_fields[label]"
+					required=true}}
+				</td>
+			</dl>
+			<div class="help block">
+				<h3>Signification du type de sortie</h3>
+				<ul>
+					<li><b>définitif</b> : le matériel n'appartient plus à l'asso (ex : vente, casse, perte, vol, ...)</li>
+					<li><b>temporaire</b> : le matériel sort temporairement de l'asso qui en reste propriétaire (ex : location, prêt)</li>
+					<li><b>retour</b> : le matériel <strong>non propriété de l'asso</strong> est rendu à son propriétaire (ex : retour de location ou d'emprunt)</li>
+				</ul>
+			</div>
+		</fieldset>
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</form>
+{{/if}}
