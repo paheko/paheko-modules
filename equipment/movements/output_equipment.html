@@ -175,7 +175,7 @@
 			<dl>
 				{{:input type="select" name="operation" label="Type" required=true default_empty="— Aucun —" options=$output_labels|sort}}
 				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
-				{{:input type="number" name="amount" label="Quantité" required=true default=$dispo min=1 max=$dispo}}
+				{{:input type="number" name="amount" label="Quantité" required=true default=1 min=1 max=$dispo}}
 				{{:input
 					type="list"
 					name="user"
