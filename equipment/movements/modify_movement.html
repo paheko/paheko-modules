@@ -210,7 +210,7 @@
 	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=modification"|args:$eqpmt_key:$prop}}
 {{/form}}
 
-{{:admin_header title="Modifier un mouvement" current="module_equipment"}}
+{{:admin_header title="Modifier un mouvement" custom_css="./../style.css" current="module_equipment"}}
 {{:form_errors}}
 
 {{*
@@ -236,8 +236,17 @@
 
 {{* formulaire de modification du mouvement *}}
 <form method="post" action="">
+	<fieldset class="informations">
+		<legend>Informations matériel</legend>
+		<dl class="describe">
+			<dt>Matériel</dt>
+			<dd>{{$equipment.name}}</dd>
+			<dt>Catégorie</dt>
+			<dd>{{$category.name}}</dd>
+		</dl>
+	</fieldset>
 	<fieldset>
-		<legend>Modifier « {{$op_label}} {{$equipment.name}} (Catégorie : {{$category.name}}) »</legend>
+		<legend>Modifier un mouvement</legend>
 		<dl>
 			{{if $mvt_new.direction == "input"}}
 				{{:input type="select" name="operation" label="Type" required=true options=$input_labels|sort default=$mvt_new.operation}}

@@ -53,7 +53,7 @@
 	}}
 	{{:assign var=cat_name from=categories.%s|args:$category}}
 	<tr>
-		<td>{{$name}}</td>
+		<td>{{:link href="equipment_history.html?key=%s&prop=1"|args:$key" label=$name}}</td>
 		<td>{{$cat_name}}</td>
 		<td class="num">{{$stock}}</td>
 		<td class="num">{{$out}}</td>
@@ -71,10 +71,6 @@
 			shape="plus"
 			href="movements/input_equipment.html?key=%s"|args:$key
 			target="_dialog"}}
-			{{:linkbutton
-			label="Historique"
-			href="equipment_history.html?key=%s&prop=1"|args:$key
-			shape="table"}}
 			{{:linkbutton
 			label="Modifier"
 			href="modify_equipment.html?key=%s&prop=1"|args:$key

@@ -195,7 +195,7 @@
 	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=copie"|args:$eqpmt_key:$prop}}
 {{/form}}
 
-{{:admin_header title="Dupliquer un mouvement" current="module_equipment"}}
+{{:admin_header title="Dupliquer un mouvement" custom_css="./../style.css" current="module_equipment"}}
 {{:form_errors}}
 
 {{*
@@ -218,8 +218,17 @@
 
 {{* formulaire de copie du mouvement *}}
 <form method="post" action="">
+	<fieldset class="informations">
+		<legend>Informations matériel</legend>
+		<dl class="describe">
+			<dt>Matériel</dt>
+			<dd>{{$equipment.name}}</dd>
+			<dt>Catégorie</dt>
+			<dd>{{$category.name}}</dd>
+		</dl>
+	</fieldset>
 	<fieldset>
-		<legend>Créer une copie de « {{$op_label}} {{$equipment.name}} (Catégorie : {{$category.name}}) »</legend>
+		<legend>Créer une copie du mouvement</legend>
 		<dl>
 			{{if $mvt_new.direction == "input"}}
 				{{:input type="select" name="operation" label="Type" required=true options=$input_labels|sort default=$mvt_new.operation}}

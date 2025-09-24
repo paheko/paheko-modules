@@ -187,12 +187,23 @@
 {{#load key=$equipment.category assign="category"}}{{/load}}
 
 <form method="post" action="">
+	<fieldset class="informations">
+		<legend>Informations matériel</legend>
+		<dl class="describe">
+			<dt>Matériel</dt>
+			<dd>{{$equipment.name}}</dd>
+			<dt>Catégorie</dt>
+			<dd>{{$category.name}}</dd>
+			<dt>Quantité disponible</dt>
+			<dd class="num">{{$present}}</dd>
+		</dl>
+	</fieldset>
 	<fieldset>
-		<legend>Retour de « {{$equipment.name}} (Catégorie : {{$category.name}}) »</legend>
+		<legend>Retour de matériel</legend>
 		<dl>
 			{{:input type="select" name="operation" label="Type" required=true options=$return_label}}
 			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
-			{{:input type="number" name="amount" label="Quantité" min=1 max=$present required=true default=$present}}
+			{{:input type="number" name="amount" label="Quantité" min=1 max=$present required=true default=1}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false}}
 		</dl>
 	</fieldset>
