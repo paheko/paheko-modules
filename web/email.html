@@ -12,32 +12,37 @@
 		margin: 10px;
 	}
 	#main {
-		{{if $_GET.preview !== null}}
 		max-width: 700px;
 		margin: 0 auto;
-		{{/if}}
-		background: rgba({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}200, 200, 200{{/if}}, 0.2);
-		padding: 10px;
-		border-radius: 10px;
+		margin-bottom: 30px;
 	}
 	a {
 		color: #009;
 		text-decoration: underline;
 	}
-	.web-content, .footer {
-		padding: 10px;
-		background: #fff;
-		max-width: 750px;
-		margin: 10px auto;
-		border-radius: 5px;
+	.header {
+		margin-bottom: 10px;
 	}
-	.footer {
-		margin-top: 30px;
-		background: rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
-	}
-	.footer h3, .footer h4, .footer h5 {
-		text-align: center;
+	.header h2, .header h5 {
 		margin: 5px 0;
+	}
+	.header h5 {
+		font-weight: normal;
+	}
+	.header a {
+		color: rgb({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 255{{/if}});
+	}
+	.header img {
+		float: right;
+		margin-left: 10px;
+		margin-bottom: 10px;
+		max-height: 100px;
+	}
+	.web-content {
+		border: 5px solid rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
+		border-radius: 10px;
+		padding: 10px;
+		clear: both;
 	}
 	{{* Inclure le contenu de content.css pour s'assurer que le style du texte Markdown/Skriv est correct *}}
 	{{:include file="./content.css"}}
@@ -48,27 +53,35 @@
 </head>
 <body>
 
+{{* This is the email preheader, what will be seen below the subject line in some email clients *}}
+<span style="display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">{{$html|strip_tags|truncate:130:"…":true}}</span>
+
 <div id="main">
 
-{{* Le contenu du mail est dans la variable $html, ne pas supprimer sinon le message sera vide ! *}}
-{{$html|raw}}
+	<div class="header">
+		{{if $config.files.logo}}
+			<img src="{{$config.files.logo}}" alt="{{$config.org_name}}" class="logo" />
+		{{/if}}
+		<h2><a href="{{$site_url}}" target="_blank">{{$config.org_name}}</a></h2>
+		{{if $config.org_address || $config.org_phone}}
+			<h5>
+				{{$config.org_address}}
+				{{if $config.org_phone}}
+					(<a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>)
+				{{/if}}
+			</h5>
+		{{/if}}
+	</div>
 
-{{* D'autres variables sont disponibles, permettant de personnaliser le message :
-	- $recipient contient l'adresse email du destinataire
-	- $data contient les données disponibles pour le message (par exemple $data.nom contiendra le nom du membre dans un message collectif)
-	- $context contient le contexte du message (0 = changement de mot de passe, 1 = message privé entre membres, 2 = message collectif)
-	- $from contient l'expéditeur (si NULL, l'expéditeur sera l'association)
-*}}
+	{{* Le contenu du mail est dans la variable $html, ne pas supprimer sinon le message sera vide ! *}}
+	{{$html|raw}}
 
-<div class="footer">
-	<h3><a href="{{$site_url}}" target="_blank">{{$config.org_name}}</a></h3>
-	{{if $config.org_address}}
-		<h4>{{$config.org_address}}</h4>
-	{{/if}}
-	{{if $config.org_phone}}
-		<h5><a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a></h5>
-	{{/if}}
-</div>
+	{{* D'autres variables sont disponibles, permettant de personnaliser le message :
+		- $recipient contient l'adresse email du destinataire
+		- $data contient les données disponibles pour le message (par exemple $data.nom contiendra le nom du membre dans un message collectif)
+		- $context contient le contexte du message (0 = changement de mot de passe, 1 = message privé entre membres, 2 = message collectif)
+		- $from contient l'expéditeur (si NULL, l'expéditeur sera l'association)
+	*}}
 
 </div>
 
