@@ -22,27 +22,32 @@
 	}
 	.header {
 		margin-bottom: 10px;
+		display: flex;
+		justify-content: space-between;
 	}
-	.header h2, .header h5 {
-		margin: 5px 0;
+	.header h2 {
+		margin-bottom: 5px;
 	}
 	.header h5 {
 		font-weight: normal;
 	}
-	.header a {
+	.header a, .header h2 {
 		color: rgb({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 255{{/if}});
 	}
 	.header img {
-		float: right;
-		margin-left: 10px;
-		margin-bottom: 10px;
-		max-height: 100px;
+		margin-left: auto;
+		max-height: 75px;
+	}
+	.header .title {
+		display: flex;
+		align-items: flex-start;
+		flex-direction: column;
+		justify-content: flex-end;
 	}
 	.web-content {
 		border: 5px solid rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
 		border-radius: 10px;
 		padding: 10px;
-		clear: both;
 	}
 	{{* Inclure le contenu de content.css pour s'assurer que le style du texte Markdown/Skriv est correct *}}
 	{{:include file="./content.css"}}
@@ -59,17 +64,24 @@
 <div id="main">
 
 	<div class="header">
-		{{if $config.files.logo}}
-			<img src="{{$config.files.logo}}" alt="{{$config.org_name}}" class="logo" />
-		{{/if}}
-		<h2><a href="{{$site_url}}" target="_blank">{{$config.org_name}}</a></h2>
-		{{if $config.org_address || $config.org_phone}}
+		<div class="title">
+			<h2>{{$config.org_name}}</h2>
 			<h5>
-				{{$config.org_address}}
+				{{if $site_url}}
+					<a href="{{$site_url}}" target="_blank">{{$site_url|replace:'https://':''}}</a>
+				{{/if}}
+				{{if $config.org_address}}
+					<br />{{$config.org_address}}
+				{{/if}}
 				{{if $config.org_phone}}
-					(<a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>)
+					<br />Téléphone : <a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>
 				{{/if}}
 			</h5>
+		</div>
+		{{if $config.files.logo}}
+		<div>
+			<img src="{{$config.files.logo}}" alt="{{$config.org_name}}" class="logo" />
+		</div>
 		{{/if}}
 	</div>
 
