@@ -68,13 +68,13 @@
 			<h2>{{$config.org_name}}</h2>
 			<h5>
 				{{if $site_url}}
-					<a href="{{$site_url}}" target="_blank">{{$site_url|replace:'https://':''}}</a>
+					Site web&nbsp;: <a href="{{$site_url}}" target="_blank">{{$site_url|regexp_replace:'!^https?://(.*?)/?$!':'$1'}}</a>
 				{{/if}}
 				{{if $config.org_address}}
 					<br />{{$config.org_address}}
 				{{/if}}
 				{{if $config.org_phone}}
-					<br />Téléphone : <a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>
+					<br />Téléphone&nbsp;: <a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>
 				{{/if}}
 			</h5>
 		</div>
