@@ -30,29 +30,32 @@
 {{/load}}
 
 {{if $table_presente}}
-	{{#select
-		eqpmt.key as eqpmt_key,
-		json_extract(eqpmt.document, '$.name') as eqpmt_name,
-		mvt.key AS mvt_key,
-		json_extract(mvt.document, '$.direction') as direction,
-		json_extract(mvt.document, '$.operation') as operation,
-		json_extract(mvt.document, '$.date') as date,
-		json_extract(mvt.document, '$.amount') as amount
-		FROM module_data_equipment AS mvt
-		INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-		INNER JOIN module_data_equipment AS eqpmt
-		ON json_extract(mvt.document, '$.equipment') = eqpmt.key
-		WHERE users.id = :user
-		AND (json_extract(mvt.document, '$.operation') IN !output_types
-			 OR json_extract(mvt.document, '$.operation') IN !input_types)
-		ORDER BY date
-		;
-		:user = $user.id
-		!output_types=$output_types.temporaire
-		!input_types=$input_types.retour
-		assign="temp_mat."
-	}}
-	{{/select}}
+	{{* vérifier la présence des types d'entrées et de sorties requis *}}
+	{{if $output_types|has_key:"temporaire" && $input_types|has_key:"retour"}}
+		{{#select
+			eqpmt.key as eqpmt_key,
+			json_extract(eqpmt.document, '$.name') as eqpmt_name,
+			mvt.key AS mvt_key,
+			json_extract(mvt.document, '$.direction') as direction,
+			json_extract(mvt.document, '$.operation') as operation,
+			json_extract(mvt.document, '$.date') as date,
+			json_extract(mvt.document, '$.amount') as amount
+			FROM module_data_equipment AS mvt
+			INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+			INNER JOIN module_data_equipment AS eqpmt
+			ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+			WHERE users.id = :user
+			AND (json_extract(mvt.document, '$.operation') IN !output_types
+				 OR json_extract(mvt.document, '$.operation') IN !input_types)
+			ORDER BY date
+			;
+			:user = $user.id
+			!output_types=$output_types.temporaire
+			!input_types=$input_types.retour
+			assign="temp_mat."
+		}}
+		{{/select}}
+	{{/if}}
 
 	{{if $temp_mat|count != 0}}
 		<h3 class="ruler">Matériels attribués temporairement</h3>
@@ -102,26 +105,29 @@
 		</table>
 	{{/if}}
 
-	{{#select
-		eqpmt.key as eqpmt_key,
-		json_extract(eqpmt.document, '$.name') as eqpmt_name,
-		json_extract(mvt.document, '$.direction') as direction,
-		json_extract(mvt.document, '$.operation') as operation,
-		json_extract(mvt.document, '$.date') as date,
-		json_extract(mvt.document, '$.amount') as amount
-		FROM module_data_equipment AS mvt
-		INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-		INNER JOIN module_data_equipment AS eqpmt
-		ON json_extract(mvt.document, '$.equipment') = eqpmt.key
-		WHERE users.id = :user
-		AND json_extract(mvt.document, '$.operation') IN !output_types
-		ORDER BY date DESC
-		;
-		:user = $user.id
-		!output_types=$output_types.définitif
-		assign="def_mat."
-	}}
-	{{/select}}
+	{{* vérifier la présence des types d'entrées et de sorties requis *}}
+	{{ if $output_types|has_key:"définitif"}}
+		{{#select
+			eqpmt.key as eqpmt_key,
+			json_extract(eqpmt.document, '$.name') as eqpmt_name,
+			json_extract(mvt.document, '$.direction') as direction,
+			json_extract(mvt.document, '$.operation') as operation,
+			json_extract(mvt.document, '$.date') as date,
+			json_extract(mvt.document, '$.amount') as amount
+			FROM module_data_equipment AS mvt
+			INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+			INNER JOIN module_data_equipment AS eqpmt
+			ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+			WHERE users.id = :user
+			AND json_extract(mvt.document, '$.operation') IN !output_types
+			ORDER BY date DESC
+			;
+			:user = $user.id
+			!output_types=$output_types.définitif
+			assign="def_mat."
+		}}
+		{{/select}}
+	{{/if}}
 
 	{{if $def_mat|count != 0}}
 		<h3 class="ruler">Matériels attribués définitivement</h3>

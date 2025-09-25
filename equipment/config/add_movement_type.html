@@ -12,8 +12,8 @@
 
 {{*	Traiter l'envoi du formulaire *}}
 
-{{* lecture config (défaut ou enregistrée) *}}
-{{:include file="../_get_config.html" keep="config, directions"}}
+{{* lecture config par défaut *}}
+{{:include file="../_get_config.html" keep="config, directions" default=true}}
 
 {{#form on="save"}}
 	{{* vérifier s'il existe un type de mouvement de même nom *}}
