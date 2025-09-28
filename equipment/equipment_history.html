@@ -310,11 +310,15 @@
 							target="_dialog"}}
 						{{/if}}
 					{{/if}}
-					{{:linkbutton
-						label="Dupliquer"
-						href="movements/copy_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
-						shape="plus"
-						target="_dialog"}}
+					{{if $direction == "output" && $type_mvt == "retour"}}
+						{{* interdire dupliquer *}}
+					{{else}}
+						{{:linkbutton
+							label="Dupliquer"
+							href="movements/copy_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
+							shape="plus"
+							target="_dialog"}}
+					{{/if}}
 					{{:linkbutton
 						label="Modifier"
 						href="movements/modify_movement.html?key=%s"|args:$key
