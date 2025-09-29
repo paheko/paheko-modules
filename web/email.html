@@ -22,8 +22,7 @@
 	}
 	.header {
 		margin-bottom: 10px;
-		display: flex;
-		justify-content: space-between;
+		height: 75px;
 	}
 	.header h2 {
 		margin-bottom: 5px;
@@ -35,19 +34,15 @@
 		color: rgb({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 255{{/if}});
 	}
 	.header img {
-		margin-left: auto;
+		float: right;
 		max-height: 75px;
-	}
-	.header .title {
-		display: flex;
-		align-items: flex-start;
-		flex-direction: column;
-		justify-content: flex-end;
 	}
 	.web-content {
 		border: 5px solid rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
 		border-radius: 10px;
 		padding: 10px;
+		max-width: 700px;
+		margin: 10px auto;
 	}
 	{{* Inclure le contenu de content.css pour s'assurer que le style du texte Markdown/Skriv est correct *}}
 	{{:include file="./content.css"}}
@@ -59,30 +54,27 @@
 <body>
 
 {{* This is the email preheader, what will be seen below the subject line in some email clients *}}
-<span style="display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">{{$html|strip_tags|truncate:130:"…":true}}</span>
+<span style="display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">{{$html|strip_tags|truncate:130:"…":true}}{{* Add some spacing after pre-header text just in case it is too short *}}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</span>
 
 <div id="main">
 
 	<div class="header">
-		<div class="title">
-			<h2>{{$config.org_name}}</h2>
-			<h5>
-				{{if $site_url}}
-					Site web&nbsp;: <a href="{{$site_url}}" target="_blank">{{$site_url|regexp_replace:'!^https?://(.*?)/?$!':'$1'}}</a>
-				{{/if}}
-				{{if $config.org_address}}
-					<br />{{$config.org_address}}
-				{{/if}}
-				{{if $config.org_phone}}
-					<br />Téléphone&nbsp;: <a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>
-				{{/if}}
-			</h5>
-		</div>
 		{{if $config.files.logo}}
-		<div>
 			<img src="{{$config.files.logo}}" alt="{{$config.org_name}}" class="logo" />
-		</div>
 		{{/if}}
+		<h2>{{$config.org_name}}</h2>
+		<h5>
+			{{if $site_url}}
+				Site web&nbsp;: <a href="{{$site_url}}" target="_blank">{{$site_url|regexp_replace:'!^https?://(.*?)/?$!':'$1'}}</a>
+			{{/if}}
+			{{if $config.org_address}}
+				<br />{{$config.org_address}}
+			{{/if}}
+			{{if $config.org_phone}}
+				<br />Téléphone&nbsp;: <a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>
+			{{/if}}
+		</h5>
+		</div>
 	</div>
 
 	{{* Le contenu du mail est dans la variable $html, ne pas supprimer sinon le message sera vide ! *}}
