@@ -46,7 +46,10 @@
 {{#foreach from=$directions key="direction"}}
 	{{:assign var="nature" from="config.%s_nature"|args:$direction}}
 	{{#foreach from=$nature key="key"}}
-		{{:assign var="%s_labels.%s"|args:$direction:$key value=$label}}
+		{{if $type_mvt != "retour" && $type != "retour" ||
+			$type_mvt == "retour" && $type == "retour"}}
+			{{:assign var="%s_labels.%s"|args:$direction:$key value=$label}}
+		{{/if}}
 	{{/foreach}}
 {{/foreach}}
 

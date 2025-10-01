@@ -17,6 +17,11 @@
 {{:include file="../_get_config.html" keep="config, directions"}}
 {{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_new.direction:$mvt_new.operation}}
 
+{{* interdire de dupliquer un retour => utiliser le bouton « Retour » *}}
+{{if $type_mvt == "retour"}}
+	{{:error message="Opération interdite !"}}
+{{/if}}
+
 {{if $mvt_new.direction == "input"}}
 	{{if $type_mvt == "temporaire"}}
 		{{:assign prop=0}}
@@ -24,11 +29,7 @@
 		{{:assign prop=1}}
 	{{/if}}
 {{else}}
-	{{if $type_mvt == "retour"}}
-		{{:assign prop=0}}
-	{{else}}
-		{{:assign prop=1}}
-	{{/if}}
+	{{:assign prop=1}}
 {{/if}}
 
 {{* infos pour affichage *}}
@@ -46,7 +47,7 @@
 {{if $mvt_new.direction == "input"}}
 	{{* types d'entrées *}}
 	{{#foreach from=$config.input_nature key=key}}
-		{{if $_GET.prop && $type != "temporaire" ||
+		{{if $_GET.prop && $type == "définitif" ||
 			 ! $_GET.prop && $type == "temporaire"
 		}}
 			{{:assign var="input_labels.%s"|args:$key value=$label}}
@@ -55,13 +56,12 @@
 {{else}}
 	{{* types de sorties *}}
 	{{#foreach from=$config.output_nature key=key}}
-		{{if $_GET.prop && $type != "retour" ||
-			! $_GET.prop && $type == "retour"
-		}}
+		{{if $_GET.prop && $type != "retour"}}
 			{{:assign var="output_labels.%s"|args:$key value=$label}}
 		{{/if}}
 	{{/foreach}}
 {{/if}}
+
 {{*
 	-------------------- Traiter la saisie --------------------
 *}}
