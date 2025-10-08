@@ -14,7 +14,7 @@
 		<li{{if $current === 'history'}} class="current"{{/if}}><a href="{{$module.url}}history.html">Historique</a></li>
 		<li{{if $current === 'stats'}} class="current"{{/if}}><a href="{{$module.url}}stats.html">Statistiques</a></li>
 	{{if $module.config.caisse_exit|count || $module.config.velos_exit|count || $module.config.velos_entry|count}}
-		<li{{if $current === 'sync'}} class="current"{{/if}}><a href="{{$module.url}}sync.html">Import extensions</a></li>
+		<li{{if $current === 'sync'}} class="current"{{/if}}><a href="{{$module.url}}sync.html">Synchro. extensions</a></li>
 	{{/if}}
 	{{#restrict section="config" level="admin"}}
 		<li{{if $current === 'config'}} class="current"{{/if}}><a href="{{$module.url}}config/list.html?type=category">Configuration</a></li>

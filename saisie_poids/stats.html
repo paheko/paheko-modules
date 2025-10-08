@@ -24,6 +24,15 @@
 	{{:assign group="$$.category" group_label="Motif" where="$$.type = 'exit'"}}
 {{/if}}
 
+{{if $module.config.caisse_exit|count
+	|| $module.config.velos_entry|count
+	|| $module.config.velos_exit|count}}
+	<div class="alert block">
+		<p>Avez-vous pensé à synchroniser avec la caisse et la gestion des vélos&nbsp;?</p>
+		<p>{{:linkbutton shape="reload" href="sync.html" label="Synchroniser les extensions"}}</p>
+	</div>
+{{/if}}
+
 {{#list
 	select="%s AS 'Période'; %s AS '%s'; SUM($$.qty) AS 'Qté'; SUM($$.total_weight) AS 'Poids'"|args:$period:$group:$group_label
 	order=1

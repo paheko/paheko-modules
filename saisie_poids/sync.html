@@ -1,4 +1,4 @@
-{{:admin_header title="Import extensions" current="module_saisie_poids"}}
+{{:admin_header title="Synchronisation avec les extensions" current="module_saisie_poids"}}
 
 {{:include file="_nav.html" current="sync"}}
 
@@ -177,7 +177,8 @@
 {{/if}}
 
 {{if !$exits && !$entries}}
-	<p class="block alert">Rien à importer depuis les extensions.</p>
+	<p class="block alert">Rien à synchroniser avec les extensions.</p>
+	<p class="help">Seules les entrées et sorties ayant un poids sont prises en compte.</p>
 {{/if}}
 
 {{:admin_footer}}
