@@ -40,6 +40,12 @@
 		"storage": {
 			"description": "clé du lieu de stockage",
 			"type": ["string", "null"]
+		},
+		"transactions": {
+			"type": ["array", "null"],
+			"items": {
+				"type": "integer"
+			}
 		}
 	},
 	"required": ["type", "direction", "operation", "amount", "equipment", "date", "comment"]

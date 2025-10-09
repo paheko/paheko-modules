@@ -88,6 +88,12 @@
 			notowned=$notowned
 		}}
 	{{/if}}
+
+	{{* documents liés *}}
+	{{#foreach from=$_POST.transactions item="value"}}
+		{{:assign var="transactions." value=$value|intval}}
+	{{/foreach}}
+
 	{{* Enregistrer le mouvement *}}
 	{{:assign mvt_key=""|uuid}}
 	{{:assign var="operation" from="input_labels.%d"|args:$_POST.type_operation}}
@@ -102,6 +108,7 @@
 		date=$_POST.date|parse_date
 		comment=$_POST.remarques|trim
 		storage=$_POST.storage
+		transactions=$transactions
 	}}
 
 	{{if $type_mvt == "temporaire"}}
@@ -124,7 +131,7 @@
 	<form method="post" action="">
 
 		<fieldset class="entree">
-			<legend>Enregistrer une entrée de matériel</legend>
+			<legend>Informations obligatoires</legend>
 			<dl>
 				{{if $input_labels|count == 1}}
 					{{:input type="select" name="operation" label="Type" required=true options=$input_labels}}
@@ -133,21 +140,21 @@
 				{{/if}}
 				{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
 				{{:input type="number" name="amount" label="Quantité" min=1 required=true default=1}}
-			</dl>
-		</fieldset>
-
-		<fieldset>
-			<legend>Sélectionner une catégorie et indiquer le nom du nouveau matériel</legend>
-			<dl>
 				{{if $categories|count == 1}}
 					{{:input type="select" name="category" label="Catégorie" options=$categories required=true}}
 				{{else}}
 					{{:input type="select" name="category" label="Catégorie" default_empty="— Aucune —" options=$categories required=true}}
 				{{/if}}
 				{{:input type="text" name="name" label="Désignation" required=true}}
+			</dl>
+		</fieldset>
+		<fieldset>
+			<legend>Informations facultatives</legend>
+			<dl>
 				{{if $storage != null}}
 					{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
 				{{/if}}
+				{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 				{{:input type="textarea" name="remarques" label="Remarques" cols="40", rows="3" required=false}}
 			</dl>
 		</fieldset>

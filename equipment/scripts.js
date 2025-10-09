@@ -8,7 +8,7 @@ function disableColumSort(liste) {
 	let columns = liste.querySelectorAll("tbody > tr > td");
 
 	// chercher la ligne de titres
-	let titles = liste.querySelectorAll("thead > tr > td");
+	let titles = liste.querySelectorAll("thead > tr > th");
 
 	// désactiver le tri
 	for (let i = 0; i < titles.length; ++i) {

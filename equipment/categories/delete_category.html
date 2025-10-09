@@ -7,7 +7,7 @@
 
 {{#form on="delete"}}
 	{{* Vérifier s'il reste des matériels dans cette catégorie *}}
-	{{#load type="equipment" category=$_GET.key assign="equipment"}}
+	{{#load type="equipment" category=$_GET.key limit="1"}}
 		{{:redirect force="./index.html?err=1&msg=suppression"}}
 	{{else}}
 		{{* supprimer la catégorie sélectionnée*}}

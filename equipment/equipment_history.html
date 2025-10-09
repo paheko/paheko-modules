@@ -122,14 +122,10 @@
 {{if $current != "archives"}}
 	<nav class="tabs">
 		<aside>
-			{{if $_GET.prop}}
-				{{if $equipment.stock > 0}}
-					{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
-				{{/if}}
-				{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
-		{{else}}
-			{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
-		{{/if}}
+			{{if $_GET.prop && $equipment.stock > 0}}
+					{{:linkbutton label="Sortie" title="Enregistrer une sortie de ce matériel" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+			{{/if}}
+			{{:linkbutton label="Entrée" title="Enregistrer une entrée de ce matériel" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
 		</aside>
 	</nav>
 {{/if}}
@@ -197,7 +193,7 @@
 			<tr>
 				<td>{{$date|date_short}}</td>
 				<td>{{$col2}}</td>
-				<td>{{$op_label}}</td>
+				<td class="nosort">{{$op_label}}</td>
 				<td class="num">{{$amount}}</td>
 				<td class="num nosort">{{$stock}}</td>
 				<td class="num nosort">{{$exterieur}}</td>
@@ -212,6 +208,7 @@
 							{{if $temp_ext != null && $temp_ext > 0}}
 								{{:linkbutton
 								label="Retour"
+								title="Enregistrer un retour de sortie temporaire"
 								href="movements/output_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
 								shape="reset"
 								target="_dialog"}}
@@ -294,7 +291,7 @@
 			<tr>
 				<td>{{$date|date_short}}</td>
 				<td>{{$col2}}</td>
-				<td>{{$op_label}}</td>
+				<td class="nosort">{{$op_label}}</td>
 				<td class="num">{{$amount}}</td>
 				<td class="num nosort">{{$stock}}</td>
 				<td>{{$col6}}</td>
@@ -305,6 +302,7 @@
 						{{if $temp_in != null && $temp_in > 0}}
 							{{:linkbutton
 							label="Retour"
+							title="Enregistrer un retour d'entrée temporaire"
 							href="movements/input_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
 							shape="reset"
 							target="_dialog"}}

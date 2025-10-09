@@ -27,15 +27,17 @@
 		{{:assign category_key=$key}}
 		{{* voir s'il y a des matériels dans cette catégorie *}}
 		{{:assign materiel_present=true}}
-		{{#load type="equipment"  where="$$.category = :category_key" :category_key=$category_key}}
+		{{#load type="equipment" where="$$.category = :category_key" :category_key=$category_key limit=1}}
 		{{else}}
 			{{:assign materiel_present=false}}
 		{{/load}}
 		<tr>
 			<th>{{$name}}</th>
 			<td class="actions">
+				{{if ! $materiel_present}}
+					{{:linkbutton label="Supprimer" href="delete_category.html?key=%s"|args:$key shape="delete" target="_dialog"}}
+				{{/if}}
 				{{:linkbutton label="Modifier" href="modify_category.html?key=%s"|args:$key shape="edit" target="_dialog"}}
-				{{:linkbutton label="Supprimer" href="delete_category.html?key=%s"|args:$key shape="delete" target="_dialog"}}
 			</td>
 		</tr>
 	{{else}}

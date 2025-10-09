@@ -6,11 +6,6 @@
 	- key : clé du matériel à ajouter
 *}}
 
-{{* barre de navigation *}}
-{{if ! $dialog}}
-	{{:include file="../_nav.html" current="entrees"}}
-{{/if}}
-
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="../_get_config.html" keep="config"}}
 
@@ -29,7 +24,6 @@
 
 {{* Traiter l'envoi du formulaire *}}
 {{#form on="save"}}
-
 	{{* vérifier la quantité saisie *}}
 	{{if $_POST.amount <= 0}}
 		{{:error message="La quantité (%s) doit être strictement positive !!"|args:$_POST.amount}}
@@ -47,6 +41,11 @@
 	{{elseif $type_mvt == 'temporaire'}}
 		{{:assign var="equipment.notowned" value="%d+%d"|math:$equipment.notowned:$_POST.amount|intval}}
 	{{/if}}
+
+	{{* documents liés *}}
+	{{#foreach from=$_POST.transactions item="value"}}
+		{{:assign var="transactions." value=$value|intval}}
+	{{/foreach}}
 
 	{{:save
 		key=$equipment.key
@@ -73,6 +72,7 @@
 		date=$_POST.date|parse_date
 		comment=$_POST.remarques|trim
 		storage=$_POST.storage
+		transactions=$transactions
 	}}
 	{{:assign var=type_entree from="config.input_nature.%s.type"|args:$_POST.operation}}
 	{{if $type_entree == "temporaire"}}
@@ -90,18 +90,19 @@
 {{#load type="storage" order="$$.name"}}
 	{{:assign var="storage.%s"|args:$key value=$name}}
 {{/load}}
+
 <form method="post" action="">
 	<fieldset class="informations">
-		<legend>Informations matériel</legend>
+		<legend>Matériel</legend>
 		<dl class="describe">
-			<dt>Matériel</dt>
+			<dt>Désignation</dt>
 			<dd>{{$equipment.name}}</dd>
 			<dt>Catégorie</dt>
 			<dd>{{$category.name}}</dd>
 		</dl>
 	</fieldset>
 	<fieldset class="entree">
-		<legend>Enregistrer une entrée de matériel</legend>
+		<legend>Informations obligatoires</legend>
 		<dl>
 			{{if $input_labels|count == 1}}
 				{{:input type="select" name="operation" label="Type" required=true options=$input_labels}}
@@ -110,9 +111,15 @@
 			{{/if}}
 			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
 			{{:input type="number" name="amount" label="Quantité" required=true min=1 default=1}}
-				{{if $storage != null}}
-					{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
-				{{/if}}
+		</dl>
+	</fieldset>
+	<fieldset class="entree">
+		<legend>Informations facultatives</legend>
+		<dl>
+			{{if $storage != null}}
+				{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
+			{{/if}}
+			{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 			{{:input type="textarea" name="remarques" label="Remarques" cols="40" rows="3" required=false}}
 		</dl>
 	</fieldset>

@@ -21,6 +21,6 @@
 }
 
 /* désactiver rétroaction pour colonnes non triables */
-table.list > thead td[class~=nosort] a:hover {
+table.list > thead th[class~=nosort] a:hover {
 	background-color : rgba(var(--gSecondColor), 0.);
 }

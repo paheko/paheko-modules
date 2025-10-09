@@ -178,6 +178,11 @@
 		{{/if}}
 	{{/if}}
 
+	{{* documents liés *}}
+	{{#foreach from=$_POST.transactions item="value"}}
+		{{:assign var="transactions." value=$value|intval}}
+	{{/foreach}}
+
 	{{:save
 		key=$equipment.key
 		validate_schema="../equipment.schema.json"
@@ -209,6 +214,7 @@
 		comment=$mvt_new.comment
 		user=$user_id
 		storage=$_POST.storage
+		transactions=$transactions
 	}}
 	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=modification"|args:$eqpmt_key:$prop}}
 {{/form}}
@@ -240,16 +246,24 @@
 {{* formulaire de modification du mouvement *}}
 <form method="post" action="">
 	<fieldset class="informations">
-		<legend>Informations matériel</legend>
+		<legend>Matériel</legend>
 		<dl class="describe">
-			<dt>Matériel</dt>
+			<dt>Désignation</dt>
 			<dd>{{$equipment.name}}</dd>
 			<dt>Catégorie</dt>
 			<dd>{{$category.name}}</dd>
+			{{if $mvt_new.transactions != null}}
+				<dt>Écritures liées</dt>
+				<dd>
+				{{#foreach from=$mvt_new.transactions item="trans"}}
+					{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$trans label=$trans}}
+				{{/foreach}}
+				</dd>
+			{{/if}}
 		</dl>
 	</fieldset>
 	<fieldset>
-		<legend>Modifier un mouvement</legend>
+		<legend>Informations obligatoires</legend>
 		<dl>
 			{{if $mvt_new.direction == "input"}}
 				{{:input type="select" name="operation" label="Type" required=true options=$input_labels|sort default=$mvt_new.operation}}
@@ -258,6 +272,11 @@
 			{{/if}}
 			{{:input type="date" name="date" label="Date" required=true default=$mvt_new.date}}
 			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
+		</dl>
+	</fieldset>
+	<fieldset class="entree">
+		<legend>Informations facultatives</legend>
+		<dl>
 			{{if $prop == 1 && $mvt_new.direction == "output" && ! $retour}}
 				{{:input
 					type="list"
@@ -272,6 +291,9 @@
 			{{if $mvt_new.direction == "input"}}
 				{{if $storage != null}}
 					{{:input type="select" name="storage" label="Lieu de stockage" default=$mvt_new.storage default_empty="— Aucun —" options=$storage required=false}}
+				{{/if}}
+				{{if $type_mvt != "retour"}}
+					{{:input type="list" name="transactions" default=$mvt_new.transactions label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 				{{/if}}
 			{{/if}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false default=$mvt_new.comment}}

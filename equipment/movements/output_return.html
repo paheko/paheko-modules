@@ -151,7 +151,9 @@
 		date=$_POST.date|parse_date
 		comment=$_POST.comment|trim
 		user=$mvt_new.user
+		storage=$_POST.storage
 	}}
+
 	{{* enregistrer la liaison entre le retour et la sortie temporaire *}}
 	{{:save
 		key=""|uuid
@@ -190,11 +192,15 @@
 {{* infos de la catégorie *}}
 {{#load key=$equipment.category assign="category"}}{{/load}}
 
+{{#load type="storage" order="$$.name"}}
+	{{:assign var="storage.%s"|args:$key value=$name}}
+{{/load}}
+
 <form method="post" action="">
 	<fieldset class="informations">
-		<legend>Informations matériel</legend>
+		<legend>Matériel</legend>
 		<dl class="describe">
-			<dt>Matériel</dt>
+			<dt>Désignation</dt>
 			<dd>{{$equipment.name}}</dd>
 			<dt>Catégorie</dt>
 			<dd>{{$category.name}}</dd>
@@ -203,11 +209,19 @@
 		</dl>
 	</fieldset>
 	<fieldset>
-		<legend>Retour de « {{$equipment.name}} (Catégorie : {{$category.name}}) »</legend>
+		<legend>Informations obligatoires</legend>
 		<dl>
 			{{:input type="select" name="operation" label="Type" required=true options=$return_label}}
 			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
 			{{:input type="number" name="amount" label="Quantité" min=1 max=$exterieur required=true default=1}}
+		</dl>
+	</fieldset>
+	<fieldset class="entree">
+		<legend>Informations facultatives</legend>
+		<dl>
+			{{if $storage != null}}
+				{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
+			{{/if}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false}}
 		</dl>
 	</fieldset>
