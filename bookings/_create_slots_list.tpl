@@ -152,3 +152,22 @@
 
 {{* Make sure we sort slots by datetime *}}
 {{:assign slots=$slots|ksort}}
+
+{{* Calculate the number of open seats for each slot*}}
+{{#foreach from=$slots item="slot" key="timestamp"}}
+	{{:assign this_datetime=$timestamp|date:"Y-m-d H:i"}}
+
+	{{:assign count=0}}
+	{{if $slot.key}}
+		{{#load count=true slot=$slot.key date=$this_datetime}}
+			{{:assign count=$count}}
+		{{/load}}
+	{{else}}
+		{{#load count=true where="$$.slot IS NULL" date=$this_datetime}}
+			{{:assign count=$count}}
+		{{/load}}
+	{{/if}}
+
+	{{:assign available="max(0, %d-%d)"|math:$slot.seats:$count}}
+	{{:assign var="slots.%d.available"|args:$timestamp value="max(0, %d-%d)"|math:$slot.seats:$count}}
+{{/foreach}}

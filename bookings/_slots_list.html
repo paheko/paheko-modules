@@ -53,37 +53,24 @@
 		{{:continue}}
 	{{/if}}
 
-	{{:assign count=0}}
-	{{if $slot.key}}
-		{{#load count=true slot=$slot.key date=$this_datetime}}
-			{{:assign count=$count}}
-		{{/load}}
-	{{else}}
-		{{#load count=true where="$$.slot IS NULL" date=$this_datetime}}
-			{{:assign count=$count}}
-		{{/load}}
-	{{/if}}
-
-	{{:assign available="max(0, %d-%d)"|math:$slot.seats:$count}}
-
-	{{if $available > 0 && $slots_available === false}}
+	{{if $slot.available > 0 && $slots_available === false}}
 		{{:assign slots_available=true}}
 	{{/if}}
 
-	{{if !$available}}
+	{{if !$slot.available}}
 		{{:assign disabled=true}}
 	{{else}}
 		{{:assign disabled=false}}
 	{{/if}}
 
-	{{if $available == 1}}
+	{{if $slot.available == 1}}
 		{{:assign label="1 place disponible"}}
 	{{else}}
-		{{:assign label="%d places disponibles"|args:$available}}
+		{{:assign label="%d places disponibles"|args:$slot.available}}
 	{{/if}}
 
 	<li>
-		<a{{if !$disabled}} href="?event={{$event.key}}&amp;slot_key={{$slot.key}}&amp;slot_time={{$this_datetime}}"{{/if}} class="available_{{$available}} {{if $disabled}}disabled{{/if}}">
+		<a{{if !$disabled}} href="?event={{$event.key}}&amp;slot_key={{$slot.key}}&amp;slot_time={{$this_datetime}}"{{/if}} class="available_{{$slot.available}} {{if $disabled}}disabled{{/if}}">
 			<strong>{{$timestamp|date_hour}}</strong>
 			<em>{{$label}}</em>
 		</a>

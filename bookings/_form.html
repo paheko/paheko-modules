@@ -136,7 +136,21 @@
 					{{:error message="Ce créneau est déjà plein, aucune place n'est disponible, désolé."}}
 				{{/if}}
 			{{/load}}
+		{{else}}
+			{{:include file="./_create_slots_list.tpl" event=$event keep="slots"}}
+			{{:assign chosen_ts=$_GET.slot_time|strtotime}}
+			{{if !$slots|has_key:$chosen_ts}}
+				{{:error message="Ce créneau n'est pas réservable."}}
+			{{/if}}
+
+			{{:assign var="available" from="slots.%d.available"|args:$chosen_ts}}
+
+			{{if !$available}}
+				{{:error message="Il n'y a plus de place disponible pour ce créneau, merci d'en choisir un autre."}}
+			{{/if}}
+
 		{{/if}}
+
 
 		{{if !$_POST.name|trim}}
 			{{:error message="Le nom doit être renseigné."}}
