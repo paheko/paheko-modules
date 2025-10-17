@@ -81,7 +81,7 @@
 	{{#load
 		type="slot"
 		event=$event.key
-		where="$$.seats > 0 AND ($$.date IS NULL OR ($$.date > date() OR ($$.date = date() AND $$.open >= strftime('%H:%M'))))"
+		where="$$.seats != 0 AND ($$.date IS NULL OR ($$.date > date() OR ($$.date = date() AND $$.open >= strftime('%H:%M'))))"
 		order="$$.frequency = 'only' DESC, $$.frequency = 'this' DESC, $$.date, $$.day = 'monday' DESC, $$.day = 'tuesday' DESC, $$.day = 'wednesday' DESC, $$.day = 'thursday' DESC, $$.day = 'friday' DESC, $$.open ASC"}}
 		{{if $frequency == 'this'}}
 			{{:assign timestamp="%s %s, %s"|args:$frequency:$day:$open|strtotime}}
@@ -157,6 +157,10 @@
 {{#foreach from=$slots item="slot" key="timestamp"}}
 	{{:assign this_datetime=$timestamp|date:"Y-m-d H:i"}}
 
+	{{if $slot.seats === -1}}
+		{{:continue}}
+	{{/if}}
+
 	{{:assign count=0}}
 	{{if $slot.key}}
 		{{#load count=true slot=$slot.key date=$this_datetime}}
@@ -168,6 +172,5 @@
 		{{/load}}
 	{{/if}}
 
-	{{:assign available="max(0, %d-%d)"|math:$slot.seats:$count}}
 	{{:assign var="slots.%d.available"|args:$timestamp value="max(0, %d-%d)"|math:$slot.seats:$count}}
 {{/foreach}}

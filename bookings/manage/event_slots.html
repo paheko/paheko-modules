@@ -36,7 +36,7 @@
 						à {{$open}}
 					</th>
 					<td>
-						{{$seats}} places
+						{{if $seats === -1}}illimité{{else}}{{$seats}} places{{/if}}
 					</td>
 					<td class="actions">
 						{{:linkbutton label="Modifier" href="slot.html?id=%s"|args:$key shape="edit" target="_dialog"}}

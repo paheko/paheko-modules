@@ -57,13 +57,15 @@
 		{{:assign slots_available=true}}
 	{{/if}}
 
-	{{if !$slot.available}}
+	{{if $slot.available === 0}}
 		{{:assign disabled=true}}
 	{{else}}
 		{{:assign disabled=false}}
 	{{/if}}
 
-	{{if $slot.available == 1}}
+	{{if $slot.seats === -1}}
+		{{:assign label="places illimitées"}}
+	{{elseif $slot.available == 1}}
 		{{:assign label="1 place disponible"}}
 	{{else}}
 		{{:assign label="%d places disponibles"|args:$slot.available}}

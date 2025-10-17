@@ -33,7 +33,7 @@
 		"seats": {
 			"description": "Nombre de places",
 			"type": "integer",
-			"minimum": 0
+			"minimum": -1
 		}
 	},
 	"required": ["type", "event", "date", "frequency", "day", "open", "seats"]

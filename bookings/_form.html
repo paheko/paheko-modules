@@ -130,12 +130,16 @@
 				{{:error message="Créneau introuvable"}}
 			{{/load}}
 
-			{{* Vérification qu'il y a encore des places dispo *}}
-			{{#load event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$_GET.slot_time type="booking" count=true}}
-				{{if $count >= $slot.seats}}
-					{{:error message="Ce créneau est déjà plein, aucune place n'est disponible, désolé."}}
-				{{/if}}
-			{{/load}}
+			{{if $slot.seats === 0}}
+				{{:error message="Ce créneau n'est pas réservable, désolé."}}
+			{{elseif $slot.seats !== -1}}
+				{{* Vérification qu'il y a encore des places dispo *}}
+				{{#load event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$_GET.slot_time type="booking" count=true}}
+					{{if $count >= $slot.seats}}
+						{{:error message="Ce créneau est déjà plein, aucune place n'est disponible, désolé."}}
+					{{/if}}
+				{{/load}}
+			{{/if}}
 		{{else}}
 			{{:include file="./_create_slots_list.tpl" event=$event keep="slots"}}
 			{{:assign chosen_ts=$_GET.slot_time|strtotime}}

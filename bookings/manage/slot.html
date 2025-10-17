@@ -79,7 +79,8 @@
 	<fieldset>
 		<legend>Jauge</legend>
 		<dl>
-			{{:input type="number" name="seats" required=true min=0 step=1 label="Nombre de places disponibles" source=$slot}}
+			{{:input type="number" name="seats" required=true min=-1 step=1 label="Nombre de places disponibles" source=$slot}}
+			{{:input type="checkbox" name="seats" value="-1" label="Jauge illimitée" source=$slot}}
 		</dl>
 	</fieldset>
 
