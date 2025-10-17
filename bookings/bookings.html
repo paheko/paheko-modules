@@ -36,8 +36,8 @@
 {{if !$event}}
 
 	{{#list select="$$.label AS 'Événement';
-		(SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date >= date()) AS 'Inscriptions à venir';
-		(SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date < date()) AS 'Inscriptions passées'"
+		(SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date >= date()) AS 'Inscriptions à venir';
+		(SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date < date()) AS 'Inscriptions passées'"
 		where="$$.type = 'event'"
 		order=1}}
 		<tr>
@@ -70,11 +70,14 @@
 	<section class="booking_list">
 		{{if $subcurrent !== 'past'}}
 			{{if $event.use_openings}}
-				{{:assign seats_left_column="MAX(0, %s - (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.date = @TABLE.$$.date AND $$.event = @TABLE.$$.event)) AS 'Places restantes';"|args:$event.openings_seats}}
+				{{:assign seats_left_column="MAX(0, %s - (SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.date = @TABLE.$$.date AND $$.event = @TABLE.$$.event)) AS 'Places restantes';"|args:$event.openings_seats}}
 			{{else}}
 				{{:assign seats_left_column="MAX(0, (SELECT $$.seats FROM @TABLE b WHERE $$.type = 'slot' AND key = @TABLE.$$.slot)
-					- (SELECT COUNT(*) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot AND $$.date = @TABLE.$$.date)) AS 'Places restantes';"}}
+					- (SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.slot = @TABLE.$$.slot AND $$.date = @TABLE.$$.date)) AS 'Places restantes';"}}
 			{{/if}}
+		{{/if}}
+		{{if $event.max_seats_per_booking > 1}}
+			{{:assign seats_booked_column="COALESCE($$.seats, 1) AS 'Places réservées';"}}
 		{{/if}}
 		{{:assign
 			current_day=null
@@ -89,8 +92,10 @@
 		{{/if}}
 		{{#list select="date($$.date) AS 'Date';
 			$$.date AS 'Heure';
-			%s $$.name AS 'Nom';
-			json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations' %s"|args:$seats_left_column:$user_columns
+			%s
+			$$.name AS 'Nom';
+			%s
+			json_object('email', json_quote($$.email), 'fields', json($$.fields)) AS 'Autres informations' %s"|args:$seats_left_column:$seats_booked_column:$user_columns
 			type="booking"
 			event=$event.key
 			where=$where
@@ -124,6 +129,9 @@
 					{{/if}}
 				{{/if}}
 				<th>{{$name}}</th>
+				{{if $.event.max_seats_per_booking > 1}}
+				<td>{{if $subcurrent === 'past'}}{{$col4}}{{else}}{{$col5}}{{/if}}</td>
+				{{/if}}
 				<td>
 					{{if $email}}<a href="mailto:{{$email}}">{{$email}}</a><br />{{/if}}
 					{{#foreach from=$fields key="label" item="value"}}

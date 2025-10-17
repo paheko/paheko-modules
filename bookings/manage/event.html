@@ -57,6 +57,7 @@
 		openings_slots=$_POST.openings_slots|intval|or:null
 		openings_delay=$_POST.openings_delay|intval|or:null
 		email=$_POST.email|boolval
+		max_seats_per_booking=$_POST.max_seats_per_booking|intval
 		archived=$_POST.archived|boolval
 		fields=$fields|arrayval
 		notify_email=$_POST.notify_email|strval|or:null
@@ -133,6 +134,8 @@
 			<dd class="help">Pour chaque inscription, le nom de la personne sera toujours demandé.</dd>
 			{{:input type="checkbox" name="email" value="1" label="Demander aussi l'adresse e-mail" source=$event}}
 			<dd class="help">Si la personne indique une adresse e-mail, une confirmation d'inscription lui sera envoyée. Cocher cette case pour rendre l'adresse e-mail obligatoire.</dd>
+			{{:input type="number" step=1 min=1 name="max_seats_per_booking" default=1 label="Nombre de places réservables par personne" source=$event required=true}}
+			<dd class="help">Indique le nombre de places qu'une personne peut réserver à chaque inscription. Si on indique "2" ici, alors une personne pourra réserver une ou deux places. Si on indique "1", chaque personne ne pourra réserver qu'une seule place.</dd>
 		</dl>
 	</fieldset>
 

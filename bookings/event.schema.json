@@ -54,6 +54,10 @@
 		"email": {
 			"type": "boolean"
 		},
+		"max_seats_per_booking": {
+			"type": "integer",
+			"minimum": "1"
+		},
 		"archived": {
 			"type": "boolean"
 		},
@@ -67,5 +71,6 @@
 			"type": ["string", "null"]
 		}
 	},
-	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_slots", "openings_delay", "use_closings", "fields", "email", "archived", "notify_email"]
+	"required": ["type", "label", "description", "use_openings", "openings_seats", "openings_slots",
+		"openings_delay", "use_closings", "fields", "email", "max_seats_per_booking", "archived", "notify_email"]
 }

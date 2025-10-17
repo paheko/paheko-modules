@@ -123,6 +123,8 @@
 			{{:error message="Date invalide"}}
 		{{/if}}
 
+		{{:assign seats=$_POST.seats|intval|or:1}}
+
 		{{if $_GET.slot_key}}
 			{{* Vérification que le créneau sélectionné existe bien *}}
 			{{#load key=$_GET.slot_key type="slot" assign="slot"}}
@@ -134,11 +136,11 @@
 				{{:error message="Ce créneau n'est pas réservable, désolé."}}
 			{{elseif $slot.seats !== -1}}
 				{{* Vérification qu'il y a encore des places dispo *}}
-				{{#load event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$_GET.slot_time type="booking" count=true}}
-					{{if $count >= $slot.seats}}
-						{{:error message="Ce créneau est déjà plein, aucune place n'est disponible, désolé."}}
-					{{/if}}
+				{{#load select="SUM(COALESCE($$.seats, 1)) AS count" event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$_GET.slot_time type="booking"}}
+					{{:assign count=$count}}
 				{{/load}}
+
+				{{:assign available="%d-%d"|math:$slot.seats:$count}}
 			{{/if}}
 		{{else}}
 			{{:include file="./_create_slots_list.tpl" event=$event keep="slots"}}
@@ -148,13 +150,15 @@
 			{{/if}}
 
 			{{:assign var="available" from="slots.%d.available"|args:$chosen_ts}}
-
-			{{if !$available}}
-				{{:error message="Il n'y a plus de place disponible pour ce créneau, merci d'en choisir un autre."}}
-			{{/if}}
-
 		{{/if}}
 
+		{{* Vérification qu'il y a encore des places dispo *}}
+
+		{{if !$available}}
+			{{:error message="Il n'y a plus de place disponible pour ce créneau, merci d'en choisir un autre."}}
+		{{elseif "%d-%d"|math:$available:$seats < 0}}
+			{{:error message="Il y a %d places libres restantes, il n'est pas possible de réserver %d places."|args:$available:$seats}}
+		{{/if}}
 
 		{{if !$_POST.name|trim}}
 			{{:error message="Le nom doit être renseigné."}}
@@ -197,6 +201,7 @@
 			email=$email
 			id_user=$logged_user.id
 			fields=$fields
+			seats=$seats
 		}}
 
 		{{if $event.notify_email}}

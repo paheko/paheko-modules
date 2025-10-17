@@ -21,7 +21,12 @@
 		</aside>
 	{{elseif $event}}
 		<aside>
-			{{:linkbutton shape="search" label="Chercher les inscriptions liées" href="?event=%s&past=%d&users=1"|args:$event.key:$_GET.past}}
+			{{if $access_config}}
+				{{:linkbutton shape="edit" label="Modifier l'événement" href="manage/event.html?id=%s"|args:$event.key}}
+			{{/if}}
+			{{if !$_GET.users}}
+				{{:linkbutton shape="search" label="Chercher les membres liés" href="?event=%s&past=%d&users=1"|args:$event.key:$_GET.past}}
+			{{/if}}
 			{{:linkbutton shape="plus" label="Inscrire" href="./?event=%s"|args:$event.key}}
 		</aside>
 	{{/if}}

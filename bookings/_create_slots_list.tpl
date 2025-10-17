@@ -163,11 +163,11 @@
 
 	{{:assign count=0}}
 	{{if $slot.key}}
-		{{#load count=true slot=$slot.key date=$this_datetime}}
+		{{#load select="SUM(COALESCE($$.seats, 1)) AS count" slot=$slot.key date=$this_datetime}}
 			{{:assign count=$count}}
 		{{/load}}
 	{{else}}
-		{{#load count=true where="$$.slot IS NULL" date=$this_datetime}}
+		{{#load select="SUM(COALESCE($$.seats, 1)) AS count" where="$$.slot IS NULL" date=$this_datetime}}
 			{{:assign count=$count}}
 		{{/load}}
 	{{/if}}

@@ -30,7 +30,11 @@
 			"items": {
 				"type": "string"
 			}
+		},
+		"seats": {
+			"type": "integer",
+			"minimum": 1
 		}
 	},
-	"required": ["type", "event", "slot", "date", "name", "email", "id_user", "fields"]
+	"required": ["type", "event", "slot", "date", "name", "email", "id_user", "fields", "seats"]
 }
