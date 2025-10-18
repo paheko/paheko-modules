@@ -36,5 +36,5 @@
 			"minimum": 1
 		}
 	},
-	"required": ["type", "event", "slot", "date", "name", "email", "id_user", "fields", "seats"]
+	"required": ["type", "event", "slot", "date", "name", "email", "id_user", "fields"]
 }
