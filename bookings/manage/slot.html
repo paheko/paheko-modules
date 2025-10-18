@@ -52,7 +52,7 @@
 		day=$day
 		date=$date|or:null
 		open=$_POST.open|parse_time
-		seats=$_POST.seats|intval
+		seats=$_POST.unlimited_seats|or:$_POST.seats|intval
 	}}
 	{{:redirect to="./event_slots.html?id=%s&ok=1"|args:$event}}
 {{/form}}
@@ -80,7 +80,10 @@
 		<legend>Jauge</legend>
 		<dl>
 			{{:input type="number" name="seats" required=true min=-1 step=1 label="Nombre de places disponibles" source=$slot}}
-			{{:input type="checkbox" name="seats" value="-1" label="Jauge illimitée" source=$slot}}
+			{{if $slot.seats === -1}}
+				{{:assign is_unlimited="-1"}}
+			{{/if}}
+			{{:input type="checkbox" name="unlimited_seats" value="-1" label="Jauge illimitée" default=$is_unlimited}}
 		</dl>
 	</fieldset>
 
@@ -100,6 +103,17 @@ function selectFrequency () {
 
 $('#f_frequency').onchange = selectFrequency;
 selectFrequency();
+
+var unlimited = $('#f_unlimited_seats_-1');
+
+function toggleUnlimited () {
+	$('#f_seats').disabled = unlimited.checked;
+	if ($('#f_seats').value == "-1") {
+		$('#f_seats').value = '1';
+	}
+}
+toggleUnlimited();
+unlimited.onchange = toggleUnlimited;
 </script>
 
 {{:admin_footer}}
