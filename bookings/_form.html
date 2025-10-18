@@ -134,7 +134,9 @@
 
 			{{if $slot.seats === 0}}
 				{{:error message="Ce créneau n'est pas réservable, désolé."}}
-			{{elseif $slot.seats !== -1}}
+			{{elseif $slot.seats === -1}}
+				{{:assign available=10}}
+			{{else}}
 				{{* Vérification qu'il y a encore des places dispo *}}
 				{{#load select="SUM(COALESCE($$.seats, 1)) AS count" event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$_GET.slot_time type="booking"}}
 					{{:assign count=$count}}
