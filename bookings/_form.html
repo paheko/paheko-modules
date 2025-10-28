@@ -41,7 +41,7 @@
 	{{else}}
 		{{:error message="L'événement indiqué est introuvable"}}
 	{{/load}}
-{{elseif $can_access}}
+{{elseif $can_list}}
 	{{#load type="event" archived=false group="$$.type HAVING COUNT(*) = 1" assign="event"}}
 	{{/load}}
 {{/if}}
