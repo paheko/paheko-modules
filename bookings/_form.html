@@ -11,6 +11,16 @@
 	{{:assign var="module.config.list_access" value="all"}}
 {{/if}}
 
+{{if $module.config.list_access === 'all'}}
+	{{:assign can_list=true}}
+{{elseif $module.config.list_access === 'users' && $logged_user}}
+	{{:assign can_list=true}}
+{{elseif $module.config.list_access === 'admins'}}
+	{{#restrict section="users" level=$module.config.access}}
+		{{:assign can_list=true}}
+	{{/restrict}}
+{{/if}}
+
 {{#form on="cancel"}}
 	{{#load key=$_POST.cancel type="booking" limit=1 assign="booking"}}
 		{{:delete id=$id}}
@@ -31,7 +41,7 @@
 	{{else}}
 		{{:error message="L'événement indiqué est introuvable"}}
 	{{/load}}
-{{else}}
+{{elseif $can_access}}
 	{{#load type="event" archived=false group="$$.type HAVING COUNT(*) = 1" assign="event"}}
 	{{/load}}
 {{/if}}
@@ -86,16 +96,6 @@
 	{{if !$logged_user}}
 	<script type="text/javascript" src="local_bookings.js" defer="defer"></script>
 	{{/if}}
-{{/if}}
-
-{{if $module.config.list_access === 'all'}}
-	{{:assign can_list=true}}
-{{elseif $module.config.list_access === 'users' && $logged_user}}
-	{{:assign can_list=true}}
-{{elseif $module.config.list_access === 'admins'}}
-	{{#restrict section="users" level=$module.config.access}}
-		{{:assign can_list=true}}
-	{{/restrict}}
 {{/if}}
 
 {{if !$event && $can_list}}
