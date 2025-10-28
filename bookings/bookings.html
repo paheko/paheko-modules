@@ -25,7 +25,9 @@
 {{if $_GET.past}}
 	{{:assign subcurrent="past"}}
 	{{:assign where="date($$.date) < date()"}}
-	{{*:delete type="booking" where="date($$.date) < date('now', '-1 month')"*}}
+	{{:assign months=$module.config.prune_months|or:24}}
+	{{* Prune old bookings here when viewing past bookings *}}
+	{{:delete type="booking" where="date($$.date) < date('now', '-%d month')"|args:$months}}
 {{else}}
 	{{:assign subcurrent="default"}}
 	{{:assign where="date($$.date) >= date()"}}

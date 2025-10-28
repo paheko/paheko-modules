@@ -1,6 +1,7 @@
+{{:assign months=$module.config.prune_months|or:24}}
 {{if "random_int(1, 10)"|math == 10}}
 	{{* Prune old bookings from time to time *}}
-	{{:delete type="booking" where="date($$.date) < date('now', '-1 month')"}}
+	{{:delete type="booking" where="date($$.date) < date('now', '-%d month')"|args:$months}}
 {{/if}}
 
 {{if !$module.config.access}}

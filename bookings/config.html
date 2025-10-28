@@ -4,6 +4,7 @@
 		access=$_POST.access
 		manage_access=$_POST.manage_access
 		list_access=$_POST.list_access
+		prune_months=$_POST.prune_months|intval|or:24
 	}}
 	{{:redirect to="./manage/?ok=1"}}
 {{/form}}
@@ -34,6 +35,12 @@
 			{{:input type="radio" name="list_access" source=$module.config value="all" default="all" label="Tout le monde"}}
 			{{:input type="radio" name="list_access" source=$module.config value="users" default="all" label="Seuls les membres connectés"}}
 			{{:input type="radio" name="list_access" source=$module.config value="admins" label="Seules les personnes gérant les réservations"}}
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>Suppression des données</legend>
+		<dl>
+			{{:input type="number" step="1" min="1" max="60" name="prune_months" source=$module.config default=24 required=true label="Nombre de mois avant suppression automatique des anciennes réservations" help="Si on indique '12' ici, les anciennes réservations seront supprimées un an jour pour jour après leur date, en conformité avec le RGPD."}}
 		</dl>
 	</fieldset>
 	<p class="submit">
