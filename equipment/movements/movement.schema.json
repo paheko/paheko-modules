@@ -46,6 +46,11 @@
 			"items": {
 				"type": "integer"
 			}
+		},
+		"return_date" : {
+			"description": "Date de retour du matériel",
+			"type" : ["null", "string"],
+			"format" : "date"
 		}
 	},
 	"required": ["type", "direction", "operation", "amount", "equipment", "date", "comment"]

@@ -28,6 +28,7 @@
 {{else}}
 	{{:error message="Le matériel %s n'appartient à aucune catégorie"|args:$equipment.name}}
 {{/load}}
+
 {{:admin_header title="Gestion des matériels" custom_css="./style.css" current="module_equipment"}}
 
 {{if $_GET.current != null}}
@@ -112,20 +113,20 @@
 			{{:assign nonproprio="%d-%d"|math:$nonproprio:$amount}}
 		{{/if}}
 	{{/if}}
-	{{:assign dispo="%d-%d"|math:$stock:$exterieur}}
+	{{:assign dispo_final="%d-%d"|math:$stock:$exterieur}}
 	{{:assign var="quantites.%s.stock"|args:$id value=$stock}}
 	{{:assign var="quantites.%s.exterieur"|args:$id value=$exterieur}}
-	{{:assign var="quantites.%s.dispo"|args:$id value=$dispo}}
+	{{:assign var="quantites.%s.dispo"|args:$id value=$dispo_final}}
 	{{:assign var="quantites.%s.nonproprio"|args:$id value=$nonproprio}}
 {{/load}}
 
 {{if $current != "archives"}}
 	<nav class="tabs">
 		<aside>
-			{{if $_GET.prop && $equipment.stock > 0}}
-					{{:linkbutton label="Sortie" title="Enregistrer une sortie de ce matériel" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+			{{if $_GET.prop && $dispo_final > 0}}
+				{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
 			{{/if}}
-			{{:linkbutton label="Entrée" title="Enregistrer une entrée de ce matériel" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+			{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
 		</aside>
 	</nav>
 {{/if}}
@@ -144,9 +145,9 @@
 	{{#select
 		mvt.key AS mvt_key,
 		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS reste
-		FROM module_data_equipment AS mvt
-		LEFT JOIN module_data_equipment AS link ON mvt.key = json_extract(link.document, '$.temp_key')
-		LEFT JOIN module_data_equipment AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+		FROM {!$module.table} AS mvt
+		LEFT JOIN {!$module.table} AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+		LEFT JOIN {!$module.table} AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
 		WHERE
 			json_extract(mvt.document, '$.operation') IN !op
 		AND json_extract(mvt.document, '$.equipment') = :eqpmt_key
@@ -176,11 +177,12 @@
 				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
 				ELSE ''
 			END AS 'Stockage';
-		$$.comment AS 'Commentaire'
+			'' AS 'Documents';
+			$$.transactions AS 'Écritures'
 		"|args:$config.user_fields.name_sql
 		equipment=$equipment_key
 		order=1
-	}}
+		}}
 		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
 		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
 
@@ -190,6 +192,12 @@
 			{{:assign var="stock" from="quantites.%s.stock"|args:$id}}
 			{{:assign var="exterieur" from="quantites.%s.exterieur"|args:$id}}
 			{{:assign var="dispo" from="quantites.%s.dispo"|args:$id}}
+
+			{{:assign file_path="%s/%s/"|args:$module.storage_root:$key}}
+			{{:assign file_path=$file_path|cat:"%"}}
+			{{#select count(*) AS nb FROM files WHERE path LIKE :file_path ; :file_path=$file_path}}
+				{{:assign nb_files=$nb}}
+			{{/select}}
 			<tr>
 				<td>{{$date|date_short}}</td>
 				<td>{{$col2}}</td>
@@ -200,7 +208,8 @@
 				<td class="num nosort">{{$dispo}}</td>
 				<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$col8}}</td>
 				<td>{{$col9}}</td>
-				<td>{{$comment}}</td>
+				<td class="num nosort">{{if $nb_files > 0}}{{:icon shape="attach"}}{{/if}}</td>
+				<td class="num">{{if $transactions|count > 0}}{{:icon shape="money"}}{{/if}}</td>
 				<td class="actions">
 					{{if $current != "archives"}}
 						{{if $direction == "output" && $type_mvt == "temporaire"}}
@@ -208,37 +217,24 @@
 							{{if $temp_ext != null && $temp_ext > 0}}
 								{{:linkbutton
 								label="Retour"
-								title="Enregistrer un retour de sortie temporaire"
 								href="movements/output_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
 								shape="reset"
 								target="_dialog"}}
 							{{/if}}
 						{{/if}}
-						{{if $direction == "input" && $type_mvt == "retour"}}
-							{{* interdire dupliquer *}}
-						{{else}}
-							{{:linkbutton
-								label="Dupliquer"
-								href="movements/copy_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
-								shape="plus"
-								target="_dialog"}}
-						{{/if}}
 						{{:linkbutton
-							label="Modifier"
-							href="movements/modify_movement.html?key=%s"|args:$key
-							shape="edit"
-							target="_dialog"}}
-						{{:linkbutton
-							label="Supprimer"
-							href="movements/delete_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
-							shape="delete"
-							target="_dialog"}}
+							label="Détails"
+							href="movements/movement_details.html?key=%s&prop=%s"|args:$key:$_GET.prop
+							shape="eye"
+						}}
 					{{/if}}
 				</td>
 			</tr>
 		{{/if}}
 	{{/list}}
-
+	{{if $dispo_final === 0}}
+		<span class="help">Il n'y a aucun matériel disponible, il n'est donc pas possible d'effectuer une sortie</span>
+	{{/if}}
 {{else}}
 	{{* calculer la quantité présente temporairement de chaque matériel *}}
 	{{#foreach from=$config.input_nature key=key}}
@@ -252,9 +248,9 @@
 	{{#select
 		mvt.key AS mvt_key,
 		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS present
-		FROM module_data_equipment AS mvt
-		LEFT JOIN module_data_equipment AS link ON mvt.key = json_extract(link.document, '$.temp_key')
-		LEFT JOIN module_data_equipment AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+		FROM {!$module.table} AS mvt
+		LEFT JOIN {!$module.table} AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+		LEFT JOIN {!$module.table} AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
 		WHERE
 			json_extract(mvt.document, '$.operation') IN !op
 		AND json_extract(mvt.document, '$.equipment') = :eqpmt_key
@@ -277,7 +273,9 @@
 				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
 				ELSE ''
 			END as 'Stockage';
-			$$.comment AS 'Commentaire'"
+			'' AS 'Documents';
+			$$.transactions AS 'Écritures'
+		"
 		equipment=$equipment_key
 		order=1
 	}}
@@ -288,6 +286,12 @@
 			 $direction === "output"&& $op_label|in:$output_types
 		}}
 			{{:assign var="stock" from="quantites.%s.nonproprio"|args:$id}}
+
+			{{:assign file_path="%s/%s/"|args:$module.storage_root:$key}}
+			{{:assign file_path=$file_path|cat:"%"}}
+			{{#select count(*) AS nb FROM files WHERE path LIKE :file_path ; :file_path=$file_path}}
+				{{:assign nb_files=$nb}}
+			{{/select}}
 			<tr>
 				<td>{{$date|date_short}}</td>
 				<td>{{$col2}}</td>
@@ -295,38 +299,24 @@
 				<td class="num">{{$amount}}</td>
 				<td class="num nosort">{{$stock}}</td>
 				<td>{{$col6}}</td>
-				<td>{{$comment}}</td>
+				<td class="num nosort">{{if $nb_files > 0}}{{:icon shape="attach"}}{{/if}}</td>
+				<td class="num">{{if $transactions|count > 0}}{{:icon shape="money"}}{{/if}}</td>
 				<td class="actions">
 					{{if $direction == "input" && $type_mvt == "temporaire"}}
 						{{:assign var="temp_in" from="present.%s"|args:$key}}
 						{{if $temp_in != null && $temp_in > 0}}
 							{{:linkbutton
 							label="Retour"
-							title="Enregistrer un retour d'entrée temporaire"
 							href="movements/input_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
 							shape="reset"
 							target="_dialog"}}
 						{{/if}}
 					{{/if}}
-					{{if $direction == "output" && $type_mvt == "retour"}}
-						{{* interdire dupliquer *}}
-					{{else}}
-						{{:linkbutton
-							label="Dupliquer"
-							href="movements/copy_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
-							shape="plus"
-							target="_dialog"}}
-					{{/if}}
 					{{:linkbutton
-						label="Modifier"
-						href="movements/modify_movement.html?key=%s"|args:$key
-						shape="edit"
-						target="_dialog"}}
-					{{:linkbutton
-						label="Supprimer"
-						href="movements/delete_movement.html?key=%s&prop=%s"|args:$key:$_GET.prop
-						shape="delete"
-						target="_dialog"}}
+						label="Détails"
+						href="movements/movement_details.html?key=%s&prop=%s"|args:$key:$_GET.prop
+						shape="eye"
+					}}
 				</td>
 			</tr>
 		{{/if}}
@@ -337,7 +327,10 @@
 
 <script type="text/javascript" src="scripts.js"></script>
 <script type="text/javascript">
-	(function () {
-		disableColumSort(document.querySelector("table[class=list]"));
-	})();
+(function () {
+	let table = document.querySelector("table[class=list]");
+	if (table != null) {
+		disableColumSort(table);
+	}
+})();
 </script>

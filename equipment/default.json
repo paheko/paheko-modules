@@ -33,5 +33,6 @@
 			"label" : "Retour de Location/Emprunt",
 			"type" : "retour"
 		}
-	]
+	],
+	"loan_duration" : "30"
 }

@@ -3,8 +3,12 @@
 Ce module permet de gérer les matériels de l'association: stock,
 entrées, sorties, classés par catégorie.
 
-Un matériel peut entrer temporairement (location, emprunt, ...) ou
-définitivement dans l'association (achat, ...).
+Un matériel peut entrer dans l'association :
+- temporairement (location, emprunt, ...)
+- définitivement (achat, ...)
+
+Dans les deux cas, il est possible de lui associer une écriture de la
+compta ou un fichier.
 
 Un matériel appartenant à l'association peut sortir :
 - temporairement (prêt, ...) : il est possible de lui associer un lieu

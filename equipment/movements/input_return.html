@@ -32,9 +32,9 @@
 
 {{#select
 	json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS present
-	FROM module_data_equipment AS mvt
-	LEFT JOIN module_data_equipment AS link ON mvt.key = json_extract(link.document, '$.temp_key')
-	LEFT JOIN module_data_equipment AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+	FROM {!$module.table} AS mvt
+	LEFT JOIN {!$module.table} AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+	LEFT JOIN {!$module.table} AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
 	WHERE
 	json_extract(mvt.document, '$.operation') IN !op
 	AND mvt.key = :mvt_key

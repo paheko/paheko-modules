@@ -25,3 +25,30 @@ function disableColumSort(liste) {
 		}
 	}
 }
+
+function toggleVisibility(idcheck, fields) {
+	const elem = document.getElementById(idcheck);
+	for (let id of fields) {
+		const field = document.getElementById(id);
+		if (elem.checked) {
+			field.style.visibility = "visible";
+		} else {
+			field.style.visibility = "hidden";
+		}
+	}
+}
+
+/**
+ * renvoyer la valeur en secondes d'une date au format j/m/a
+ * @param {string} date
+ */
+function str2sec(date) {
+	const jma = date.split('/');
+	const dd = new Date(jma[2], jma[1]-1, jma[0]);
+	return dd.getTime()/1000;
+}
+
+// renvoyer la valeur en secondes d'un champ date
+function getDate(idelem) {
+	return str2sec(document.getElementById(idelem).value);
+}

@@ -12,16 +12,16 @@
 
 {{*	Traiter l'envoi du formulaire *}}
 
-{{* lecture config par défaut *}}
-{{:include file="../_get_config.html" keep="config, directions" default=true}}
+{{* lecture config *}}
+{{:include file="../_get_config.html" keep="config, directions, config_defaut"}}
 
 {{#form on="save"}}
-	{{* vérifier s'il existe un type de mouvement de même nom *}}
+	{{* vérifier s'il existe un libellé de même nom dans la même direction *}}
 	{{#foreach from=$directions key="direction"}}
 		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
 		{{#foreach from=$nature key="key"}}
 			{{:assign var="fields" from="_POST.%s_fields"|args:$_GET.dir}}
-			{{if $label|trim|tolower == $fields.label|trim|tolower}}
+			{{if $_GET.dir == $direction && $label|trim|tolower == $fields.label|trim|tolower}}
 				{{:error message="Ce libellé est déjà présent"}}
 			{{/if}}
 			{{:assign var="%s_nature.key"|args:$direction value=$key}}
@@ -39,7 +39,6 @@
 			{{:assign var="%s_nature.type"|args:$direction from="_POST.%s_fields.type"|args:$direction}}
 			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
 		{{/if}}
-
 	{{/foreach}}
 
 	{{:save
@@ -56,7 +55,7 @@
 
 {{if $_GET.dir == 'input'}}
 	{{* types d'entrées *}}
-	{{#foreach from=$config.input_nature}}
+	{{#foreach from=$config_defaut.inputs}}
 		{{:assign var='input_types.%s'|args:$type value=$type}}
 	{{/foreach}}
 	<form method="post" action="">
@@ -95,7 +94,7 @@
 	</form>
 {{else}}
 	{{* types de sorties *}}
-	{{#foreach from=$config.output_nature}}
+	{{#foreach from=$config_defaut.outputs}}
 		{{:assign var='output_types.%s'|args:$type value=$type}}
 	{{/foreach}}
 

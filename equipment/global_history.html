@@ -6,7 +6,7 @@
 
 {{:admin_header title="Historique des mouvements" custom_css="./style.css" current="module_equipment"}}
 
-{{:include file="./_nav.html" current="historique"}}
+{{:include file="./_nav.html" current="historique" subcurrent="tous"}}
 
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="./_get_config.html" keep="config"}}
@@ -88,7 +88,10 @@
 
 <script type="text/javascript" src="scripts.js"></script>
 <script type="text/javascript">
-	(function () {
-		disableColumSort(document.querySelector("table[class=list]"));
-	})();
+(function () {
+	let table = document.querySelector("table[class=list]");
+	if (table != null) {
+		disableColumSort(table);
+	}
+})();
 </script>

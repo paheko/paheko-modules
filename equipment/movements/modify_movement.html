@@ -13,7 +13,7 @@
 {{/load}}
 
 {{* récupérer la config des entrées/sorties *}}
-{{:include file="../_get_config.html" keep="config, directions"}}
+{{:include file="../_get_config.html" keep="config, directions, loan_duration"}}
 {{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_new.direction:$mvt_new.operation}}
 
 {{if $mvt_new.direction == "input"}}
@@ -84,6 +84,11 @@
 	{{:assign var="mvt_new.amount" value=$_POST.amount}}
 	{{:assign var="mvt_new.date" value=$_POST.date|parse_date}}
 	{{:assign var="mvt_new.comment" value=$_POST.comment}}
+	{{if $_POST.set_return_date != null}}
+		{{:assign return_date=$_POST.return_date}}
+	{{else}}
+		{{:assign return_date=null}}
+	{{/if}}
 
 	{{*
 		lister les mouvements
@@ -215,11 +220,17 @@
 		user=$user_id
 		storage=$_POST.storage
 		transactions=$transactions
+		return_date=$return_date|parse_date
 	}}
 	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=modification"|args:$eqpmt_key:$prop}}
 {{/form}}
 
-{{:admin_header title="Modifier un mouvement" custom_css="./../style.css" current="module_equipment"}}
+{{if $mvt_new.direction == "input"}}
+	{{:assign mvt_label="entrée"}}
+{{else}}
+	{{:assign mvt_label="sortie"}}
+{{/if}}
+{{:admin_header title="Modifier une %s"|args:$mvt_label custom_css="./../style.css" current="module_equipment"}}
 {{:form_errors}}
 
 {{*
@@ -232,11 +243,6 @@
 	{{#select id, !name as nom FROM users WHERE id=:id; !name=$config.user_fields.name_sql :id=$mvt_new.user}}
 		{{:assign var="user.%s"|args:$id value=$nom}}
 	{{/select}}
-	{{#load type="link" where="$$.direction="output" AND $$.temp_key = :mvt_key" :mvt_key=$mvt_new.key limit=1}}
-		{{:assign retour=true}}
-	{{else}}
-		{{:assign retour=false}}
-	{{/load}}
 {{/if}}
 
 {{#load type="storage" order="$$.name"}}
@@ -274,10 +280,11 @@
 			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
 		</dl>
 	</fieldset>
+
 	<fieldset class="entree">
 		<legend>Informations facultatives</legend>
 		<dl>
-			{{if $prop == 1 && $mvt_new.direction == "output" && ! $retour}}
+			{{if $prop == 1 && $mvt_new.direction == "output"}}
 				{{:input
 					type="list"
 					name="user"
@@ -297,6 +304,23 @@
 				{{/if}}
 			{{/if}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false default=$mvt_new.comment}}
+			{{if $mvt_new.direction == "output" && $type_mvt == "temporaire"}}
+				{{if $mvt_new.return_date != null}}
+					{{:assign checked="checked"}}
+					{{:assign visibility="visible"}}
+					{{:assign return_date=$mvt_new.return_date}}
+				{{else}}
+					{{:assign visibility="hidden"}}
+					{{:assign ts_sortie=$mvt_new.date|strtotime}}
+					{{:assign ts_retour="%d+%d*(60*60*24)"|math:$ts_sortie:$loan_duration}}
+					{{:assign return_date=$ts_retour|date_short}}
+				{{/if}}
+				{{:input id="set_return_date" type="checkbox" value=1 name="set_return_date" label="Fixer une date de retour" help="Cocher pour fixer une date de retour" checked="%s"|args:$checked}}
+				<div id="div_return_date" style="visibility:{{$visibility}}">
+					{{:input type="date" name="return_date" label="Date de retour" default=$return_date}}
+					<input type="hidden" id="loan_duration" name="loan_duration" value="{{$loan_duration}}">
+				</div>
+			{{/if}}
 		</dl>
 	</fieldset>
 
@@ -307,3 +331,22 @@
 </form>
 
 {{:admin_footer}}
+
+<script type="text/javascript" src="../scripts.js"></script>
+<script type="text/javascript">
+function changeVisibility(evt, idcheck = 'f_set_return_date_1', fields = ['div_return_date']) {
+	toggleVisibility(idcheck, fields);
+}
+
+function changeReturnDate(evt, id_date = 'f_date', id_return_date = 'f_return_date', id_loan_duration='loan_duration') {
+	const loan_duration = document.getElementById(id_loan_duration).value;
+	let nbsec = getDate(id_date) + loan_duration*24*60*60;
+	const date_retour = new Date(nbsec * 1000);
+	document.getElementById(id_return_date).value = date_retour.toLocaleDateString();
+}
+
+(function () {
+	document.getElementById('f_set_return_date_1').onclick = changeVisibility;
+	document.getElementById('f_date').onchange = changeReturnDate;
+})();
+</script>

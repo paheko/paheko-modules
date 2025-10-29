@@ -29,6 +29,11 @@
 				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
 			</ul>
 		{{/if}}
+	{{elseif $current == 'historique'}}
+		<ul class="sub">
+			<li {{if $subcurrent == 'tous'}} class="current"{{/if}}><a href="{{$module.url}}global_history.html">Tous</a></li>
+			<li {{if $subcurrent == 'prêts'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html">Prêts</a></li>
+		</ul>
 	{{elseif $current == 'archives'}}
 		{{if $subsubcurrent == 'historique'}}
 			<ul class="sub">
@@ -54,6 +59,7 @@
 			<li {{if $subcurrent == 'categories'}} class="current"{{/if}}><a href="{{$module.url}}categories/index.html">Catégories</a></li>
 			<li {{if $subcurrent == 'storage'}} class="current"{{/if}}><a href="{{$module.url}}storage/index.html">Lieux de stockage</a></li>
 			<li {{if $subcurrent == 'typesES'}} class="current"{{/if}}><a href="{{$module.url}}config.html">Types d'entrées/sorties</a></li>
+			<li {{if $subcurrent == 'divers'}} class="current"{{/if}}><a href="{{$module.url}}config/misc.html">Divers</a></li>
 		</ul>
 	{{/if}}
 </nav>

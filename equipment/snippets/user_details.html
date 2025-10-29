@@ -30,97 +30,140 @@
 {{/load}}
 
 {{if $table_presente}}
+	{{* Matériels attribués temporairement *}}
 	{{* vérifier la présence des types d'entrées et de sorties requis *}}
 	{{if $output_types|has_key:"temporaire" && $input_types|has_key:"retour"}}
+
+		{{*
+			Calculer les quantités de matériel en prêt
+		*}}
+		{{:assign premier=true}}
 		{{#select
+			json_extract(mvt.document, '$.direction') AS direction,
+			json_extract(mvt.document, '$.date') AS date,
 			eqpmt.key as eqpmt_key,
-			json_extract(eqpmt.document, '$.name') as eqpmt_name,
-			mvt.key AS mvt_key,
-			json_extract(mvt.document, '$.direction') as direction,
-			json_extract(mvt.document, '$.operation') as operation,
-			json_extract(mvt.document, '$.date') as date,
-			json_extract(mvt.document, '$.amount') as amount
-			FROM module_data_equipment AS mvt
+			json_extract(eqpmt.document, '$.name') AS eqpmt_name,
+			json_extract(mvt.document, '$.amount') AS qte,
+			json_extract(mvt.document, '$.return_date') AS return_date,
+			json_extract(mvt.document, '$.operation') AS operation
+			FROM {!$module.table} AS mvt
 			INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-			INNER JOIN module_data_equipment AS eqpmt
-			ON json_extract(mvt.document, '$.equipment') = eqpmt.key
-			WHERE users.id = :user
-			AND (json_extract(mvt.document, '$.operation') IN !output_types
-				 OR json_extract(mvt.document, '$.operation') IN !input_types)
-			ORDER BY date
+			INNER JOIN {!$module.table} AS eqpmt ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+			WHERE
+				users.id = :user
+			AND
+				json_extract(mvt.document, '$.type') = 'movement'
+			AND
+				(json_extract(mvt.document, '$.operation') IN !output_types
+				OR
+				json_extract(mvt.document, '$.operation') IN !input_types)
+			ORDER BY eqpmt_name, date
 			;
 			:user = $user.id
 			!output_types=$output_types.temporaire
 			!input_types=$input_types.retour
-			assign="temp_mat."
 		}}
+			{{if $premier}}
+				{{:assign premier=false}}
+				{{:assign total=0}}
+				{{:assign nb_jours=0}}
+				{{:assign old_eqpmt_key=$eqpmt_key}}
+				{{:assign var="ligne.date" value=$date}}
+				{{:assign var="ligne.materiel" value=$eqpmt_name}}
+				{{:assign var="ligne.return_date" value=$return_date}}
+				{{:assign var="ligne.retard" value="0"}}
+				{{if $return_date != null}}
+					{{:assign ts_retour=$return_date|strtotime}}
+					{{:assign nb_jours="floor((%d-%d)/(60*60*24))"|math:$now:$ts_retour}}
+					{{:assign var="ligne.retard" value=$nb_jours}}
+				{{/if}}
+			{{/if}}
+
+			{{if $eqpmt_key != $old_eqpmt_key}}
+				{{if $total > 0}}
+					{{:assign var="ligne.qte" value=$total}}
+					{{:assign var="lignes." value=$ligne}}
+				{{/if}}
+				{{:assign total=0}}
+				{{:assign nb_jours=0}}
+				{{:assign old_eqpmt_key=$eqpmt_key}}
+				{{:assign var="ligne.date" value=$date}}
+				{{:assign var="ligne.materiel" value=$eqpmt_name}}
+				{{:assign var="ligne.return_date" value=$return_date}}
+				{{:assign var="ligne.retard" value="0"}}
+				{{if $return_date != null}}
+					{{:assign ts_retour=$return_date|strtotime}}
+					{{:assign nb_jours="floor((%d-%d)/(60*60*24))"|math:$now:$ts_retour}}
+					{{:assign var="ligne.retard" value=$nb_jours}}
+				{{/if}}
+			{{/if}}
+
+			{{if $direction == "output"}}
+				{{:assign total="%d+%d"|math:$total:$qte}}
+			{{else}}
+				{{:assign total="%d-%d"|math:$total:$qte}}
+			{{/if}}
 		{{/select}}
-	{{/if}}
 
-	{{if $temp_mat|count != 0}}
-		<h3 class="ruler">Matériels attribués temporairement</h3>
-		<table class="list">
-			<thead>
-				<tr>
-					<td>Date</td>
-					<td>Opération</td>
-					<td>Matériel</td>
-					<td>Quantité</td>
-					<td>Total</td>
-					<td class="actions"></td>
-				</tr>
-			</thead>
-			<tbody>
-				{{#foreach from=$temp_mat}}
-					{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
-					{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
-					{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
-					{{if $total == null}}
-						{{:assign total=0}}
-					{{/if}}
-					{{if $direction == 'input' && $type_mvt == 'retour'}}
-						{{:assign var="reste.%s"|args:$eqpmt_key value="%d-%d"|math:$total:$amount}}
-					{{elseif $direction == 'output' && $type_mvt == 'temporaire'}}
-						{{:assign var="reste.%s"|args:$eqpmt_key value="%d+%d"|math:$total:$amount}}
-					{{/if}}
-					{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
+		{{if $total > 0}}
+			{{:assign var="ligne.qte" value=$total}}
+			{{:assign var="lignes." value=$ligne}}
+		{{/if}}
+
+		{{if $lignes|count > 0}}
+			<h3 class="ruler">Matériels attribués temporairement</h3>
+			<table class="list" id="liste_temporaires">
+				<thead>
 					<tr>
-						<td>{{$date|date_short}}</td>
-						<td>{{$op_label}}</td>
-						<td>{{$eqpmt_name}}</td>
-						<td>{{$amount}}</td>
-						<td>{{$total}}</td>
-						<td class="actions">
-							{{if $direction == "output" && $type_mvt == "temporaire"}}
-								{{:linkbutton
-								label="Retour"
-								href="%smovements/output_return.html?key=%s&prop=0&user=%s"|args:$module.url:$mvt_key:$user.id
-								shape="history"
-								target="_dialog"}}
-							{{/if}}
-						</td>
+						<th>Date</th>
+						<th>Matériel</th>
+						<th>Quantité</th>
+						<th>Date de retour</th>
+						<th>Remarque</th>
 					</tr>
-				{{/foreach}}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{{#foreach from=$lignes}}
+						<tr>
+							<td>{{$date|date_short}}</td>
+							<td>{{$materiel}}</td>
+							<td>{{$qte}}</td>
+							<td>{{$return_date|date_short}}</td>
+							<td>
+								{{if $retard < 0}}
+									{{:assign delai="abs(%d)"|math:$retard}}
+									{{"Reste %s jours"|args:$delai}}
+								{{elseif $retard >0 }}
+									{{:tag color="darkred" label="Retard %s jours"|args:$retard}}
+								{{else}}
+									{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
+								{{/if}}
+							</td>
+						</tr>
+					{{/foreach}}
+				</tbody>
+			</table>
+		{{/if}}
 	{{/if}}
 
-	{{* vérifier la présence des types d'entrées et de sorties requis *}}
-	{{ if $output_types|has_key:"définitif"}}
+	{{* Matériels attribués définitivement *}}
+	{{* vérifier la présence des types de sorties requis *}}
+	{{if $output_types|has_key:"définitif"}}
 		{{#select
 			eqpmt.key as eqpmt_key,
 			json_extract(eqpmt.document, '$.name') as eqpmt_name,
 			json_extract(mvt.document, '$.direction') as direction,
 			json_extract(mvt.document, '$.operation') as operation,
-			json_extract(mvt.document, '$.date') as date,
-			json_extract(mvt.document, '$.amount') as amount
-			FROM module_data_equipment AS mvt
+			MIN(json_extract(mvt.document, '$.date')) as date,
+			SUM(json_extract(mvt.document, '$.amount')) as amount
+			FROM {!$module.table} AS mvt
 			INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-			INNER JOIN module_data_equipment AS eqpmt
+			INNER JOIN {!$module.table} AS eqpmt
 			ON json_extract(mvt.document, '$.equipment') = eqpmt.key
 			WHERE users.id = :user
 			AND json_extract(mvt.document, '$.operation') IN !output_types
-			ORDER BY date DESC
+			GROUP BY eqpmt_key, operation
+			ORDER BY eqpmt_name, date
 			;
 			:user = $user.id
 			!output_types=$output_types.définitif
@@ -134,31 +177,20 @@
 		<table class="list">
 			<thead>
 				<tr>
-					<td>Date</td>
-					<td>Opération</td>
-					<td>Matériel</td>
-					<td>Quantité</td>
-					<td>Total</td>
+					<th>Date</th>
+					<th>Matériel</th>
+					<th>Opération</th>
+					<th>Quantité</th>
 				</tr>
 			</thead>
 			<tbody>
 				{{#foreach from=$def_mat}}
-					{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
 					{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
-					{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
-					{{if $total == null}}
-						{{:assign total=0}}
-					{{/if}}
-					{{if $direction == 'output' && $type_mvt == 'définitif'}}
-						{{:assign var="reste.%s"|args:$eqpmt_key value="%d+%d"|math:$total:$amount}}
-					{{/if}}
-					{{:assign var="total" from="reste.%s"|args:$eqpmt_key}}
 					<tr>
 						<td>{{$date|date_short}}</td>
-						<td>{{$op_label}}</td>
 						<td>{{$eqpmt_name}}</td>
+						<td>{{$op_label}}</td>
 						<td>{{$amount}}</td>
-						<td>{{$total}}</td>
 					</tr>
 				{{/foreach}}
 			</tbody>

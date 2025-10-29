@@ -14,7 +14,7 @@
 {{/load}}
 
 {{* récupérer la config des entrées/sorties *}}
-{{:include file="../_get_config.html" keep="config, directions"}}
+{{:include file="../_get_config.html" keep="config, directions, loan_duration"}}
 {{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_new.direction:$mvt_new.operation}}
 
 {{* interdire de dupliquer un retour => utiliser le bouton « Retour » *}}
@@ -93,6 +93,11 @@
 	{{:assign var="mvt_new.amount" value=$_POST.amount}}
 	{{:assign var="mvt_new.date" value=$_POST.date|parse_date}}
 	{{:assign var="mvt_new.comment" value=$_POST.comment}}
+	{{if $_POST.set_return_date != null}}
+		{{:assign return_date=$_POST.return_date}}
+	{{else}}
+		{{:assign return_date=null}}
+	{{/if}}
 
 	{{*
 		lister les mouvements
@@ -198,11 +203,17 @@
 		user=$user.id
 		storage=$_POST.storage
 		transactions=$transactions
+		return_date=$return_date|parse_date
 	}}
 	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=copie"|args:$eqpmt_key:$prop}}
 {{/form}}
 
-{{:admin_header title="Dupliquer un mouvement" custom_css="./../style.css" current="module_equipment"}}
+{{if $mvt_new.direction == "input"}}
+	{{:assign mvt_label="entrée"}}
+{{else}}
+	{{:assign mvt_label="sortie"}}
+{{/if}}
+{{:admin_header title="Dupliquer une %s"|args:$mvt_label custom_css="./../style.css" current="module_equipment"}}
 {{:form_errors}}
 
 {{*
@@ -261,14 +272,28 @@
 				}}
 			{{/if}}
 			{{if $mvt_new.direction == "input"}}
-				{{if $storage != null}}
-					{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
-				{{/if}}
+				{{:input type="select" name="storage" default=$mvt_new.storage label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
 				{{if $type_mvt != "retour"}}
 					{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 				{{/if}}
 			{{/if}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false default=$mvt_new.comment}}
+			{{if $mvt_new.direction == "output" && $type_mvt == "temporaire"}}
+				{{if $mvt_new.return_date != null}}
+					{{:assign checked="checked"}}
+					{{:assign visibility="visible"}}
+					{{:assign return_date=$mvt_new.return_date}}
+				{{else}}
+					{{:assign visibility="hidden"}}
+					{{:assign ts_sortie=$mvt_new.date|strtotime}}
+					{{:assign ts_retour="%d+%d*(60*60*24)"|math:$ts_sortie:$loan_duration}}
+					{{:assign return_date=$ts_retour|date_short}}
+				{{/if}}
+				{{:input id="set_return_date" type="checkbox" value=1 name="set_return_date" label="Fixer une date de retour" help="Cocher pour fixer une date de retour" checked="%s"|args:$checked}}
+				<div id="div_return_date" style="visibility:{{$visibility}}">
+					{{:input type="date" name="return_date" label="Date de retour" default=$return_date}}
+				</div>
+			{{/if}}
 		</dl>
 	</fieldset>
 
@@ -279,3 +304,14 @@
 </form>
 
 {{:admin_footer}}
+
+<script type="text/javascript" src="../scripts.js"></script>
+<script type="text/javascript">
+function changeVisibility(evt, idcheck = 'f_set_return_date_1', fields = ['div_return_date']) {
+	toggleVisibility(idcheck, fields);
+}
+
+(function () {
+	document.getElementById('f_set_return_date_1').onclick = changeVisibility;
+})();
+</script>

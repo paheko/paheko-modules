@@ -1,9 +1,8 @@
 {{* -*- brindille -*- *}}
 
 {{*
-	Récupérer soit la config enregistrée, soit la config par défaut
-	@param : default = true si config par défaut
-	résultat : config.input_nature et config.output_nature
+	Récupérer la config
+	résultat : config_defaut, directions, config.input_nature et config.output_nature
 *}}
 
 {{* config par défaut *}}
@@ -15,7 +14,7 @@
 
 {{#foreach from=$directions key="direction"}}
 	{{:assign var="nature" from="module.config.%s_nature"|args:$direction}}
-	{{if $nature != null && ! $default}}
+	{{if $nature != null}}
 		{{#foreach from=$nature item="elem"}}
 			{{:assign var="item" label=$label type=$type}}
 			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$item}}
@@ -29,3 +28,9 @@
 		{{/foreach}}
 	{{/if}}
 {{/foreach}}
+
+{{if $module.config.loan_duration != null}}
+	{{:assign loan_duration=$module.config.loan_duration}}
+{{else}}
+	{{:assign loan_duration=$config_defaut.loan_duration}}
+{{/if}}

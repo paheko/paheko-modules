@@ -71,6 +71,10 @@
 			shape="plus"
 			href="movements/input_equipment.html?key=%s"|args:$key
 			target="_dialog"}}
+ 			{{:linkbutton
+			label="Historique"
+			href="equipment_history.html?key=%s&prop=1"|args:$key
+			shape="table"}}
 			{{:linkbutton
 			label="Modifier"
 			href="modify_equipment.html?key=%s&prop=1"|args:$key
@@ -84,7 +88,10 @@
 
 <script type="text/javascript" src="scripts.js"></script>
 <script type="text/javascript">
-	(function () {
-		disableColumSort(document.querySelector("table[class=list]"));
-	})();
+(function () {
+	let table = document.querySelector("table[class=list]");
+	if (table != null) {
+		disableColumSort(table);
+	}
+})();
 </script>

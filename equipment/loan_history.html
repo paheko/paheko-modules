@@ -1,0 +1,97 @@
+{{* -*- brindille -*- *}}
+
+{{:admin_header title="Matériels hors de l'asso" custom_css="../style.css" current="module_equipment"}}
+{{:include file="./_nav.html" current="historique" subcurrent="prêts"}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="./_get_config.html" keep="config"}}
+
+{{#foreach from=$config.output_nature key="key"}}
+	{{if $type == 'temporaire'}}
+		{{:assign var="output_types." value=$key|quote_sql}}
+	{{/if}}
+{{/foreach}}
+{{:assign output_ops=$output_types|implode:","}}
+{{:assign output_ops="("|cat:$output_ops|cat:")"}}
+
+{{:assign premier=true}}
+{{#select
+		users.nom AS nom,
+		users.id AS user,
+		mvt.key AS mvt_key,
+		json_extract(mat.document, '$.name') AS mat_name,
+		json_extract(mvt.document, '$.date') AS out_date,
+		json_extract(mvt.document, '$.amount') AS out_amount,
+		json_extract(mvt.document, '$.return_date') AS return_date,
+		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(retour.document, '$.amount')), 0) AS remain
+	FROM module_data_equipment AS mvt
+	INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+	LEFT JOIN module_data_equipment AS links ON mvt.key = json_extract(links.document, '$.temp_key')
+	LEFT JOIN module_data_equipment AS retour ON retour.key = json_extract(links.document, '$.return')
+	INNER JOIN module_data_equipment AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
+	WHERE
+		json_extract(mvt.document, '$.type') = 'movement'
+	AND
+		json_extract(mvt.document, '$.operation') IN !op
+	GROUP BY mvt.key
+	HAVING remain != 0
+	ORDER BY out_date, nom
+	;
+	!op = $output_ops
+}}
+	{{if $premier}}
+		<table class="list">
+			<thead>
+				<tr>
+					<th>Matériel</th>
+					<th>Date sortie</th>
+					<th>Quantité</th>
+					<th>Membre</th>
+					<th>Date retour</th>
+					<th>Reste à rendre</th>
+					<th>Remarque</th>
+					<th class="actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+		{{:assign premier=false}}
+	{{/if}}
+
+	{{if $return_date != null}}
+		{{:assign ts_retour=$return_date|strtotime}}
+		{{:assign nb_jours="floor((%d-%d)/(60*60*24))"|math:$now:$ts_retour}}
+	{{/if}}
+	<tr>
+		<td>{{$mat_name}}</td>
+		<td>{{$out_date|date_short}}</td>
+		<td>{{$out_amount}}</td>
+		<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$nom}}</td>
+		<td>{{$return_date|date_short}}</td>
+		<td>{{$remain}}</td>
+		<td>
+			{{if $return_date != null}}
+			{{if $nb_jours > 0}}
+				{{:tag color="darkred" label="Retard %s jours"|args:$nb_jours}}
+			{{elseif $nb_jours < 0}}
+				{{:assign delai="abs(%d)"|math:$nb_jours}}
+				{{"Reste %s jours"|args:$delai}}
+			{{else}}
+				{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
+			{{/if}}
+			{{/if}}
+		</td>
+		<td>
+			{{:linkbutton
+				label="Retour"
+				href="movements/output_return.html?key=%s&prop=1"|args:$mvt_key
+				shape="reset"
+				target="_dialog"}}
+		</td>
+	</tr>
+{{else}}
+	<p class="block alert">Aucun mouvement.</p>
+{{/select}}
+	</tbody>
+</table>
+
+{{:admin_footer}}

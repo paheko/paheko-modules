@@ -1,0 +1,113 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Afficher les détails d'un mouvement et donner la possibilité :
+	- d'associer des fichiers
+	- de modifier, supprimer ou dupliquer le mouvement
+	paramètres :
+	- key		: clé du mouvement
+	- prop = 1 si matériel appartient à l'asso
+*}}
+
+{{:admin_header title="Détails du mouvement" custom_css="../style.css" current="module_equipment"}}
+{{:form_errors}}
+
+{{* récupérer les infos du mouvement *}}
+{{#load key=$_GET.key assign="mvt"}}
+{{else}}
+	{{:error message="Aucun mouvement avec la clé %s"|args:$_GET.key}}
+{{/load}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="../_get_config.html" keep="config, directions"}}
+{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt.direction:$mvt.operation}}
+
+{{* récupérer les infos du matériel associé *}}
+{{#load key=$mvt.equipment assign="equipment"}}
+{{else}}
+	{{:error message="Aucun matériel avec la clé « %s »"|args:$mvt.equipment}}
+{{/load}}
+
+{{*
+	-------------------- Afficher les informations du mouvement --------------------
+*}}
+
+{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$mvt.direction:$mvt.operation}}
+{{#load key=$equipment.category assign="category"}}{{/load}}
+{{#load key=$mvt.storage assign="storage"}}{{/load}}
+{{#select !name as nom FROM users WHERE id=:id; !name=$config.user_fields.name_sql :id=$mvt.user}}
+	{{:assign user_name=$nom}}
+{{/select}}
+
+<nav class="tabs">
+	{{:linkbutton
+		label="Modifier ce mouvement"
+		href="modify_movement.html?key=%s"|args:$_GET.key
+		shape="edit"
+		target="_dialog"}}
+	{{:linkbutton
+		label="Supprimer ce mouvement"
+		href="delete_movement.html?key=%s&prop=%s"|args:$_GET.key:$_GET.prop
+		shape="delete"
+		target="_dialog"}}
+	{{if $type_mvt != "retour"}}
+		{{:linkbutton
+			label="Dupliquer ce mouvement"
+			href="copy_movement.html?key=%s&prop=%s"|args:$_GET.key:$_GET.prop
+			shape="plus"
+			target="_dialog"}}
+	{{/if}}
+</nav>
+
+<dl class="describe">
+	<dt>Opération</dt>
+	<dd>{{$op_label}}</dd>
+	<dt>Matériel</dt>
+	<dd>{{$equipment.name}}</dd>
+	<dt>Catégorie</dt>
+	<dd>{{$category.name}}</dd>
+	<dt>Date</dt>
+	<dd>{{$mvt.date|date_short}}</dd>
+	<dt>Quantité</dt>
+	<dd>{{$mvt.amount}}</dd>
+	{{if $mvt.direction == "output" && $type_mvt != "retour"}}
+		<dt>Membre destinataire</dt>
+		<dd>
+			{{if $mvt.user != null}}
+				{{$user_name}}
+			{{else}}—
+			{{/if}}
+		</dd>
+	{{/if}}
+	{{if $mvt.direction == "input"}}
+		<dt>Lieu de stockage</dt>
+		<dd>
+			{{if $storage != null}}
+				{{$storage.name}}
+			{{else}}—
+			{{/if}}
+		</dd>
+	{{/if}}
+	<dt>Écritures liées</dt>
+	<dd>
+		{{#foreach from=$mvt.transactions item="trans"}}
+			{{:link class="num" href="!acc/transactions/details.php?id=%d"|args:$trans label=$trans}}
+		{{else}}—
+		{{/foreach}}
+	</dd>
+	<dt>Remarques</dt>
+	<dd>{{if $mvt.comment != null}}
+		{{$mvt.comment}}
+		{{else}}—
+		{{/if}}
+	</dd>
+	{{if $mvt.return_date != null}}
+		<dt>Date de retour</dt>
+		<dd>{{$mvt.return_date|date_short}}</dd>
+	{{/if}}
+</dl>
+
+<form method="post" action="">
+	{{:admin_files path=$_GET.key upload=true edit=true use_trash=false}}
+</form>
+{{:admin_footer}}
