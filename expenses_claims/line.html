@@ -36,33 +36,41 @@
 		{{/load}}
 	{{/if}}
 
+	{{:assign label=$_POST.label|trim}}
+
 	{{if $cat.expense_type === 'km_vehicle'}}
+		{{:assign distance=$_POST.distance|intval}}
 		{{if !$_POST.vehicle|trim}}
 			{{:error message="Aucun véhicule sélectionné"}}
-		{{elseif $_POST.distance|intval < 1}}
+		{{elseif $distance < 1}}
 			{{:error message="La distance parcourue ne peut être inférieure à 1 km"}}
 		{{/if}}
 
-		{{:include file="./_calcul_bareme.tpl" vehicule=$_POST.vehicle distance=$_POST.distance keep="resultat,calcul,bonus"}}
+		{{:include file="./_calcul_bareme.tpl" vehicule=$_POST.vehicle distance=$distance keep="resultat,calcul,bonus"}}
+		{{:assign calcul_label=$calcul|replace:'d':$distance}}
 		{{if $bonus > 1}}
 			{{:assign bonus="+20% (véhicule électrique)"}}
+			{{:assign calcul_label="1,2 (bonus) x %s"|args:$calcul_label}}
 		{{else}}
 			{{:assign bonus="Non"}}
 		{{/if}}
 		{{:assign var="vehicle_name" from="vehicles.%s"|args:$_POST.vehicle}}
 		{{:assign
 			amount=$resultat
-			description="Départ : %s\nArrivée : %s\nVéhicule : %s\nDistance : %s km\nCalcul : %s\nBonus : %s\n\n%s"|args:$_POST.depart:$_POST.arrivee:$vehicle_name:$_POST.distance:$calcul:$bonus:$_POST.description|trim
+			label="%s (%s)"|args:$label:$calcul_label
+			description="Départ : %s\nArrivée : %s\nVéhicule : %s\nDistance : %d km\nCalcul : %s\nBonus : %s\n\n%s"|args:$_POST.depart:$_POST.arrivee:$vehicle_name:$_POST.distance:$calcul:$bonus:$_POST.description|trim
 		}}
 	{{elseif $cat.expense_type === 'km_free'}}
-		{{if $_POST.distance|intval < 1}}
+		{{:assign distance=$_POST.distance|intval}}
+		{{if $distance < 1}}
 			{{:error message="La distance parcourue ne peut être inférieure à 1 km"}}
 		{{/if}}
 
 		{{:assign bareme=$cat.price|money_currency:false:false:false}}
 		{{:assign
-			amount="%d*%d"|math:$_POST.distance:$cat.price|money_raw
-			description="Départ : %s\nArrivée : %s\nDistance : %s km\nBarème : %s par km\n\n%s"|args:$_POST.depart:$_POST.arrivee:$_POST.distance:$bareme:$_POST.description|trim
+			amount="%d*%d"|math:$distance:$cat.price|money_raw
+			label="%s (%d x %s)"|args:$label:$distance:$bareme
+			description="Départ : %s\nArrivée : %s\nDistance : %s km\nBarème : %s par km\n\n%s"|args:$_POST.depart:$_POST.arrivee:$distance:$bareme:$_POST.description|trim
 		}}
 	{{/if}}
 
@@ -71,7 +79,7 @@
 		key="uuid"
 		type="line"
 		claim=$claim.key
-		label=$_POST.label|trim
+		label=$label
 		category=$cat.label|or:'Autre'
 		account=$cat.account|keys|key:0|strval|or:null
 		description=$description|or:$_POST.description|trim|or:null
