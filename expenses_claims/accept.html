@@ -14,7 +14,7 @@
 	{{:assign var="upload_path" value="%s/%s"|args:$module.storage_root:$claim.key}}
 
 	{{#foreach from=$_POST.lines|array_transpose}}
-		{{:assign var="lines." debit=$amount label=$label account=$account|keys|key:0 id_project=$id_project}}
+		{{:assign var="lines." debit=$amount label=$label account=$account|keys|key:0 id_project=$id_project reference=$reference}}
 		{{:assign amount=$amount|money_int}}
 		{{:assign total="%d+%d"|math:$amount:$total}}
 	{{/foreach}}
