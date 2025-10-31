@@ -42,18 +42,18 @@
 <nav class="tabs">
 	{{:linkbutton
 		label="Modifier ce mouvement"
-		href="modify_movement.html?key=%s"|args:$_GET.key
+		href="modify_movement.html?key=%s&from=%s"|args:$_GET.key:$_GET.from
 		shape="edit"
 		target="_dialog"}}
 	{{:linkbutton
 		label="Supprimer ce mouvement"
-		href="delete_movement.html?key=%s&prop=%s"|args:$_GET.key:$_GET.prop
+		href="delete_movement.html?key=%s&prop=%s&from=%s"|args:$_GET.key:$_GET.prop:$_GET.from
 		shape="delete"
 		target="_dialog"}}
 	{{if $type_mvt != "retour"}}
 		{{:linkbutton
 			label="Dupliquer ce mouvement"
-			href="copy_movement.html?key=%s&prop=%s"|args:$_GET.key:$_GET.prop
+			href="copy_movement.html?key=%s&prop=%s&from=%s"|args:$_GET.key:$_GET.prop:$_GET.from
 			shape="plus"
 			target="_dialog"}}
 	{{/if}}

@@ -205,7 +205,12 @@
 		transactions=$transactions
 		return_date=$return_date|parse_date
 	}}
-	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=copie"|args:$eqpmt_key:$prop}}
+	{{if $_GET.from == "lh"}}
+		{{:assign from="../loan_history.html"}}
+	{{else}}
+		{{:assign from="../equipment_history.html"}}
+	{{/if}}
+	{{:redirect force="%s?ok=1&key=%s&prop=%s&msg=copie"|args:$from:$eqpmt_key:$prop}}
 {{/form}}
 
 {{if $mvt_new.direction == "input"}}
@@ -273,9 +278,9 @@
 			{{/if}}
 			{{if $mvt_new.direction == "input"}}
 				{{:input type="select" name="storage" default=$mvt_new.storage label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
-				{{if $type_mvt != "retour"}}
-					{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
-				{{/if}}
+			{{/if}}
+			{{if $type_mvt != "retour"}}
+				{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 			{{/if}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false default=$mvt_new.comment}}
 			{{if $mvt_new.direction == "output" && $type_mvt == "temporaire"}}
@@ -292,6 +297,7 @@
 				{{:input id="set_return_date" type="checkbox" value=1 name="set_return_date" label="Fixer une date de retour" help="Cocher pour fixer une date de retour" checked="%s"|args:$checked}}
 				<div id="div_return_date" style="visibility:{{$visibility}}">
 					{{:input type="date" name="return_date" label="Date de retour" default=$return_date}}
+					<input type="hidden" id="loan_duration" name="loan_duration" value="{{$loan_duration}}">
 				</div>
 			{{/if}}
 		</dl>
@@ -311,7 +317,13 @@ function changeVisibility(evt, idcheck = 'f_set_return_date_1', fields = ['div_r
 	toggleVisibility(idcheck, fields);
 }
 
+function changeReturnDate(evt, id_date = 'f_date', id_return_date = 'f_return_date', id_loan_duration='loan_duration')
+{
+	setReturnDate(id_date, id_return_date, id_loan_duration);
+}
+
 (function () {
 	document.getElementById('f_set_return_date_1').onclick = changeVisibility;
+	document.getElementById('f_date').onchange = changeReturnDate;
 })();
 </script>

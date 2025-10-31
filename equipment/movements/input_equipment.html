@@ -42,7 +42,7 @@
 		{{:assign var="equipment.notowned" value="%d+%d"|math:$equipment.notowned:$_POST.amount|intval}}
 	{{/if}}
 
-	{{* documents liés *}}
+	{{* écritures liées *}}
 	{{#foreach from=$_POST.transactions item="value"}}
 		{{:assign var="transactions." value=$value|intval}}
 	{{/foreach}}

@@ -52,3 +52,14 @@ function str2sec(date) {
 function getDate(idelem) {
 	return str2sec(document.getElementById(idelem).value);
 }
+
+/**
+ * modifier la date de retour en fonction de la date de sortie et de la durée du prêt
+ */
+function setReturnDate(id_date, id_return_date, id_loan_duration)
+{
+	const loan_duration = document.getElementById(id_loan_duration).value;
+	let nbsec = getDate(id_date) + loan_duration*24*60*60;
+	const date_retour = new Date(nbsec * 1000);
+	document.getElementById(id_return_date).value = date_retour.toLocaleDateString();
+}

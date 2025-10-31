@@ -1,6 +1,21 @@
 {{* -*- brindille -*- *}}
 
 {{:admin_header title="Matériels hors de l'asso" custom_css="../style.css" current="module_equipment"}}
+
+{{if $_GET.ok}}
+	{{if $_GET.msg == "modification"}}
+		<p class="block confirm">Modification enregistrée</p>
+	{{elseif $_GET.msg == "copie"}}
+		<p class="block confirm">Mouvement copié</p>
+	{{elseif $_GET.msg == "suppression"}}
+		<p class="block confirm">Mouvement supprimé</p>
+	{{/if}}
+{{elseif $_GET.err}}
+	{{if $_GET.msg == "suppression"}}
+		<p class="block error">Ce mouvement ne peut être supprimé</p>
+	{{/if}}
+{{/if}}
+
 {{:include file="./_nav.html" current="historique" subcurrent="prêts"}}
 
 {{* lecture config (défaut ou enregistrée) *}}
@@ -24,11 +39,11 @@
 		json_extract(mvt.document, '$.amount') AS out_amount,
 		json_extract(mvt.document, '$.return_date') AS return_date,
 		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(retour.document, '$.amount')), 0) AS remain
-	FROM module_data_equipment AS mvt
-	INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-	LEFT JOIN module_data_equipment AS links ON mvt.key = json_extract(links.document, '$.temp_key')
-	LEFT JOIN module_data_equipment AS retour ON retour.key = json_extract(links.document, '$.return')
-	INNER JOIN module_data_equipment AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
+	FROM {!$module.table} AS mvt
+	LEFT JOIN users ON json_extract(mvt.document, '$.user') = users.id
+	LEFT JOIN {!$module.table} AS links ON mvt.key = json_extract(links.document, '$.temp_key')
+	LEFT JOIN {!$module.table} AS retour ON retour.key = json_extract(links.document, '$.return')
+	INNER JOIN {!$module.table} AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
 	WHERE
 		json_extract(mvt.document, '$.type') = 'movement'
 	AND
@@ -70,14 +85,17 @@
 		<td>{{$remain}}</td>
 		<td>
 			{{if $return_date != null}}
-			{{if $nb_jours > 0}}
-				{{:tag color="darkred" label="Retard %s jours"|args:$nb_jours}}
-			{{elseif $nb_jours < 0}}
-				{{:assign delai="abs(%d)"|math:$nb_jours}}
-				{{"Reste %s jours"|args:$delai}}
-			{{else}}
-				{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
-			{{/if}}
+				{{:assign jour="jour}}
+				{{if $nb_jours > 0}}
+					{{if $nb_jours > 1}}{{:assign jour="jours"}}{{/if}}
+					{{:tag color="darkred" label="Retard %s %s"|args:$nb_jours:$jour}}
+				{{elseif $nb_jours < 0}}
+					{{:assign delai="abs(%d)"|math:$nb_jours}}
+					{{if $nb_jours < -1}}{{:assign jour="jours"}}{{/if}}
+					{{"Reste %s %s"|args:$delai:$jour}}
+				{{else}}
+					{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
+				{{/if}}
 			{{/if}}
 		</td>
 		<td>
@@ -86,6 +104,11 @@
 				href="movements/output_return.html?key=%s&prop=1"|args:$mvt_key
 				shape="reset"
 				target="_dialog"}}
+			{{:linkbutton
+				label="Détails"
+				href="movements/movement_details.html?key=%s&prop=1&from=lh"|args:$mvt_key
+				shape="eye"
+			}}
 		</td>
 	</tr>
 {{else}}
