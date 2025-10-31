@@ -1,0 +1,34 @@
+{{* -*- brindille -*- *}}
+
+{{:admin_header title="Configuration" current="module_equipment"}}
+
+{{#form on="save"}}
+	{{:save
+	key="config"
+	loan_duration=$_POST.loan_duration
+	}}
+{{/form}}
+
+{{* barre de navigation *}}
+{{:include file="../_nav.html" current="config" subcurrent="divers"}}
+
+{{if $_GET.ok}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="../_get_config.html" keep="loan_duration"}}
+
+<form method="post" action="" data-focus="1">
+	<fieldset class="storage">
+		<legend>Autres paramètres</legend>
+		<dl>
+			{{:input type="number" name="loan_duration" label="Durée de prêt par défaut" min=1 required=true default=$loan_duration help="Durée en nombre de jours"}}
+
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+{{:admin_footer}}
