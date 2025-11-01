@@ -48,6 +48,7 @@
 		at=$_POST.at|arrayval|keys|key:0|strval|or:null
 		a3=$_POST.a3|arrayval|keys|key:0|strval|or:null
 		ll=$lines|or:null
+		ru=$_POST.ru|boolval|intval
 	}}
 	{{:redirect to="./"}}
 {{/if}}
@@ -74,6 +75,7 @@
 		{{:input type="date" name="dt" label="Date" source=$tpl}}
 		{{:input type="text" name="r" label="Numéro de pièce comptable" source=$tpl}}
 		{{:input type="textarea" name="n" label="Remarques" source=$tpl}}
+		{{:input type="checkbox" name="ru" value=1 label="Obliger à indiquer un membre lié" prefix_title="Autres options"}}
 	</dl>
 	<dl class="t1 t2 t3 t4 t5">
 		{{:input type="money" name="a00" label="Montant" source=$tpl}}

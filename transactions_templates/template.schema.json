@@ -62,6 +62,10 @@
 			"description": "Remarques",
 			"type": ["string", "null"]
 		},
+		"ru": {
+			"description": "Rendre obligatoire le champ membres liés",
+			"type": "integer"
+		},
 		"ll": {
 			"description": "Lignes de l'écriture avancée",
 			"type": ["array", "null"],
