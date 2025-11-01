@@ -100,21 +100,28 @@
 				Par exemple, pour un événement tous les vendredis, inscrire le chiffre 2 ici permettra de réserver pour ce vendredi, et le vendredi suivant.<br />
 				Pour un événement tous les premier dimanches du mois, inscrire le chiffre 8 ici permettra de réserver pour le premier dimanche du prochain mois, et le premier dimanche du mois suivant (8 semaines = 2 mois).
 			</dd>
-			{{#module name="openings"}}
-				<dt><strong>Synchronisation avec les ouvertures</strong></dt>
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Restrictions</legend>
+		<dl>
+			{{:input type="datetime-local" name="not_open_before" label="Ne pas ouvrir les réservations avant le…" help="Il ne sera pas possible d'enregistrer une réservation avant la date et heure indiquée." source=$event}}
+			{{:input type="datetime-local" name="not_open_after" label="Fermer les inscriptions après le…" help="Il ne sera plus possible d'enregistrer une réservation après la date et heure indiquée." source=$event}}
+		</dl>
+	</fieldset>
+
+	{{#module name="openings"}}
+		<fieldset>
+			<legend>Synchronisation avec les ouvertures</legend>
+			<dl>
 				{{:input type="checkbox" name="use_closings" value=1 source=$event label="Ne pas proposer de créneaux pendant les périodes de fermeture"}}
 				{{:input type="checkbox" name="use_openings" value=1 source=$event label="Utiliser les horaires d'ouverture comme créneaux"}}
 				<dd class="help">Si cette case est cochée, les créneaux seront automatiquement configurés à partir des informations indiquées dans l'extension {{:link href="%sconfig.html"|args:$url label="Horaires d'ouverture"}}.<br />Sinon, il faudra configurer les créneaux manuellement.</dd>
 				<dd class="help">{{:linkbutton shape="settings" href="%sconfig.html"|args:$url label="Configurer les ouvertures et fermetures"}}</dd>
 			</dl>
 		</fieldset>
-		<fieldset>
-			<legend>Restrictions</legend>
-			<dl>
-				{{:input type="datetime-local" name="not_open_before" label="Ne pas ouvrir les réservations avant le…" help="Il ne sera pas possible d'enregistrer une réservation avant la date et heure indiquée." source=$event}}
-				{{:input type="datetime-local" name="not_open_after" label="Fermer les inscriptions après le…" help="Il ne sera plus possible d'enregistrer une réservation après la date et heure indiquée." source=$event}}
-			</dl>
-		</fieldset>
+
 		<fieldset class="openings_options">
 			<legend>Pour chaque ouverture…</legend>
 			<dl>
@@ -124,9 +131,9 @@
 			</dl>
 			<dl class="openings_delay">
 				{{:input type="select" name="openings_delay" source=$event label="Intervalle entre chaque créneau" options=$delay_options required=true}}
-			{{/module}}
-		</dl>
-	</fieldset>
+			</dl>
+		</fieldset>
+	{{/module}}
 
 	<fieldset>
 		<legend>Informations à demander aux inscrits</legend>
