@@ -76,6 +76,7 @@
 				<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 					{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" class="main"}}
 				</form>
+				<footer>{{:linkbutton href="booking_export.html?booking=%s"|args:$key label="Ajouter à mon agenda" shape="calendar"}}</footer>
 			</article>
 		{{else}}
 			<p class="error block">La réservation indiquée est introuvable, elle a peut-être déjà été annulée.</p>
@@ -90,6 +91,7 @@
 				<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 					{{:button type="submit" name="cancel" value="#key#" label="Annuler cette réservation" shape="delete" }}
 				</form>
+				<footer>{{:linkbutton href="booking_export.html?booking=#key#" label="Ajouter à mon agenda" shape="calendar"}}</footer>
 			</article>
 		</template>
 	</section>

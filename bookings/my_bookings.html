@@ -29,6 +29,7 @@
 			<form method="post" action="./" onsubmit="return confirm('Annuler la réservation ?');">
 				{{:button type="submit" name="cancel" value=$key label="Annuler cette réservation" shape="delete" }}
 			</form>
+			<footer>{{:linkbutton href="booking_export.html?booking=%s"|args:$key label="Ajouter à mon agenda" shape="calendar"}}</footer>
 		</article>
 	{{else}}
 		<p class="alert block">Vous n'avez fait aucune réservation.</p>

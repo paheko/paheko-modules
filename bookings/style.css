@@ -188,6 +188,10 @@
 	background: #fdd;
 }
 
+.my_bookings article footer {
+	font-size: .9em;
+}
+
 .booking_list article {
 	margin: 1rem;
 }

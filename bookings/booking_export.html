@@ -1,0 +1,31 @@
+{{**keep_whitespaces**}}
+{{#strip}}
+	{{#load type="booking" key=$_GET.booking assign="booking"}}
+		{{#load type="event" key=$event assign="event"}}
+		{{else}}
+			{{:error message="Événement non trouvé" code=404}}
+		{{/load}}
+	{{else}}
+		{{:error message="Réservation non trouvée" code=404}}
+	{{/load}}
+	{{:http type="text/calendar" download="reservation.ics"}}
+{{/strip}}
+BEGIN:VCALENDAR
+PRODID:-//Paheko//Paheko//FR
+VERSION:2.0
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+UID:{{$booking.key}}
+SUMMARY:{{$event.label|raw}}
+DTSTAMP;TZID={{$config.timezone}}:{{$booking.date|date:'Ymd\THis'}}
+DTSTART;TZID={{$config.timezone}}:{{$booking.date|date:'Ymd\THis'}}
+DESCRIPTION:{{$event.description|raw|regexp_replace:"/\r?\n|\r/":"\\n"|wordwrap:65:"\n "}}
+STATUS:CONFIRMED
+SEQUENCE:0
+BEGIN:VALARM
+TRIGGER:-PT60M
+DESCRIPTION:{{$event.label|raw}}
+ACTION:DISPLAY
+END:VALARM
+END:VEVENT
+END:VCALENDAR
