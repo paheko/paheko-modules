@@ -12,8 +12,10 @@
 	{{else}}
 		{{:error message="L'élément demandé n'existe pas"}}
 	{{/load}}
+	{{:assign title="Modifier"}}
 {{else}}
 	{{:assign key=""|uuid target=$_GET.target}}
+	{{:assign title="Ajouter"}}
 {{/if}}
 
 {{if $target === 'entry'}}
@@ -54,15 +56,15 @@
 			key=$key
 			label=$_POST.label|trim
 			target=$target
-			weight=$_POST.weight|weightval
+			weight=$_POST.weight|weightval|or:0
 		}}
 	{{/if}}
 
-	{{:redirect to="./list.html?type="|cat:$type}}
+	{{:redirect to="./list.html?target=%s&type=%s"|args:$target:$type}}
 
 {{/form}}
 
-{{:admin_header title="Modifier"}}
+{{:admin_header title=$title}}
 
 {{:form_errors}}
 

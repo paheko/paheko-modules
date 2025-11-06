@@ -3,9 +3,9 @@
 	{{if $current === 'stats' || $current === 'history'}}
 		{{:exportmenu right=true}}
 	{{elseif $current === 'config' && $type === 'category'}}
-		{{:linkbutton shape="plus" href="edit.html?key=new&target=%s"|args:$target label="Ajouter une catégorie"}}
+		{{:linkbutton shape="plus" href="edit.html?key=new&target=%s&type=%s"|args:$target:$type label="Ajouter une catégorie"}}
 	{{elseif $current === 'config' && $type === 'object'}}
-		{{:linkbutton shape="plus" href="edit.html?key=new&target=%s"|args:$target label="Ajouter un type d'objet"}}
+		{{:linkbutton shape="plus" href="edit.html?key=new&target=%s&type=%s"|args:$target:$type label="Ajouter un type d'objet"}}
 	{{/if}}
 	</aside>
 	<ul>
