@@ -27,6 +27,13 @@
     margin-bottom: 1rem;
 }
 
+.web-content h1 { font-size: 2em; }
+.web-content h2 { font-size: 1.5em; }
+.web-content h3 { font-size: 1.2em; }
+.web-content h4 { font-size: 1em; }
+.web-content h5 { font-size: 0.85em; }
+.web-content h6 { font-size: 0.7em; }
+
 .web-content ul, .web-content ol, .web-content dd {
     margin-left: 2em;
 }
@@ -51,7 +58,6 @@
 }
 
 .web-content blockquote {
-    font-size: 1.1em;
     padding-left: 3rem;
 }
 

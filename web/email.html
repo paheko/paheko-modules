@@ -17,13 +17,10 @@
 /* CSS reset for margin and padding */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6,
 pre, form, fieldset, input, textarea, p, blockquote, th, td,
-figure, article, aside, section, header, footer {
+figure, article, aside, section, header, footer, img {
 	padding: 0;
 	margin: 0;
-}
-
-fieldset, img {
-	border: 0;
+	border: 0; /* Required for laposte.net */
 }
 
 #main {
@@ -43,6 +40,8 @@ a {
 	border-color: rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
 	border-bottom-width: 7px;
 	padding: .8em;
+	background: #fff;
+	color: #000;
 }
 .header h2 {
 	margin-bottom: 5px;
@@ -61,6 +60,7 @@ a {
 	float: right;
 	max-height: 75px;
 	border-left: 10px solid #fff;
+	background: #fff;
 }
 .web-content {
 	border-radius: 10px;
@@ -74,18 +74,6 @@ a {
 	margin-left: 1em;
 	border-left: 5px solid BurlyWood;
 	padding: 1em;
-}
-</style>
-{{* Only the first style tag is parsed and replaced, so we can keep some basic stuff here,
-	might be useful in some cases, but not really worth it to apply font and color to *all* elements.
-	Especially as this increases HTML size by +15-20%.
-*}}
-<style type="text/css">
-body {
-	background: #fff;
-	color: #000;
-	font-family: sans-serif;
-	margin: 10px;
 }
 </style>
 <base target="_blank" />
