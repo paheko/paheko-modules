@@ -1,67 +1,99 @@
-{{* Ce squelette est utilisé pour l'envoi d'un e-mail au format HTML *}}
+{{* This skeleton is used for sending emails in HTML *}}
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <style type="text/css">
-{{#capture assign="css"}}
-	* { margin: 0; padding: 0; }
-	body {
-		background: #fff;
-		color: #000;
-		font-family: sans-serif;
-		margin: 10px;
-	}
-	#main {
-		max-width: 700px;
-		margin: 0 auto;
-		margin-bottom: 30px;
-	}
-	a {
-		color: #009;
-		text-decoration: underline;
-	}
-	.header {
-		border-bottom: 5px solid #ccc;
-		padding: 0px 10px 20px 10px;
-		border-radius: 1em;
-		overflow: auto;
-		border-color: rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
-	}
-	.header h2 {
-		margin-bottom: 5px;
-	}
-	.header h5 {
-		font-weight: normal;
-	}
-	.header a, .header h2 {
-		color: rgb({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 255{{/if}});
-	}
-	.header img {
-		float: right;
-		max-height: 75px;
-	}
-	.web-content {
-		border-radius: 10px;
-		max-width: 680px;
-		margin: 10px auto;
-	}
-	{{* Inclure le contenu de content.css pour s'assurer que le style du texte Markdown/Skriv est correct *}}
-	{{:include file="./content.css"}}
-{{/capture}}
-{{$css|raw|minify:'css'}}
+{{*
+	Warning! Email clients are bad at CSS.
+	So Paheko will parse the contents of this <style> tag
+	and apply all CSS rules in each element 'style' attribute!
+	Then this tag will be deleted.
+
+	Yes this means the produced HTML will look like shit,
+	but there is no other choice :(
+*}}
+
+/* CSS reset for margin and padding */
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6,
+pre, form, fieldset, input, textarea, p, blockquote, th, td,
+figure, article, aside, section, header, footer {
+	padding: 0;
+	margin: 0;
+}
+
+fieldset, img {
+	border: 0;
+}
+
+#main {
+	max-width: 700px;
+	margin: 0 auto;
+	margin-bottom: 30px;
+}
+a {
+	color: #009;
+	text-decoration: underline;
+}
+.header {
+	border-bottom: 5px solid #ccc;
+	padding: 0px 10px 20px 10px;
+	border-radius: 1em;
+	overflow: auto;
+	border-color: rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
+}
+.header h2 {
+	margin-bottom: 5px;
+}
+.header h5 {
+	font-weight: normal;
+}
+.header a, .header h2 {
+	color: rgb({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 255{{/if}});
+}
+.header img {
+	float: right;
+	max-height: 75px;
+}
+.web-content {
+	border-radius: 10px;
+	max-width: 680px;
+	margin: 10px auto;
+}
+{{* Include the contents of the 'content.css' file here, so that Markdown text appears the same as in the web pages *}}
+{{:include file="./content.css"}}
+{{* Override some of the rules, as some things are not handled by the CSS parser, such as ::before *}}
+.web-content blockquote {
+	margin-left: 1em;
+	border-left: 5px solid BurlyWood;
+	padding: 1em;
+}
+</style>
+{{* Only the first style tag is parsed and replaced, so we can keep some basic stuff here,
+	might be useful in some cases, but not really worth it to apply font and color to *all* elements.
+	Especially as this increases HTML size by +15-20%.
+*}}
+<style type="text/css">
+body {
+	background: #fff;
+	color: #000;
+	font-family: sans-serif;
+	margin: 10px;
+}
 </style>
 <base target="_blank" />
 </head>
 <body>
 
 {{* This is the email preheader, what will be seen below the subject line in some email clients *}}
-<span style="display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">{{$html|strip_tags|truncate:130:"…":true}}{{* Add some spacing after pre-header text just in case it is too short *}}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</span>
+{{* entities_escape is important: https://github.com/hteumeuleu/email-bugs/issues/41#issuecomment-1321464561 }}
+<span style="display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">{{$html|strip_tags|truncate:130:"…":true|entities_escape|raw}}{{* Add some spacing after pre-header text just in case it is too short *}}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</span>
 
 <div id="main">
 
 	<div class="header">
 		{{if $config.files.logo}}
-			<img src="{{$config.files.logo}}&150px" alt="{{$config.org_name}}" class="logo" style="max-height: 75px;" />
+			<img src="{{$config.files.logo}}&150px" alt="{{$config.org_name}}" class="logo" />
 		{{/if}}
 		<h2>{{$config.org_name}}</h2>
 		<h5>
@@ -78,18 +110,11 @@
 		</div>
 	</div>
 
-	{{* Le contenu du mail est dans la variable $html, ne pas supprimer sinon le message sera vide ! *}}
+	{{* The real email content is in the $html variable. Don't delete this or the email will be empty! *}}
 	{{$html|raw}}
-
-	{{* D'autres variables sont disponibles, permettant de personnaliser le message :
-		- $recipient contient l'adresse email du destinataire
-		- $data contient les données disponibles pour le message (par exemple $data.nom contiendra le nom du membre dans un message collectif)
-		- $context contient le contexte du message (0 = changement de mot de passe, 1 = message privé entre membres, 2 = message collectif)
-		- $from contient l'expéditeur (si NULL, l'expéditeur sera l'association)
-	*}}
 
 </div>
 
-{{* Le lien de désinscription sera ajouté automatiquement en bas du message, il n'est pas possible de le modifier ou le supprimer. *}}
+{{* The unsubscribe link will be automatically added to the message. It's not possible to remove or change it. *}}
 </body>
 </html>
