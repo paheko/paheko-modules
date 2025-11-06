@@ -36,17 +36,23 @@ a {
 	text-decoration: underline;
 }
 .header {
-	border-bottom: 5px solid #ccc;
 	padding: 0px 10px 20px 10px;
 	border-radius: 1em;
 	overflow: auto;
+	border: 1px solid #ccc;
 	border-color: rgba({{if $config.color2}}{{$config.color2|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
+	border-bottom-width: 7px;
+	padding: .8em;
 }
 .header h2 {
 	margin-bottom: 5px;
+	border-bottom: 1px solid rgba({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
+	font-size: 22px;
 }
 .header h5 {
+	font-size: 12px;
 	font-weight: normal;
+	margin: 0;
 }
 .header a, .header h2 {
 	color: rgb({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 255{{/if}});
@@ -54,6 +60,7 @@ a {
 .header img {
 	float: right;
 	max-height: 75px;
+	border-left: 10px solid #fff;
 }
 .web-content {
 	border-radius: 10px;
