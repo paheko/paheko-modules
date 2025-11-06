@@ -569,7 +569,7 @@
 }
 
 .web-grid {
-    /* Default grid template: just auto sized columns */;
+    /* Default grid template: just auto sized columns */
     --grid-template: none / repeat(auto-fit, minmax(100px, 1fr));
     grid-gap: 1rem;
     display: grid;
