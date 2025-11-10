@@ -12,6 +12,11 @@
 
 	Yes this means the produced HTML will look like shit,
 	but there is no other choice :(
+
+	For what CSS can be used, see https://www.caniemail.com
+	Warning: flex/grids cannot be used, grid in content should
+	be converted to <table role="presentation" (TODO)
+	https://github.com/hteumeuleu/email-guidelines
 *}}
 
 /* CSS reset for margin and padding */
@@ -46,7 +51,7 @@ a {
 .header h2 {
 	margin-bottom: 5px;
 	border-bottom: 1px solid rgba({{if $config.color1}}{{$config.color1|css_hex_to_rgb}}{{else}}100, 100, 100{{/if}}, 0.5);
-	font-size: 22px;
+	font-size: 20px;
 }
 .header h5 {
 	font-size: 12px;
@@ -75,7 +80,43 @@ a {
 	border-left: 5px solid BurlyWood;
 	padding: 1em;
 }
+.web-content .toc ol {
+	counter-reset: unset;
+	list-style: decimal;
+	margin-left: 2em;
+	color: #666;
+}
+.web-content .web-grid-legacy {
+	display: block;
+	text-align: center;
+	margin-bottom: 1em;
+}
+.web-content .web-grid-legacy article {
+	display: inline-block;
+	vertical-align: top;
+	min-width: 150px;
+	text-align: center;
+	margin: 1%;
+}
+.web-content .web-grid-legacy article p {
+	margin: 0;
+}
 </style>
+<style type="text/css">
+@media screen and (max-width: 450px) {
+	.web-content .web-grid-legacy article {
+		width: auto !important;
+		display: block !important;
+		margin: 1em 0 !important;
+	}
+}
+.pko-preview .web-content .web-grid-legacy article {
+	width: auto !important;
+	display: block !important;
+	margin: 1em 0 !important;
+}
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <base target="_blank" />
 </head>
 <body>
