@@ -110,9 +110,11 @@
 		{{if $repeat > 1 && $frequency !== 'only'}}
 			{{if $frequency !== 'this'}}
 				{{* Change week repeat into month repeat for monthly events *}}
-				{{:assign repeat='round(%d/4.3)'|math:$repeat|intval}}
+				{{:assign slot_repeat='round(%d/4.3)'|math:$repeat|intval}}
+			{{else}}
+				{{:assign slot_repeat=$repeat}}
 			{{/if}}
-			{{#foreach count=$repeat}}
+			{{#foreach count=$slot_repeat}}
 				{{if $frequency === 'this'}}
 					{{:assign timestamp=$timestamp|date:'Y-m-d'|cat:', +1 day'|strtotime}}
 					{{:assign date=$timestamp|date:'Y-m-d'}}
