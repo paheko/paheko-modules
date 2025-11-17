@@ -196,6 +196,10 @@
 			email=$_POST.email|trim|or:null
 			my_date=$_GET.slot_time|parse_datetime|date_long:true}}
 
+		{{#load type="booking" event=$event.key slot=$slot.key date=$_GET.slot_time name=$name limit=1}}
+			{{:error message="Une réservation existe déjà pour ce créneau et à ce nom."}}
+		{{/load}}
+
 		{{:save type="booking"
 			key=$key
 			validate_schema="./booking.schema.json"

@@ -36,7 +36,7 @@
 				{{:input type="number" name="seats" max=$event.max_seats_per_booking min=1 default=1 label="Combien de personnes serez-vous ?" help="Indiquez le nombre de places à réserver." required=true}}
 			{{/if}}
 		</dl>
-		{{if !$event.email && !$_POST.email}}
+		{{if !$event.email && !$_POST.notify}}
 			{{:assign email_hidden=true}}
 			{{#restrict section="users" level=$module.config.access}}
 				{{:assign email_disabled=false}}
