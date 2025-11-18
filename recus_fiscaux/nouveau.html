@@ -203,7 +203,7 @@
 {{elseif $_GET.id_transaction}}
 	{{#select
 		u.id AS id_user,
-		t.id AS id_transactions,
+		t.id AS id_transaction,
 		SUM(l1.credit) AS total,
 		t.date AS date,
 		!champs_nom AS name,
