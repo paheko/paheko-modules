@@ -76,8 +76,9 @@
 			$$.nom AS 'Nom du bénéficiaire';
 			$$.date AS 'Date d''émission';
 			$$.montant AS 'Montant';
+			$$.envoi AS 'Envoyé le';
 			CASE WHEN $$.annule = 1 THEN 'Annulé' ELSE '' END AS 'Annulé ?';
-			$$.envoi AS 'Envoyé le'"
+			$$.linked_transactions AS 'Écritures'"
 		where=$where
 		order=1
 		desc=true
@@ -111,10 +112,15 @@
 				{{$montant|raw|money_currency}}
 			</td>
 			<td>
+				{{if $envoi}}{{$envoi|date_short}}{{:assign send_label="Renvoyer"}}{{else}}{{:assign send_label="Envoyer"}}{{/if}}
+			</td>
+			<td>
 				{{if $annule}}<span class="alert">Annulé</span>{{/if}}
 			</td>
 			<td>
-				{{if $envoi}}{{$envoi|date_short}}{{:assign send_label="Renvoyer"}}{{else}}{{:assign send_label="Envoyer"}}{{/if}}
+				{{#foreach from=$linked_transactions item="id"}}
+					{{:link href="!acc/transactions/details.php?id=%d"|args:$id class="num" label="#%d"|args:$id}}
+				{{/foreach}}
 			</td>
 			<td class="actions">
 				{{if !$annule}}
