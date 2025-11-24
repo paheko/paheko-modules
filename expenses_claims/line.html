@@ -74,6 +74,12 @@
 		}}
 	{{/if}}
 
+	{{:assign amount=$amount|or:$_POST.amount|money_int}}
+
+	{{if $amount < 0}}
+		{{:error message="Les montants négatifs ne sont pas autorisés"}}
+	{{/if}}
+
 	{{:save
 		validate_schema="./line.schema.json"
 		key="uuid"
@@ -83,7 +89,7 @@
 		category=$cat.label|or:'Autre'
 		account=$cat.account|keys|key:0|strval|or:null
 		description=$description|or:$_POST.description|trim|or:null
-		amount=$amount|or:$_POST.amount|money_int
+		amount=$amount
 		reference=$_POST.reference|trim|or:null
 		date=$_POST.date|parse_date|or:null
 		id_project=$cat.id_project|intval|or:null
