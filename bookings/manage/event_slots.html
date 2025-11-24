@@ -58,7 +58,7 @@
 {{/load}}
 
 <div class="help block">
-	<h3>Accès la réservation de créneaux pour cet événement</h3>
+	<h3>Accès à la réservation de créneaux pour cet événement</h3>
 	<p>Les non-membres pourront réserver un créneau de cet événement directement via l'adresse suivante :<br />
 		{{:assign url="%s?event=%s"|args:$module.url:$event.key}}
 		{{:input copy=true name="url" type="url" readonly=true default=$url size=$url|strlen}}
