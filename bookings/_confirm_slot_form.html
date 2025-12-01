@@ -32,7 +32,7 @@
 			{{if !$event.email}}
 				{{:input type="checkbox" name="notify" value="1" label="Recevoir une confirmation d'inscription par e-mail" onchange="g.toggle('dl.email', this.checked);" help="facultatif"}}
 			{{/if}}
-			{{if $event.max_seats_per_booking}}
+			{{if $event.max_seats_per_booking > 1}}
 				{{:input type="number" name="seats" max=$event.max_seats_per_booking min=1 default=1 label="Combien de personnes serez-vous ?" help="Indiquez le nombre de places à réserver." required=true}}
 			{{/if}}
 		</dl>
