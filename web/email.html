@@ -27,7 +27,9 @@ figure, article, aside, section, header, footer, img {
 	margin: 0;
 	border: 0; /* Required for laposte.net */
 }
-
+body {
+	padding: 10px 0;
+}
 #main {
 	max-width: 700px;
 	margin: 0 auto;
@@ -121,9 +123,7 @@ a {
 </head>
 <body>
 
-{{* This is the email preheader, what will be seen below the subject line in some email clients *}}
-{{* entities_escape is important: https://github.com/hteumeuleu/email-bugs/issues/41#issuecomment-1321464561 }}
-<span style="display: none !important; visibility: hidden; mso-hide: all; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">{{$html|strip_tags|truncate:130:"…":true|entities_escape|raw}}{{* Add some spacing after pre-header text just in case it is too short *}}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</span>
+{{$preheader|raw}}
 
 <div id="main">
 
