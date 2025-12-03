@@ -9,7 +9,7 @@
 
 			{{#pages search=$_GET.search future=false}}
 			<article class="web-content">
-				<h3><a href="{{$url_highlight}}">{{$title}}</a></h3>
+				<h3><a href="{{$url_highlight}}">{{$title|remove_leading_number}}</a></h3>
 				<h5>{{$published|date_long}}</h5>
 				<p>{{$snippet|raw}}</p>
 			</article>
