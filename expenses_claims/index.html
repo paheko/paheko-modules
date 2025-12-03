@@ -54,7 +54,19 @@
 		<td>{{$col2}}</td>
 		<td>{{$date|date_short}}</td>
 		<td>{{$col4}}</td>
-		<td>{{$col5}}</td>
+		<td>
+			{{if $status === 'waiting'}}
+				{{:tag label=$col5 color="lightcoral"}}
+			{{elseif $status === 'payable'}}
+				{{:tag label=$col5 color="darkorange"}}
+			{{elseif $status === 'paid'}}
+				{{:tag label=$col5 color="darkseagreen"}}
+			{{elseif $status === 'cancelled'}}
+				{{:tag label=$col5 color="#999"}}
+			{{else}}
+				{{:tag label=$col5 color="tan"}}
+			{{/if}}
+		</td>
 		<td>{{$col6|money_currency}}</td>
 		<td class="actions">
 			{{:linkbutton href="details.html?key=%s"|args:$key label="Ouvrir" shape="menu"}}
