@@ -19,7 +19,7 @@
 
 	{{#articles order="published DESC" limit=20}}
 	<entry>
-		<title>{{$title|xml_escape}}</title>
+		<title>{{$title|remove_leading_number|xml_escape}}</title>
 		<link href="{{$url|xml_escape}}" rel="alternate" type="text/html" title="{{$title|xml_escape}}" />
 		<id>{{$url|xml_escape}}</id>
 		<updated>{{$published|atom_date}}</updated>

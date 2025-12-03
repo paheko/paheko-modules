@@ -102,9 +102,9 @@
 {{/if}}
 
 	{{if $module.config.show_search !== false || $_GET.search}}
-	<form method="get" action="{{ $root_uri }}search.html" class="search-widget">
+	<form method="get" action="{{$root_uri}}search.html" class="search-widget">
 		<p>
-			<input type="search" name="search" placeholder="Rechercher…" value="{{ $_GET.search }}" />
+			<input type="search" name="search" placeholder="Rechercher…" value="{{$_GET.search}}" />
 			<input type="submit" value="&rarr;" title="Lancer la recherche" />
 		</p>
 	</form>
@@ -112,7 +112,7 @@
 
 	<ul class="subcategories">
 	{{#categories parent=null order="title" private=true}}
-		<li><a href="{{$url}}" {{if $url == $.url}}class="current"{{/if}}>{{ $title }}</a></li>
+		<li><a href="{{$url}}" {{if $url == $.url}}class="current"{{/if}}>{{$title|remove_leading_number}}</a></li>
 	{{/categories}}
 	{{if $module.config.contact_form === true}}
 		<li><a href="{{$site_url}}contact.html" {{if $contact_form}}class="current"{{/if}}>Contact</a></li>

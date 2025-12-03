@@ -2,16 +2,16 @@
 	{{:error message="Page not found"}}
 {{/if}}
 
-{{:include file="./_head.html" title=$page.title}}
+{{:include file="./_head.html" title=$page.title|remove_leading_number}}
 
 {{:include file="./_breadcrumbs.html" parent=$page.path}}
 
-<h1>{{$page.title}}</h1>
+<h1>{{$page.title|remove_leading_number}}</h1>
 
 <section class="subcategories">
 	{{#categories parent=$page.path order="title"}}
 	<ul>
-		<li><a href="{{$url}}">{{$title}}</a></li>
+		<li><a href="{{$url}}">{{$title|remove_leading_number}}</a></li>
 	</ul>
 	{{/categories}}
 </section>
