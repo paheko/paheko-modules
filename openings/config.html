@@ -1,7 +1,13 @@
 {{#restrict section="config" level="admin" block=true}}{{/restrict}}
 {{:admin_header title="Configuration des horaires d'ouverture"}}
 
-{{if $_POST.save}}
+{{:include file="./_common.tpl" keep="months,frequencies,days"}}
+
+{{#form on="save"}}
+	{{:assign
+		days_order=$days|keys|flip
+		frequencies_order=$frequencies|keys|flip
+	}}
 	{{#foreach from=$_POST.slots|array_transpose key="i" item="slot"}}
 		{{:assign line="%d+1"|math:$i}}
 		{{:assign open=$slot.open|explode:':' close=$slot.close|explode:':'}}
@@ -11,42 +17,53 @@
 			open='%02d:%02d'|args:$open.0:$open.1
 			close='%02d:%02d'|args:$close.0:$close.1
 		}}
-		{{* Use timestamp to order slots *}}
-		{{:assign timestamp="%s %s of this month, %s:00"|args:$slot.frequency:$slot.day:$slot.open|strtotime}}
 
-		{{if !$timestamp}}
-			{{:error message="Date invalide : %s %s of this month, %s:00"|args:$slot.frequency:$slot.day:$slot.open}}
-		{{/if}}
+		{{:assign var="day_order" from="days_order.%s"|args:$slot.day}}
+		{{:assign var="freq_order" from="frequencies_order.%s"|args:$slot.frequency}}
+		{{:assign key="%d-%d-%s-%s"|args:$freq_order:$day_order:$slot.open:$slot.close}}
 
-		{{:assign var="slots.%d"|args:$timestamp value=$slot}}
+		{{:assign var="slots.%s"|args:$key value=$slot}}
 
 		{{if !"%s %s"|args:$slot.frequency:$slot.day|trim|strtotime}}
-			{{:assign error="Ouvertures - ligne %d : le sélecteur de jour est invalide: %s %s"|args:$line:$slot.frequency:$slot.day}}
-			{{:break}}
+			{{:error message="Ouvertures - ligne %d : le sélecteur de jour est invalide: %s %s"|args:$line:$slot.frequency:$slot.day}}
 		{{elseif !$slot.open|regexp_match:'/^(2[0-3]|[01][0-9]):([0-5][0-9])$/'}}
-			{{:assign error="Ouvertures - ligne %d: heure d'ouverture invalide."|args:$line}}
-			{{:break}}
+			{{:error message="Ouvertures - ligne %d: heure d'ouverture invalide."|args:$line}}
 		{{elseif !$slot.close|regexp_match:'/^(2[0-3]|[01][0-9]):([0-5][0-9])$/'}}
-			{{:assign error="Ouvertures - ligne %d: heure de fermeture invalide."|args:$line}}
-			{{:break}}
+			{{:error message="Ouvertures - ligne %d: heure de fermeture invalide."|args:$line}}
 		{{/if}}
 	{{/foreach}}
 
-	{{if $error}}
-		<p class="error block">{{$error}}</p>
-	{{else}}
-		{{:save key="config"
-			validate_schema="./schema.json"
-			open=$slots|ksort|values
-			closed=$_POST.closed|array_transpose
-		}}
-		{{:redirect to="?ok=1"}}
-	{{/if}}
-{{/if}}
+	{{:assign closed=$_POST.closed|array_transpose}}
+	{{#foreach from=$closed item="closing" key="l"}}
+		{{:assign line="%d+1"|math:$l}}
+		{{if !$closing.close_day || !$closing.reopen_day}}
+		 	{{if $closed|count === 1}}
+				{{:continue}}
+			{{else}}
+				{{:error message="Il manque la date de fermeture sur la ligne %d"|args:$line}}
+			{{/if}}
+		{{/if}}
+
+		{{if $closing.reopen_day < $closing.close_day && $closing.close_month === $closing.reopen_month}}
+			{{:error message="Fermetures, ligne %d : il n'est pas possible de réouvrir avant de fermer"|args:$line}}
+		{{/if}}
+
+		{{:assign var="closings." value=$closing}}
+	{{/foreach}}
+
+	{{:save key="config"
+		validate_schema="./schema.json"
+		open=$slots|ksort|values
+		closed=$closings
+	}}
+	{{:redirect to="?ok=1"}}
+{{/form}}
 
 {{if $_GET.ok}}
 	<p class="block confirm">Configuration enregistrée.</p>
 {{/if}}
+
+{{:form_errors}}
 
 <form method="post" action="{{$self_url}}">
 
@@ -91,7 +108,6 @@
 		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
 	</p>
 
-	{{:include file="./_common.tpl" keep="months,frequencies,days"}}
 	<script type="text/javascript">
 	const months = {{$months|json_encode|raw}};
 	const frequencies = {{$frequencies|json_encode|raw}};

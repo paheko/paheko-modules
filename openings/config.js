@@ -32,12 +32,12 @@ const open_row = `<tr>
 
 const close_row = `<tr>
 	<td>
-		<input type="number" name="closed[close_day][]" min="1" max="31" step="1" size="2" required="required" pattern="^\d{1,2}$" />
+		<input type="number" name="closed[close_day][]" min="1" max="31" step="1" size="2" pattern="^\d{1,2}$" />
 		<select name="closed[close_month][]">
 		</select>
 	</td>
 	<td>
-		<input type="number" name="closed[reopen_day][]" min="1" max="31" step="1" size="2" required="required" pattern="^\d{1,2}$" />
+		<input type="number" name="closed[reopen_day][]" min="1" max="31" step="1" size="2" pattern="^\d{1,2}$" />
 		<select name="closed[reopen_month][]">
 		</select>
 		inclus
@@ -126,17 +126,24 @@ open_data.open.forEach((slot) => {
 	add_slot_row(slot);
 });
 
-open_data.closed.forEach((slot) => {
-	add_closed_row(slot);
-});
+if (open_data.closed) {
+	open_data.closed.forEach((slot) => {
+		add_closed_row(slot);
+	});
+}
+else {
+	add_closed_row(null);
+}
+
 
 
 function removeRow(e) {
 	var row = e.target.parentNode.parentNode;
 	var table = row.parentNode.parentNode;
 
-	if (table.rows.length <= 2)
-	{
+	if (table.rows.length <= 2) {
+		row.querySelectorAll('input').forEach(i => i.value = i.defaultValue);
+		row.querySelectorAll('select').forEach(i => i.selectedIndex = 0);
 		return false;
 	}
 
