@@ -1,5 +1,7 @@
 {{* -*- brindille -*- *}}
 
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
+
 {{:admin_header title="Matériels hors de l'asso" custom_css="../style.css" current="module_equipment"}}
 {{:include file="./_nav.html" current="historique" subcurrent="prêts"}}
 
@@ -106,11 +108,11 @@
 					{{if $nb_jours < -1}}{{:assign jour="jours"}}{{/if}}
 					{{"Reste %s %s"|args:$delai:$jour}}
 				{{else}}
-					{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
+					{{:tag color="darkgreen" label="À rendre aujourd'hui"}}
 				{{/if}}
 			{{/if}}
 		</td>
-		<td>
+		<td class="actions">
 			{{:linkbutton
 				label="Retour"
 				href="movements/output_return.html?key=%s&prop=1"|args:$mvt_key

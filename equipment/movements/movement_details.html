@@ -1,5 +1,7 @@
 {{* -*- brindille -*- *}}
 
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
+
 {{*
 	Afficher les détails d'un mouvement et donner la possibilité :
 	- d'associer des fichiers
@@ -63,9 +65,9 @@
 	<dt>Opération</dt>
 	<dd>{{$op_label}}</dd>
 	<dt>Matériel</dt>
-	<dd>{{$equipment.name}}</dd>
+	<dd>{{:link href="../equipment_history.html?key=%s&prop=%s"|args:$equipment.key:$_GET.prop label=$equipment.name}}</dd>
 	<dt>Catégorie</dt>
-	<dd>{{$category.name}}</dd>
+	<dd>{{:link href="../index.html?cat_key=%s&prop=1"|args:$category.key label=$category.name}}</dd>
 	<dt>Date</dt>
 	<dd>{{$mvt.date|date_short}}</dd>
 	<dt>Quantité</dt>
@@ -74,7 +76,7 @@
 		<dt>Membre destinataire</dt>
 		<dd>
 			{{if $mvt.user != null}}
-				{{$user_name}}
+				{{:link href="/admin/users/details.php?id=%s"|args:$mvt.user label=$user_name}}
 			{{else}}—
 			{{/if}}
 		</dd>
@@ -95,16 +97,21 @@
 		{{else}}—
 		{{/foreach}}
 	</dd>
+	{{if $mvt.direction == "output" && $type_mvt != "retour"}}
+		<dt>Date de retour</dt>
+		<dd>
+			{{if $mvt.return_date != null}}
+				{{$mvt.return_date|date_short}}
+			{{else}}—
+			{{/if}}
+		</dd>
+	{{/if}}
 	<dt>Remarques</dt>
 	<dd>{{if $mvt.comment != null}}
 		{{$mvt.comment}}
 		{{else}}—
 		{{/if}}
 	</dd>
-	{{if $mvt.return_date != null}}
-		<dt>Date de retour</dt>
-		<dd>{{$mvt.return_date|date_short}}</dd>
-	{{/if}}
 </dl>
 
 <form method="post" action="">

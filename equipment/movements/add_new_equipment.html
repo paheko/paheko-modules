@@ -1,9 +1,6 @@
 {{* -*- brindille -*- *}}
 
-{{* barre de navigation *}}
-{{if ! $dialog}}
-	{{:include file="../_nav.html" current="entrees"}}
-{{/if}}
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
 
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="../_get_config.html" keep="config"}}
@@ -120,6 +117,10 @@
 {{/form}}
 
 {{:admin_header title="Entrée de matériel" current="module_equipment"}}
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="entrees"}}
+{{/if}}
 {{:form_errors}}
 
 {{if $categories != null}}

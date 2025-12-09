@@ -1,9 +1,6 @@
 {{* -*- brindille -*- *}}
 
-{{* barre de navigation *}}
-{{if ! $dialog}}
-	{{:include file="../_nav.html" current="config" subcurrent="categories"}}
-{{/if}}
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
 
 {{* Traiter l'envoi du formulaire *}}
 {{#form on="save"}}
@@ -25,6 +22,11 @@
 {{/form}}
 
 {{:admin_header title="Gestion des matériels" current="module_equipment"}}
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="config" subcurrent="categories"}}
+{{/if}}
+
 {{:form_errors}}
 
 {{* formulaire d'ajout de catégorie *}}

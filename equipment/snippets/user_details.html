@@ -69,6 +69,7 @@
 				{{:assign nb_jours=0}}
 				{{:assign old_eqpmt_key=$eqpmt_key}}
 				{{:assign var="ligne.date" value=$date}}
+				{{:assign var="ligne.eqpmt_key" value=$eqpmt_key}}
 				{{:assign var="ligne.materiel" value=$eqpmt_name}}
 				{{:assign var="ligne.return_date" value=$return_date}}
 				{{:assign var="ligne.retard" value="0"}}
@@ -88,6 +89,7 @@
 				{{:assign nb_jours=0}}
 				{{:assign old_eqpmt_key=$eqpmt_key}}
 				{{:assign var="ligne.date" value=$date}}
+				{{:assign var="ligne.eqpmt_key" value=$eqpmt_key}}
 				{{:assign var="ligne.materiel" value=$eqpmt_name}}
 				{{:assign var="ligne.return_date" value=$return_date}}
 				{{:assign var="ligne.retard" value="0"}}
@@ -120,6 +122,7 @@
 						<th>Quantité</th>
 						<th>Date de retour</th>
 						<th>Remarque</th>
+						<th class="actions">
 					</tr>
 				</thead>
 				<tbody>
@@ -138,6 +141,14 @@
 								{{else}}
 									{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
 								{{/if}}
+							</td>
+							<td class="actions">
+								{{:linkbutton
+								label="Historique"
+								href="%smember_history.html?key=%s&id=%s"|args:$module.url:$eqpmt_key:$user.id
+								shape="table"
+								target="_dialog"
+								}}
 							</td>
 						</tr>
 					{{/foreach}}

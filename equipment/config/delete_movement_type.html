@@ -1,15 +1,13 @@
 {{* -*- brindille -*- *}}
 
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
+
 {{*
 	paramètres :
 	- dir : input ou output
 	- op_key : clé du type de mouvement à supprimer
 *}}
 
-{{* barre de navigation *}}
-{{if ! $dialog}}
-	{{:include file="../_nav.html" current="config" subcurrent="typesES"}}
-{{/if}}
 
 {{* lecture config (défaut ou enregistrée) *}}
 {{:include file="../_get_config.html" keep="config, directions"}}
@@ -37,6 +35,10 @@
 {{/form}}
 
 {{:admin_header title="Gestion des matériels" current="module_equipment"}}
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="../_nav.html" current="config" subcurrent="typesES"}}
+{{/if}}
 {{:form_errors}}
 
 {{:assign var="mvt_label" from="config.%s_nature.%s.label"|args:$_GET.dir:$_GET.op_key}}
