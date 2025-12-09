@@ -34,7 +34,11 @@
 		{{else}}
 			{{:assign var="notify_emails." value=$config.org_email}}
 		{{/if}}
-		{{:mail to=$notify_emails subject="Une nouvelle note de frais a été soumise" body=$message|raw notification=true}}
+
+		{{if $notify_emails|count}}
+			{{:mail to=$notify_emails subject="Une nouvelle note de frais a été soumise" body=$message|raw notification=true}}
+		{/if}
+
 		{{:redirect to="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 
