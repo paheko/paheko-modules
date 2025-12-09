@@ -1,0 +1,126 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Afficher l'historique des mouvements d'un matériel pour un membre
+	paramètres
+	- key : clé du matériel
+	- id : id du membre
+*}}
+
+{{#restrict block=true section="users" level="read"}}{{/restrict}}
+
+{{:admin_header title="Historique membre" custom_css="./style.css" current="module_equipment"}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="./_get_config.html" keep="config, directions"}}
+
+{{#foreach from=$directions key="direction"}}
+	{{:assign var="nature" from="config.%s_nature"|args:$direction}}
+	{{#foreach from=$nature key=key}}
+		{{:assign var="types.%s.%s."|args:$direction:$type value=$key|quote_sql}}
+	{{/foreach}}
+	{{:assign var="io_types" from="types.%s"|args:$direction}}
+	{{#foreach from=$io_types key=key}}
+		{{:assign var=elem from="io_types.%s"|args:$key}}
+		{{:assign elem=$elem|implode:","}}
+		{{:assign elem="("|cat:$elem|cat:")"}}
+		{{:assign var="%s_types.%s"|args:$direction:$key value=$elem}}
+	{{/foreach}}
+{{/foreach}}
+
+{{#users id=$_GET.id}}
+	{{:assign user_name=$nom}}
+{{else}}
+	{{:error message="Il n'existe aucun membre avec l'identifiant %s !"|args:$_GET.id}}
+{{/users}}
+
+{{#load key=$_GET.key|trim}}
+	{{:assign eqpmt_name=$name}}
+{{else}}
+	{{:error message="Il n'existe aucun matériel avec la clé %s !"|args:$_GET.key|trim}}
+{{/load}}
+
+<h3>Historique des mouvements de « {{$eqpmt_name}} » du membre « {{$user_name}} »</h3>
+
+{{:assign otk=null}}
+{{#select
+	mvt.key AS mvt_key,
+	json_extract(mvt.document, '$.direction') as direction,
+	json_extract(mvt.document, '$.operation') as operation,
+	json_extract(mvt.document, '$.date') as date,
+	json_extract(mvt.document, '$.amount') as amount,
+	COALESCE((SELECT
+		json_extract(links.document, '$.temp_key')
+		FROM {!$module.table} AS links
+		WHERE json_extract(links.document, '$.temp_key') = mvt.key
+		OR json_extract(links.document, '$.return') = mvt.key), mvt.key)
+	AS out_temp_key
+	FROM {!$module.table} AS mvt
+	INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+	INNER JOIN {!$module.table} AS eqpmt
+	ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+	WHERE users.id = :user
+	AND eqpmt.key = :eqpmt_key
+	AND (json_extract(mvt.document, '$.operation') IN !output_types
+		 OR json_extract(mvt.document, '$.operation') IN !input_types)
+	ORDER BY out_temp_key, date
+	;
+	:user = $_GET.id
+	:eqpmt_key = $_GET.key|trim
+	!output_types=$output_types.temporaire
+	!input_types=$input_types.retour
+}}
+
+	{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
+	{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+	{{:assign var="total" from="reste.%s"|args:$out_temp_key}}
+	{{if $total == null}}
+		{{:assign total=0}}
+	{{/if}}
+
+	{{if $otk != null && $otk != $out_temp_key}}
+			</tbody>
+		</table>
+	{{/if}}
+	{{if $otk == null || $otk != $out_temp_key}}
+		<table class="list">
+			<thead>
+				<tr>
+					<td>Date</td>
+					<td>Opération</td>
+					<td>Quantité</td>
+					<td>Total</td>
+					<td class="actions"></td>
+				</tr>
+			</thead>
+			<tbody>
+		{{:assign otk=$out_temp_key}}
+	{{/if}}
+
+	{{if $direction == 'input' && $type_mvt == 'retour'}}
+		{{:assign var="reste.%s"|args:$out_temp_key value="%d-%d"|math:$total:$amount}}
+	{{elseif $direction == 'output' && $type_mvt == 'temporaire'}}
+		{{:assign var="reste.%s"|args:$out_temp_key value="%d+%d"|math:$total:$amount}}
+	{{/if}}
+	{{:assign var="total" from="reste.%s"|args:$out_temp_key}}
+
+	<tr>
+		<td>{{$date|date_short}}</td>
+		<td>{{$op_label}}</td>
+		<td>{{$amount}}</td>
+		<td>{{$total}}</td>
+		<td class="actions">
+			{{#restrict section="accounting" level="write"}}
+				{{if $direction == "output" && $type_mvt == "temporaire"}}
+					{{:linkbutton
+						label="Retour"
+						href="%smovements/output_return.html?key=%s&prop=0&user=%s"|args:$module.url:$mvt_key:$_GET.id
+						shape="history"
+					target="_dialog"}}
+				{{/if}}
+			{{/restrict}}
+		</td>
+	</tr>
+{{/select}}
+	</tbody>
+</table>
