@@ -9,20 +9,24 @@
 	{{:redirect to="./config.html?msg=ok"}}
 {{/form}}
 
-{{:admin_header title="Configuration des notes de frais"}}
+{{:admin_header title="Catégories des notes de frais"}}
+
+<nav class="tabs">
+	<aside>
+		{{:linkbutton shape="left" href="./" label="Liste des notes de frais"}}
+		{{:linkbutton shape="plus" href="./cat_edit.html?key=new" label="Ajouter une catégorie"}}
+	</aside>
+
+	<ul>
+		<li class="current">{{:link href="config.html" label="Catégories"}}</li>
+		<li>{{:link href="config_settings.html" label="Préférences"}}</li>
+	</ul>
+</nav>
 
 {{if $_GET.msg === 'ok'}}
 	<p class="confirm block">La configuration a été enregistrée.</p>
 {{/if}}
 
-{{:form_errors}}
-
-<nav class="tabs">
-	<aside>
-		{{:linkbutton shape="plus" href="./cat_edit.html?key=new" label="Ajouter une catégorie"}}
-	</aside>
-	{{:linkbutton shape="left" href="./" label="Liste des notes de frais"}}
-</nav>
 
 {{#list type="category" schema="./category.schema.json" columns="label" order="label" disable_user_sort=true}}
 	<tr>
@@ -33,21 +37,5 @@
 		</td>
 	</tr>
 {{/list}}
-
-<form method="post" action="">
-
-	<fieldset>
-		<legend>Notifications</legend>
-		<dl>
-			{{:input type="list" name="notify_users" source=$module.config label="Membres à notifier lors du dépôt d'une nouvelle note de frais" help="Si ce champ est laissé vide, la notification sera envoyée à l'adresse e-mail de l'association. Maximum 10 membres." required=false multiple=true target="!users/selector.php" max=10}}
-			{{:input type="list" name="extra_user_fields" source=$module.config label="Champs de la fiche membre à afficher sur une note de frais" required=false multiple=true target="!config/users/field_selector.php" max=10}}
-		</dl>
-	</fieldset>
-
-	<p class="submit">
-		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
-	</p>
-
-</form>
 
 {{:admin_footer}}
