@@ -246,7 +246,9 @@
 	{{/select}}
 
 	{{if !$rows}}
-		<p class="alert block">Aucune écriture correspondant aux comptes configurés n'a été trouvée.</p>
+		<p class="alert block">Aucune écriture correspondant aux comptes configurés n'a été trouvée.<br />
+			Seules les écritures qui sont liées à un membre peuvent être automatiquement transformées en reçu.
+		</p>
 	{{else}}
 		<form method="post" action="">
 
