@@ -37,7 +37,7 @@
 
 		{{if $notify_emails|count}}
 			{{:mail to=$notify_emails subject="Une nouvelle note de frais a été soumise" body=$message|raw notification=true}}
-		{/if}
+		{{/if}}
 
 		{{:redirect to="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
@@ -137,6 +137,15 @@
 			{{$claim.user_name}}
 		{{/if}}
 	</dd>
+	{{if $claim.user_id && $module.config.extra_user_fields|count}}
+		{{#users id=$claim.user_id assign="user_extra_info"}}{{/users}}
+		{{#foreach from=$module.config.extra_user_fields item="label" key="name"}}
+			{{if $user_extra_info|has_key:$name}}
+				<dt>{{$label}}</dt>
+				<dd>{{:assign var="value" from="user_extra_info.%s"|args:$name}}{{$value}}</dd>
+			{{/if}}
+		{{/foreach}}
+	{{/if}}
 	<dt>Statut</dt>
 	<dd>
 	{{if $claim.status === 'draft'}}

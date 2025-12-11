@@ -2,7 +2,10 @@
 {{:include file="./_config_default.tpl" keep="module.config,vehicles"}}
 
 {{#form on="save"}}
-	{{:save key="config" notify_users=$_POST.notify_users|arrayval}}
+	{{:save key="config"
+		notify_users=$_POST.notify_users|arrayval
+		extra_user_fields=$_POST.extra_user_fields|arrayval
+	}}
 	{{:redirect to="./config.html?msg=ok"}}
 {{/form}}
 
@@ -36,7 +39,8 @@
 	<fieldset>
 		<legend>Notifications</legend>
 		<dl>
-			{{:input type="list" name="notify_users" source=$module.config default=$config.org_email label="Membres à notifier lors du dépôt d'une nouvelle note de frais" help="Si ce champ est laissé vide, la notification sera envoyée à l'adresse e-mail de l'association. Maximum 10 membres." required=false multiple=true target="!users/selector.php" max=10}}
+			{{:input type="list" name="notify_users" source=$module.config label="Membres à notifier lors du dépôt d'une nouvelle note de frais" help="Si ce champ est laissé vide, la notification sera envoyée à l'adresse e-mail de l'association. Maximum 10 membres." required=false multiple=true target="!users/selector.php" max=10}}
+			{{:input type="list" name="extra_user_fields" source=$module.config label="Champs de la fiche membre à afficher sur une note de frais" required=false multiple=true target="!config/users/field_selector.php" max=10}}
 		</dl>
 	</fieldset>
 
