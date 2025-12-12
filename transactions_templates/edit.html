@@ -22,7 +22,7 @@
 		{{#foreach from=$lines item="line" key="i"}}
 			{{:assign var="lines.%d.k"|args:$i value=$line.k|or:null}}
 			{{:assign var="lines.%d.p"|args:$i value=$line.p|intval|or:null}}
-			{{:assign var="lines.%d.a"|args:$i value=$line.a|arrayval|keys|key:0|strval|or:null}}
+			{{:assign var="lines.%d.a"|args:$i value=$line.a|arrayval|keys|value:0|strval|or:null}}
 		{{/foreach}}
 	{{/if}}
 	{{if $tpl.id}}
@@ -42,11 +42,11 @@
 		a00=$_POST.a00|money_int
 		pr=$_POST.pr|strval|or:null
 		p=$_POST.p|intval|or:null
-		ar=$_POST.ar|arrayval|keys|key:0|strval|or:null
-		ae=$_POST.ae|arrayval|keys|key:0|strval|or:null
-		ab=$_POST.ab|arrayval|keys|key:0|strval|or:null
-		at=$_POST.at|arrayval|keys|key:0|strval|or:null
-		a3=$_POST.a3|arrayval|keys|key:0|strval|or:null
+		ar=$_POST.ar|arrayval|keys|value:0|strval|or:null
+		ae=$_POST.ae|arrayval|keys|value:0|strval|or:null
+		ab=$_POST.ab|arrayval|keys|value:0|strval|or:null
+		at=$_POST.at|arrayval|keys|value:0|strval|or:null
+		a3=$_POST.a3|arrayval|keys|value:0|strval|or:null
 		ll=$lines|or:null
 		ru=$_POST.ru|boolval|intval
 	}}
