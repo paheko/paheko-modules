@@ -21,6 +21,9 @@
 	{{else}}
 		{{:error message="Cette ligne n'existe plus"}}
 	{{/load}}
+	{{:assign title="Modifier la ligne"}}
+{{else}}
+	{{:assign title="Ajouter une ligne à la note de frais n°%d"|args:$claim.number}}
 {{/if}}
 
 {{:include file="./_config_default.tpl" keep="module.config,vehicles"}}
@@ -116,7 +119,7 @@
 	{{:redirect to="details.html?key=%s"|args:$claim.key}}
 {{/form}}
 
-{{:admin_header title="Ajouter une ligne à la note de frais n°%d"|args:$claim.number}}
+{{:admin_header title=$title}}
 
 {{:form_errors}}
 

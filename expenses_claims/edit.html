@@ -21,6 +21,7 @@
 		validate_schema="./claim.schema.json"
 		key=$claim.key
 		label=$_POST.label|trim|or:null
+		user_preferred_resolution=$_POST.user_preferred_resolution|strval
 	}}
 	{{:redirect to="./details.html?key=%s"|args:$key}}
 {{/form}}
@@ -33,6 +34,9 @@
 	<fieldset>
 		<legend>Modifier la note de frais</legend>
 		<dl>
+			{{:input type="radio-btn" name="user_preferred_resolution" value="pay" label="Je demande le remboursement des frais" required=true prefix_title="Préférence pour le remboursement" source=$claim}}
+			{{:input type="radio-btn" name="user_preferred_resolution" value="abandon" label="Je préfère ne pas être remboursé (abandon des frais)" required=true source=$claim}}
+			{{:input type="radio-btn" name="user_preferred_resolution" value="" label="Je n'ai pas de préférence" required=true source=$claim}}
 			{{:input type="text" name="label" label="Objet de la note de frais" required=false help="Courte description de l'objet de la note de frais." source=$claim}}
 		</dl>
 	</fieldset>

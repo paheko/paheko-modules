@@ -146,6 +146,16 @@
 			{{/if}}
 		{{/foreach}}
 	{{/if}}
+	<dt>Préférence de remboursement</dt>
+	<dd>
+		{{if $claim.user_preferred_resolution === 'pay'}}
+			{{:tag label="Remboursement" color="RebeccaPurple"}}
+		{{elseif $claim.user_preferred_resolution === 'abandon'}}
+			{{:tag label="Abandon" color="darkcyan"}}
+		{{else}}
+			{{:tag label="Pas de préférence"}}
+		{{/if}}
+	</dd>
 	<dt>Statut</dt>
 	<dd>
 	{{if $claim.status === 'draft'}}
@@ -254,8 +264,13 @@
 
 {{if $claim.status === 'payable'}}
 	<p class="actions-center">
-		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key target="_dialog"}}
-		{{:linkbutton shape="reload" label="Transformer en abandon de frais" href="abandon.html?claim=%s"|args:$claim.key target="_dialog"}}
+		{{if $claim.user_preferred_resolution === 'pay'}}
+			{{:assign pay_class="main"}}
+		{{elseif $claim.user_preferred_resolution === 'abandon'}}
+			{{:assign abandon_class="main"}}
+		{{/if}}
+		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key target="_dialog" class=$pay_class}}
+		{{:linkbutton shape="reload" label="Transformer en abandon de frais" href="abandon.html?claim=%s"|args:$claim.key target="_dialog" class=$abandon_class}}
 	</p>
 {{/if}}
 
