@@ -16,6 +16,13 @@
 	{{:error message="Cette note de frais n'est pas un brouillon, il n'est pas possible de la modifier."}}
 {{/if}}
 
+{{if $_GET.line}}
+	{{#load assign="line" key=$_GET.line claim=$claim.key}}
+	{{else}}
+		{{:error message="Cette ligne n'existe plus"}}
+	{{/load}}
+{{/if}}
+
 {{:include file="./_config_default.tpl" keep="module.config,vehicles"}}
 
 {{:assign var="categories_select.other" value="Autre"}}
@@ -36,10 +43,14 @@
 		{{/load}}
 	{{/if}}
 
-	{{:assign label=$_POST.label|trim}}
+	{{:assign
+		distance=$_POST.distance|intval
+		vehicle=$_POST.vehicle|strval|trim
+		start=$_POST.start|strval|trim
+		end=$_POST.end|strval|trim
+	}}
 
 	{{if $cat.expense_type === 'km_vehicle'}}
-		{{:assign distance=$_POST.distance|intval}}
 		{{if !$_POST.vehicle|trim}}
 			{{:error message="Aucun véhicule sélectionné"}}
 		{{elseif $distance < 1}}
@@ -55,13 +66,13 @@
 			{{:assign bonus="Non"}}
 		{{/if}}
 		{{:assign var="vehicle_name" from="vehicles.%s"|args:$_POST.vehicle}}
+
 		{{:assign
 			amount=$resultat
-			label="%s (%s)"|args:$label:$calcul_label
-			description="Départ : %s\nArrivée : %s\nVéhicule : %s\nDistance : %d km\nCalcul : %s\nBonus : %s\n\n%s"|args:$_POST.depart:$_POST.arrivee:$vehicle_name:$_POST.distance:$calcul:$bonus:$_POST.description|trim
+			extra_label="%s (%s)"|args:$label:$calcul_label
+			extra_description="Départ : %s\nArrivée : %s\nVéhicule : %s\nDistance : %d km\nCalcul : %s\nBonus : %s"|args:$start:$end:$vehicle_name:$distance:$calcul:$bonus|trim
 		}}
 	{{elseif $cat.expense_type === 'km_free'}}
-		{{:assign distance=$_POST.distance|intval}}
 		{{if $distance < 1}}
 			{{:error message="La distance parcourue ne peut être inférieure à 1 km"}}
 		{{/if}}
@@ -69,9 +80,11 @@
 		{{:assign bareme=$cat.price|money_currency:false:false:false}}
 		{{:assign
 			amount="%d*%d"|math:$distance:$cat.price|money_raw
-			label="%s (%d x %s)"|args:$label:$distance:$bareme
-			description="Départ : %s\nArrivée : %s\nDistance : %s km\nBarème : %s par km\n\n%s"|args:$_POST.depart:$_POST.arrivee:$distance:$bareme:$_POST.description|trim
+			extra_label="%s (%d x %s)"|args:$label:$distance:$bareme
+			extra_description="Départ : %s\nArrivée : %s\nDistance : %s km\nBarème : %s par km"|args:$start:$end:$distance:$bareme
 		}}
+	{{else}}
+		{{:assign distance=null vehicle=null start=null end=null}}
 	{{/if}}
 
 	{{:assign amount=$amount|or:$_POST.amount|money_int}}
@@ -82,14 +95,20 @@
 
 	{{:save
 		validate_schema="./line.schema.json"
-		key="uuid"
+		key=$line.key|or:"uuid"
 		type="line"
 		claim=$claim.key
-		label=$label
 		category=$cat.label|or:'Autre'
-		account=$cat.account|keys|key:0|strval|or:null
-		description=$description|or:$_POST.description|trim|or:null
+		label=$_POST.label|trim
 		amount=$amount
+		vehicle=$vehicle
+		start=$start
+		end=$end
+		distance=$distance
+		extra_label=$extra_label
+		extra_description=$extra_description
+		account=$cat.account|keys|value:0|strval|or:null
+		description=$description|or:$_POST.description|trim|or:null
 		reference=$_POST.reference|trim|or:null
 		date=$_POST.date|parse_date|or:null
 		id_project=$cat.id_project|intval|or:null
@@ -105,26 +124,26 @@
 	<fieldset>
 		<legend>Dépense</legend>
 		<dl>
-			{{:input type="select" name="category" options=$categories_select label="Catégorie" required=true default_empty="— Sélectionner une catégorie —"}}
+			{{:input type="select" name="category" options=$categories_select label="Catégorie" required=true default_empty="— Sélectionner une catégorie —" default=$categories_select|key:$line.category}}
 		</dl>
 		<dl class="category">
-			{{:input type="text" name="label" label="Libellé" help="Inclure ici une description courte, par exemple 'Abonnement fibre atelier, mars 2023'." required=true}}
+			{{:input type="text" name="label" label="Libellé" help="Inclure ici une description courte, par exemple 'Abonnement fibre atelier, mars 2023'." required=true source=$line}}
 		</dl>
 		<dl class="amount">
-			{{:input type="money" name="amount" label="Montant total" required=true}}
+			{{:input type="money" name="amount" label="Montant total" required=true source=$line}}
 		</dl>
 	</fieldset>
 	<fieldset class="vehicle km">
 		<legend>Trajet</legend>
 		<dl class="vehicle">
-			{{:input type="select" name="vehicle" options=$vehicles label="Type de véhicule" required=true}}
+			{{:input type="select" name="vehicle" options=$vehicles label="Type de véhicule" required=true source=$line}}
 			<dd class="carbone">--
 			</dd>
 		</dl>
 		<dl class="vehicle km">
-			{{:input type="text" name="depart" label="Lieu de départ" required=true}}
-			{{:input type="text" name="arrivee" label="Lieu d'arrivée" required=true}}
-			{{:input type="number" name="distance" options=$vehicles label="Distance parcourue" required=true min=1 step=1 size=5}}
+			{{:input type="text" name="start" label="Lieu de départ" required=true source=$line}}
+			{{:input type="text" name="end" label="Lieu d'arrivée" required=true source=$line}}
+			{{:input type="number" name="distance" options=$vehicles label="Distance parcourue" required=true min=1 step=1 size=5 source=$line}}
 			<dd class="help">
 				Le barème sera calculé lors de l'enregistrement, en fonction de la distance et du type de véhicule.
 			</dd>
@@ -133,9 +152,9 @@
 	<fieldset class="category">
 		<legend>Détails</legend>
 		<dl>
-			{{:input type="date" name="date" label="Date de la dépense"}}
-			{{:input type="text" name="reference" label="Référence du justificatif" help="Par exemple : numéro de facture, nom du magasin, etc."}}
-			{{:input type="textarea" name="description" label="Description"}}
+			{{:input type="date" name="date" label="Date de la dépense" source=$line}}
+			{{:input type="text" name="reference" label="Référence du justificatif" help="Par exemple : numéro de facture, nom du magasin, etc." source=$line}}
+			{{:input type="textarea" name="description" label="Description" source=$line}}
 			<dd class="alert block" id="notes"></dd>
 		</dl>
 	</fieldset>
@@ -153,6 +172,7 @@ var s = $('#f_category');
 
 function selectCategory() {
 	var category = null;
+	g.toggle('.category, .vehicle, .amount, p.submit', false);
 
 	Object.values(categories).forEach((c) => {
 		if (c.key !== s.value) {
@@ -212,18 +232,15 @@ function selectVehicle() {
 	$('.carbone')[0].innerHTML = msg;
 }
 
-g.toggle('.category, .vehicle, .amount, p.submit', false);
-s.onchange = selectCategory;
-
-selectCategory();
-
 var v = $('#f_vehicle');
-
 v.onchange = () => {
 	localStorage.setItem('last_vehicle', v.value);
 	selectVehicle();
 };
 selectVehicle();
+
+selectCategory();
+s.onchange = selectCategory;
 
 </script>
 

@@ -24,7 +24,7 @@
 {{/if}}
 
 {{#form on="save"}}
-	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|key:0}}
+	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|value:0}}
 	{{:assign var="lines." debit=$_POST.amount account=$debit_account}}
 	{{:api
 		method="POST"

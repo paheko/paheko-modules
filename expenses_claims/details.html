@@ -189,14 +189,15 @@
 	:claim=$claim.key
 }}
 	<tr>
-		<th>{{$label}}</th>
-		<td class="desc">{{$description|escape|nl2br}}</td>
+		<th>{{$label|cat:"\n"|cat:$extra_label|trim|escape|nl2br}}</th>
+		<td class="desc">{{$description|cat:"\n\n"|cat:$extra_description|trim|escape|nl2br}}</td>
 		<td>{{$date|date_short}}</td>
 		<td>{{$reference}}</td>
 		<td>{{$category}}</td>
 		<td class="money">{{$amount|money_currency}}</td>
 		<td class="actions">
 			{{if $.claim.status === 'draft'}}
+				{{:linkbutton label="Modifier" shape="edit" href="line.html?claim=%s&line=%s"|args:$claim:$key target="_dialog"}}
 				{{:button name="delete_line" type="submit" value=$key label="Supprimer" shape="delete"}}
 			{{/if}}
 		</td>

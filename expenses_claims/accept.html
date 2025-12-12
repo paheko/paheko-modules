@@ -14,7 +14,7 @@
 	{{:assign var="upload_path" value="%s/%s"|args:$module.storage_root:$claim.key}}
 
 	{{#foreach from=$_POST.lines|array_transpose}}
-		{{:assign var="lines." debit=$amount label=$label account=$account|keys|key:0 id_project=$id_project reference=$reference}}
+		{{:assign var="lines." debit=$amount label=$label account=$account|keys|value:0 id_project=$id_project reference=$reference}}
 		{{:assign amount=$amount|money_int}}
 		{{:assign total="%d+%d"|math:$amount:$total}}
 	{{/foreach}}
@@ -27,7 +27,7 @@
 		{{:error message="Le libellé doit être renseigné."}}
 	{{/if}}
 
-	{{:assign var="lines." credit=$total|money_raw account=$_POST.account|keys|key:0 label="Dette envers le membre"}}
+	{{:assign var="lines." credit=$total|money_raw account=$_POST.account|keys|value:0 label="Dette envers le membre"}}
 
 	{{:api
 		method="POST"
@@ -58,7 +58,7 @@
 {{/form}}
 
 {{#load type="line" claim=$claim.key}}
-	{{:assign var="notes" value="%s\n\n%s"|args:$notes:$description}}
+	{{:assign var="notes" value="%s\n\n%s\n\n%s"|args:$notes:$description:$extra_description|trim}}
 {{/load}}
 {{:assign var="default_account.4110" value="4110 — Autres usagers"}}
 {{#years closed=false}}
@@ -94,32 +94,32 @@
 	<fieldset>
 		<legend>Lignes de la note de frais</legend>
 
-		<table class="list auto">
+		<table class="list transaction-lines">
 			<thead>
 				<tr>
-					<td>Compte</td>
+					<td width="15%">Compte</td>
+					<td width="5%">Montant</td>
 					<td>Libellé</td>
-					<td>Référence</td>
-					<td>Montant</td>
+					<td width="10%">Référence</td>
 					{{if $projects|count}}
-						<td>Projet analytique</td>
+						<td width="15%">Projet analytique</td>
 					{{/if}}
 				</tr>
 			</thead>
 			<tbody>
 				{{#load type="line" claim=$claim.key}}
 					{{:assign default_account=null}}
-					{{:assign default_label=$label}}
+					{{:assign default_label=$label|cat:" "|cat:$extra_label|trim}}
 					{{if $date}}
 						{{:assign date_short=$date|date_short}}
-						{{:assign default_label="%s (%s)"|args:$label:$date_short}}
+						{{:assign default_label="%s (%s)"|args:$default_label:$date_short}}
 					{{/if}}
 					{{:assign var="default_account.%s"|args:$account value=$account}}
 					<tr>
 						<td class="account">{{:input type="list" name="lines[account][]" required=true target="!acc/charts/accounts/selector.php?types=5&key=code&id_year=%d"|args:$best_year default=$default_account}}</td>
-						<td>{{:input type="text" name="lines[label][]" default=$default_label required=false}}</td>
-						<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
 						<td class="money">{{:input type="money" name="lines[amount][]" default=$amount required=true}}</td>
+						<td>{{:input type="text" name="lines[label][]" default=$default_label required=false class="full-width"}}</td>
+						<td>{{:input type="text" name="lines[reference][]" default=$reference required=false size=10}}</td>
 						{{if $projects|count}}
 							<td>{{:input type="select" required=false name="lines[id_project][]" default=$id_project options=$projects default_empty="— Aucun —"}}</td>
 						{{/if}}

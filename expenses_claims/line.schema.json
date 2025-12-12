@@ -33,6 +33,24 @@
 			"description": "Réf.",
 			"type": ["string", "null"]
 		},
+		"vehicle": {
+			"type": ["string", "null"]
+		},
+		"start": {
+			"type": ["string", "null"]
+		},
+		"end": {
+			"type": ["string", "null"]
+		},
+		"distance": {
+			"type": ["integer", "null"]
+		},
+		"extra_label": {
+			"type": ["string", "null"]
+		},
+		"extra_description": {
+			"type": ["string", "null"]
+		},
 		"date": {
 			"description": "Date",
 			"type": ["string", "null"]

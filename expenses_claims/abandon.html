@@ -32,7 +32,7 @@
 		{{:error message="Le libellé doit être renseigné."}}
 	{{/if}}
 
-	{{:assign var="lines." debit=$total|money_raw account=$_POST.account|keys|key:0}}
+	{{:assign var="lines." debit=$total|money_raw account=$_POST.account|keys|value:0}}
 	{{:api
 		method="POST"
 		path="accounting/transaction"
@@ -46,7 +46,7 @@
 		notes=$_POST.notes|trim|or:null
 		amount=$total|money_raw
 		debit=$debit_account
-		credit=$_POST.abandon_account|keys|key:0
+		credit=$_POST.abandon_account|keys|value:0
 		linked_users=$claim.user_id
 		linked_transactions=$claim.id_transaction|intval
 	}}

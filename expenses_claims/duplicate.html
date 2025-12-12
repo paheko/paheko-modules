@@ -36,21 +36,14 @@
 		user_name=$user_name
 		status="draft"
 	}}
-	{{#load type="line" claim=$claim.key}}
-		{{:save validate_schema="./line.schema.json"
-			key="uuid"
-			type="line"
-			claim=$new_key
-			label=$label
-			category=$category
-			account=$account|strval|or:null
-			description=$description
-			amount=$amount
-			reference=$reference
-			date=$date
-			id_project=$id_project
-		}}
-	{{/load}}
+	{{#load type="line" claim=$claim.key assign="lines."}}{{/load}}
+	{{:save validate_schema="./line.schema.json"
+		key="uuid"
+		id=null
+		claim=$new_key
+		from=$lines
+		type="line"
+	}}
 	{{:redirect to="./details.html?key=%s"|args:$new_key}}
 {{/form}}
 
