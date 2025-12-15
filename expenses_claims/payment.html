@@ -52,9 +52,8 @@
 
 	{{:assign var="claim.payments." value=$result.id}}
 	{{:save
-		validate_schema="./claim.schema.json"
-		payments=$claim.payments
 		key=$claim.key
+		payments=$claim.payments
 		status=$new_status
 	}}
 	{{:redirect to="./details.html?key=%s"|args:$claim.key}}

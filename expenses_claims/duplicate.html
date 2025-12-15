@@ -35,6 +35,7 @@
 		user_id=$user_id
 		user_name=$user_name
 		status="draft"
+		user_preferred_resolution=$claim.user_preferred_resolution|or:null
 	}}
 	{{#load type="line" claim=$claim.key assign="lines."}}{{/load}}
 	{{:save validate_schema="./line.schema.json"
