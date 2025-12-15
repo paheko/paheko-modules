@@ -2,24 +2,34 @@
 {{/restrict}}
 {{if !$_GET.id}}
 
-	{{:admin_header title="Remise de chèques" current="acc"}}
+	{{:admin_header title="Remise en banque" current="acc"}}
 
-	<p class="alert block">Le bordereau de remise de chèque s'affichera en dessous des écritures de remise en banque.</p>
+	<p class="alert block">Le bordereau s'affichera en dessous des écritures de remise en banque.</p>
 
 	{{:admin_footer}}
 {{else}}
 	{{#transactions id=$_GET.id}}
 		{{:assign date_short=$date|date_format:"%d-%m-%Y"}}
-		{{:include file="/receipt/_header.html" page_size="A5" title="Bordereau chèques - %d - %s"|args:$id:$date_short}}
+		{{:include file="/receipt/_header.html" page_size="A5" title="Bordereau remise - %d - %s"|args:$id:$date_short}}
 
-			<h1>Bordereau de remise de chèques</h1>
+			<h1>Bordereau de remise en banque</h1>
 
 			<h4>Écriture n°{{if $reference}}{{$reference}}{{else}}{{$id}}{{/if}} — {{$date|date_short}}</h4>
 
-			{{#transaction_lines transaction=$id where="debit > 0"}}
-			<h3>Compte de dépôt: {{$account_label}}</h3>
-			{{:assign account_id=$id_account}}
-			{{/transaction_lines}}
+			<div style="display: flex; text-align: center; gap: 1em; margin: 1em 0; align-items: center; font-size: 1.2em;">
+				{{#transaction_lines transaction=$id where="credit > 0"}}
+					<p>Compte d'attente&nbsp;:<br /><strong>{{$account_label}}</strong></p>
+				{{/transaction_lines}}
+
+				<p>
+					&rarr;
+				</p>
+
+				{{#transaction_lines transaction=$id where="debit > 0"}}
+					<p>Compte de dépôt&nbsp;:<br /><strong>{{$account_label}}</strong></p>
+				{{:assign account_id=$id_account}}
+				{{/transaction_lines}}
+			</div>
 
 			{{#accounts id=$account_id where="description IS NOT NULL"}}
 				<p>{{$description|escape|nl2br}}</p>
@@ -38,7 +48,7 @@
 				{{/transaction_lines}}
 			</table>
 
-			<h3>Nombre de chèques : {{"%d-1"|math:$i}}</h3>
+			<h3>Nombre : {{"%d-1"|math:$i}}</h3>
 
 			<h3>Total : {{$credit|raw|money_currency}}</h3>
 
