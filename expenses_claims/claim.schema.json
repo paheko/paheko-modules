@@ -28,7 +28,8 @@
 			"type": "string"
 		},
 		"user_preferred_resolution": {
-			"type": "string"
+			"type": ["string", "null"],
+			"enum": ["pay", "abandon", ""]
 		},
 		"status": {
 			"description": "Statut",

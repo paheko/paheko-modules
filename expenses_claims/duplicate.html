@@ -35,16 +35,19 @@
 		user_id=$user_id
 		user_name=$user_name
 		status="draft"
-		user_preferred_resolution=$claim.user_preferred_resolution|or:null
+		user_preferred_resolution=$_POST.user_preferred_resolution|strval
 	}}
 	{{#load type="line" claim=$claim.key assign="lines."}}{{/load}}
-	{{:save validate_schema="./line.schema.json"
-		key="uuid"
-		id=null
-		claim=$new_key
-		from=$lines
-		type="line"
-	}}
+
+	{{if $lines|count}}
+		{{:save validate_schema="./line.schema.json"
+			key="uuid"
+			id=null
+			claim=$new_key
+			from=$lines
+			type="line"
+		}}
+	{{/if}}
 	{{:redirect to="./details.html?key=%s"|args:$new_key}}
 {{/form}}
 
