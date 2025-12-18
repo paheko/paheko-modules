@@ -54,7 +54,6 @@
 		{{:assign claim=$claim}} {{* This line is required to overwrite the claim variable stored in the root level *}}
 		{{:assign var="claim.payments." value=$result.id}}
 		{{:save
-			validate_schema="./claim.schema.json"
 			key=$claim.key
 			payments=$claim.payments
 			status="paid"
