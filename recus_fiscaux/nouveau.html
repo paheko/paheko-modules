@@ -204,6 +204,7 @@
 	{{#select
 		u.id AS id_user,
 		t.id AS id_transaction,
+		t.id_year,
 		SUM(l1.credit) AS total,
 		t.date AS date,
 		!champs_nom AS name,
@@ -360,6 +361,7 @@
 					{{:input type="hidden" name="periode_annee"}}
 				{{elseif $default.date}}
 					{{:input type="date" name="periode_date" required=true label="Date de versement du don" default=$default.date}}
+					<input type="hidden" name="id_year" value="{{$default.id_year}}" />
 				{{else}}
 					{{:input type="year" name="periode_annee" required=true label="Année de versement des dons"}}
 				{{/if}}
