@@ -31,7 +31,7 @@
 	order=1
 	count="COUNT(DISTINCT COALESCE($$.id_year, SUBSTR($$.date, 1, 4)))"}}
 	<tr>
-		<th>{{if !$col2}}{{$col1}}{{/if}}</th>
+		<th>{{$col1}}</th>
 		<th>{{if !$col2}}<em>— Non spécifié —</em>{{else}}{{$col2}}{{/if}}</th>
 		<td>{{$col3|raw|money_currency}}</td>
 		<td>{{$col4}}</td>
