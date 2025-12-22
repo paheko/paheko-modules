@@ -116,13 +116,16 @@
 			{{/if}}
 			{{#foreach count=$slot_repeat}}
 				{{if $frequency === 'this'}}
+					{{* not the same logic for weekly and monthly events *}}
 					{{:assign timestamp=$timestamp|date:'Y-m-d'|cat:', +1 day'|strtotime}}
-					{{:assign month=$timestamp|date:'Y-m'}}
+					{{:assign date=$timestamp|date:'Y-m-d'}}
+					{{:assign timestamp="%s, %s %s, %s"|args:$date:$frequency:$day:$open|strtotime}}
 				{{else}}
 					{{:assign timestamp=$timestamp|date:'Y-m-01'|cat:', +1 month'|strtotime}}
 					{{:assign month=$timestamp|date:'Y-m'}}
+					{{* 'of YYYY-MM' string is important for eg. 'third tuesday of YYYY-MM, HH:mm' *}}
+					{{:assign timestamp="%s %s of %s, %s"|args:$frequency:$day:$month:$open|strtotime}}
 				{{/if}}
-				{{:assign timestamp="%s %s of %s, %s"|args:$frequency:$day:$month:$open|strtotime}}
 				{{:assign ..="slots.%d"|args:$timestamp}}
 			{{/foreach}}
 		{{/if}}
