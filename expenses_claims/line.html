@@ -197,7 +197,7 @@ function selectCategory() {
 		notes.innerText = c.notes || '';
 		notes.innerHTML = notes.innerHTML.replace(/\r?\n|\r/, "<br>");
 
-		if (c.price) {
+		if (c.price && !$('#f_amount').value) {
 			$('#f_amount').value = g.formatMoney(c.price);
 		}
 	});
