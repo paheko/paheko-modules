@@ -42,8 +42,17 @@
 		{{/if}}
 		{{:assign var="fields." required=$field.required|boolval type=$field.type label=$field.label help=$field.help|or:null}}
 	{{/foreach}}
-	{{if $_POST.notify_email|trim !== '' && !$_POST.notify_email|check_email}}
-		{{:error message="Adresse e-mail de notification invalide : %s"|args:$_POST.notify_email}}
+	{{#foreach from=$_POST.notify_email|explode:";" item="email"}}
+		{{if !$email|trim}}
+			{{:continue}}
+		{{/if}}
+		{{if !$email|trim|check_email}}
+			{{:error message="Adresse e-mail de notification invalide : %s"|args:$email}}
+		{{/if}}
+		{{:assign var="notify_emails." value=$email|trim}}
+	{{/foreach}}
+	{{if $notify_emails|count > 5}}
+		{{:error message="Le nombre d'adresses e-mail pour la notification est limité à 5."}}
 	{{/if}}
 	{{:save key=$key
 		validate_schema="../event.schema.json"
@@ -60,7 +69,7 @@
 		max_seats_per_booking=$_POST.max_seats_per_booking|intval
 		archived=$_POST.archived|boolval
 		fields=$fields|arrayval
-		notify_email=$_POST.notify_email|strval|or:null
+		notify_email=$notify_emails|or:null
 		not_open_before=$_POST.not_open_before|parse_datetime:"LOCAL"|or:null
 		not_open_after=$_POST.not_open_after|parse_datetime:"LOCAL"|or:null
 	}}
@@ -94,7 +103,7 @@
 			<dd class="help">Syntaxe MarkDown acceptée. {{:linkbutton shape="help" target="_dialog" href="!static/doc/markdown.html" label="Aide de la syntaxe MarkDown"}}</dd>
 			{{:input type="checkbox" label="Archiver cet événement" name="archived" source=$event value=1}}
 			<dd class="help">Si coché, cet événement ne sera plus visible dans la liste et ne pourra plus être réservé.</dd>
-			{{:input type="email" label="Adresse e-mail de notification" help="Si renseignée, cette adresse recevra un message pour chaque réservation et chaque annulation. Laisser vide pour ne pas recevoir de notification." name="notify_email" source=$event}}
+			{{:input type="text" label="Adresses e-mail de notification" help="Si renseigné, chaque adresse (séparée par un point virgule) recevra un message pour chaque réservation et chaque annulation. Laisser vide pour ne pas recevoir de notification." name="notify_email" default=$event.notify_email|implode:";"}}
 			{{:input type="number" min=1 step=1 max=26 name="max_weeks" label="Nombre de semaines réservables" source=$event default=1 required=true}}
 			<dd class="help">
 				Par exemple, pour un événement tous les vendredis, inscrire le chiffre 2 ici permettra de réserver pour ce vendredi, et le vendredi suivant.<br />
