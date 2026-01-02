@@ -46,6 +46,8 @@
 
 		{{if $closing.reopen_day < $closing.close_day && $closing.close_month === $closing.reopen_month}}
 			{{:error message="Fermetures, ligne %d : il n'est pas possible de réouvrir avant de fermer"|args:$line}}
+		{{elseif $closing.close_month < $closing.reopen_month}}
+			{{:error message="Fermetures, ligne %d : le mois de réouverture ne peut être avant le mois de fermeture. Pour fermer à la fin de l'année, créer deux périodes de fermeture, une jusqu'au 31 décembre, et une à partir du 1er janvier."|args:$line}}
 		{{/if}}
 
 		{{:assign var="closings." value=$closing}}
