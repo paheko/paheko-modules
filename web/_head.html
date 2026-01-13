@@ -104,7 +104,7 @@
 	{{if $module.config.show_search !== false || $_GET.search}}
 	<form method="get" action="{{$root_uri}}search.html" class="search-widget">
 		<p>
-			<input type="search" name="search" placeholder="Rechercher…" value="{{$_GET.search}}" />
+			<input type="search" name="search" placeholder="Rechercher…" value="{{$_GET.search|strval}}" />
 			<input type="submit" value="&rarr;" title="Lancer la recherche" />
 		</p>
 	</form>
