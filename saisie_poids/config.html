@@ -36,6 +36,7 @@
 	<p class="help">
 		Associer ici une provenance de l'extension <em>"{{$label}}"</em> (colonne de gauche) à une provenance de l'extension <em>"Saisie au poids"</em> (colonne de droite).<br />
 		Pour chaque association indiquée, le poids du vélo dans le stock de vélo pourra être importé dans cette extension.
+		<strong>Note&nbsp;:</strong> seuls les provenances utilisées par au moins un vélo sont listées ici.
 	</p>
 	{{:assign var="defaults" 0='Achat' 1='Don' 2='Rachat' 3='Récupération' 4='Partenariat'}}
 	{{:assign list=$config.source|or:$defaults}}
@@ -61,7 +62,8 @@
 	{{if $exit_categories|count}}
 		<p class="help">
 			Associer ici un motif de sortie de l'extension <em>"{{$label}}"</em> (colonne de gauche) à un motif de sortie de l'extension <em>"Saisie au poids"</em> (colonne de droite).<br />
-			Pour chaque association indiquée, le poids du vélo dans le stock de vélo pourra être importé dans cette extension.
+			Pour chaque association indiquée, le poids du vélo dans le stock de vélo pourra être importé dans cette extension.<br />
+			<strong>Note&nbsp;:</strong> seuls les motifs de sortie utilisés par au moins un vélo sont listés ici.
 		</p>
 		{{:assign var="defaults" 0='Démonté' 1='Vendu' 2='Vendu en bourse' 3='Jeté'}}
 		{{:assign list=$config.raison_sortie|or:$defaults}}
