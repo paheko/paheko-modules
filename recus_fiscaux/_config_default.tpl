@@ -40,8 +40,8 @@
 	case="7UF"
 }}
 {{:assign var="types_asso.personnes"
-	label="Association fournissant gratuitement une aide alimentaire ou des soins médicaux à des personnes en difficultés ou favorisant leur logement"
-	help="75% du montant versé pour un don d'un montant inférieur ou égal à 1000 €.\nLa fraction au-delà de 1000 € ouvre droit à une réduction d'impôt de 66 % du montant donné."
+	label="Association d'aide aux personnes en difficulté ou aux victimes de violence domestique (art. 200-1-g-1ter du CGI)"
+	help="75% du montant versé pour un don d'un montant inférieur ou égal à 1000 €.\nLa fraction au-delà de 1000 € ouvre droit à une réduction d'impôt de 66 % du montant donné"
 	case="7UD"
 }}
 {{:assign var="types_asso.cultuelle"
