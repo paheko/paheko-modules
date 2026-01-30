@@ -194,9 +194,9 @@
 			<legend>Informations obligatoires</legend>
 			<dl>
 				{{if $output_labels|count == 1}}
-					{{:input type="select" name="operation" label="Type" required=true options=$output_labels}}
+					{{:input type="select" name="operation" label="Type de sortie" required=true options=$output_labels}}
 				{{else}}
-					{{:input type="select" name="operation" label="Type" required=true default_empty="— Aucun —" options=$output_labels|sort}}
+					{{:input type="select" name="operation" label="Type de sortie" required=true default_empty="— Aucun —" options=$output_labels|sort}}
 				{{/if}}
 				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
 				{{:input type="number" name="amount" label="Quantité" required=true default=1 min=1 max=$dispo}}

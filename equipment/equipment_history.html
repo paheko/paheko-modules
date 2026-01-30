@@ -147,14 +147,15 @@
 	{{#select
 		mvt.key AS mvt_key,
 		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS reste
-		FROM {!$module.table} AS mvt
-		LEFT JOIN {!$module.table} AS link ON mvt.key = json_extract(link.document, '$.temp_key')
-		LEFT JOIN {!$module.table} AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+		FROM !table AS mvt
+		LEFT JOIN !table AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+		LEFT JOIN !table AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
 		WHERE
 			json_extract(mvt.document, '$.operation') IN !op
 		AND json_extract(mvt.document, '$.equipment') = :eqpmt_key
 		GROUP by mvt.key
 		;
+		!table=$module.table
 		!op = $operations
 		:eqpmt_key = $_GET.key
 	}}
@@ -250,14 +251,15 @@
 	{{#select
 		mvt.key AS mvt_key,
 		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(mvt2.document, '$.amount')), 0) AS present
-		FROM {!$module.table} AS mvt
-		LEFT JOIN {!$module.table} AS link ON mvt.key = json_extract(link.document, '$.temp_key')
-		LEFT JOIN {!$module.table} AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
+		FROM !table AS mvt
+		LEFT JOIN !table AS link ON mvt.key = json_extract(link.document, '$.temp_key')
+		LEFT JOIN !table AS mvt2 ON mvt2.key = json_extract(link.document, '$.return')
 		WHERE
 			json_extract(mvt.document, '$.operation') IN !op
 		AND json_extract(mvt.document, '$.equipment') = :eqpmt_key
 		GROUP by mvt.key
 		;
+		!table=$module.table
 		!op = $operations
 		:eqpmt_key = $_GET.key
 	}}

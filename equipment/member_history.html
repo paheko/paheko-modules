@@ -51,13 +51,13 @@
 	json_extract(mvt.document, '$.amount') as amount,
 	COALESCE((SELECT
 		json_extract(links.document, '$.temp_key')
-		FROM {!$module.table} AS links
+		FROM !table AS links
 		WHERE json_extract(links.document, '$.temp_key') = mvt.key
 		OR json_extract(links.document, '$.return') = mvt.key), mvt.key)
 	AS out_temp_key
-	FROM {!$module.table} AS mvt
+	FROM !table AS mvt
 	INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-	INNER JOIN {!$module.table} AS eqpmt
+	INNER JOIN !table AS eqpmt
 	ON json_extract(mvt.document, '$.equipment') = eqpmt.key
 	WHERE users.id = :user
 	AND eqpmt.key = :eqpmt_key
@@ -65,6 +65,7 @@
 		 OR json_extract(mvt.document, '$.operation') IN !input_types)
 	ORDER BY out_temp_key, date
 	;
+	!table=$module.table
 	:user = $_GET.id
 	:eqpmt_key = $_GET.key|trim
 	!output_types=$output_types.temporaire

@@ -31,6 +31,9 @@
 	{{/if}}
 {{/if}}
 
+<div class="shortFormLeft">
+	<p class="help">Historique des prêts de matériel</p>
+</div>
 
 {{* lecture config (défaut ou enregistrée) *}}
 {{:include file="./_get_config.html" keep="config"}}
@@ -53,11 +56,11 @@
 		json_extract(mvt.document, '$.amount') AS out_amount,
 		json_extract(mvt.document, '$.return_date') AS return_date,
 		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(retour.document, '$.amount')), 0) AS remain
-	FROM {!$module.table} AS mvt
+	FROM !table AS mvt
 	LEFT JOIN users ON json_extract(mvt.document, '$.user') = users.id
-	LEFT JOIN {!$module.table} AS links ON mvt.key = json_extract(links.document, '$.temp_key')
-	LEFT JOIN {!$module.table} AS retour ON retour.key = json_extract(links.document, '$.return')
-	INNER JOIN {!$module.table} AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
+	LEFT JOIN !table AS links ON mvt.key = json_extract(links.document, '$.temp_key')
+	LEFT JOIN !table AS retour ON retour.key = json_extract(links.document, '$.return')
+	INNER JOIN !table AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
 	WHERE
 		json_extract(mvt.document, '$.type') = 'movement'
 	AND
@@ -66,6 +69,7 @@
 	HAVING remain != 0
 	ORDER BY out_date, nom
 	;
+	!table=$module.table
 	!op = $output_ops
 }}
 	{{if $premier}}
@@ -73,7 +77,7 @@
 			<thead>
 				<tr>
 					<th>Matériel</th>
-					<th>Date sortie</th>
+					<th>Date prêt</th>
 					<th>Quantité</th>
 					<th>Membre</th>
 					<th>Date retour</th>

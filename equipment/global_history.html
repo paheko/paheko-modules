@@ -13,12 +13,34 @@
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="./_get_config.html" keep="config"}}
 
+{{* filtrer selon la catégorie *}}
+{{if $_GET.cat_key == null}}
+	{{:assign selected_category=$module.config.hist_cat_key}}
+{{elseif $_GET.cat_key == -1}}
+	{{:assign selected_category=null}}
+	{{:save key="config" hist_cat_key=null}}
+{{else}}
+	{{:assign selected_category=$_GET.cat_key}}
+	{{:save key="config" hist_cat_key=$selected_category}}
+{{/if}}
+
+{{* condition de filtrage *}}
+{{if $selected_category != null}}
+	{{:assign cat_condition="(SELECT key
+			FROM @TABLE AS cat
+			WHERE cat.key = (SELECT $$.category
+								FROM @TABLE AS mat
+								WHERE mat.key = @TABLE.$$.equipment)) = '%s'"|args:$selected_category}}
+{{else}}
+	{{:assign cat_condition=1}}
+{{/if}}
+
 {{* Sélecteur catégories *}}
-{{:assign var="options." value="" label="Toutes les catégories" href="?"}}
+{{:assign var="cat_options." value="" label="Toutes les catégories" href="?cat_key=-1"}}
 {{#load type="category" order="$$.name"}}
 	{{:assign var="categories.%s"|args:$key value=$name}}
 	{{:assign
-		var="options."
+		var="cat_options."
 		value=$key
 		label=$name
 		href="?cat_key=%s"|args:$key
@@ -29,23 +51,16 @@
 	<legend>Filtrer par catégorie</legend>
 	{{:dropdown
 		title="Filtrer par catégorie"
-		options=$options
-		value="%s"|args:$_GET.cat_key
+		options=$cat_options
+		value="%s"|args:$selected_category
 	}}
 </fieldset>
 
-{{* condition de filtrage *}}
-{{if $_GET.cat_key != null}}
-	{{:assign condition="(SELECT key
-			FROM @TABLE AS cat
-			WHERE cat.key = (SELECT $$.category
-								FROM @TABLE AS mat
-								WHERE mat.key = @TABLE.$$.equipment)) = '%s'"|args:$_GET.cat_key}}
-{{else}}
-	{{:assign condition=1}}
-{{/if}}
+<div class="shortFormLeft">
+	<p class="help">Historique de tous les mouvements de matériel</p>
+</div>
 
-{{* lister tous les mouvements *}}
+{{* lister les mouvements *}}
 {{#list
 	type="movement"
 	select="($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
@@ -65,7 +80,7 @@
 			END as 'Stockage';
 		$$.comment AS 'Commentaire'
 	"|args:$config.user_fields.name_sql
-	where="%s"|args:$condition
+	where="%s"|args:$cat_condition
 	order=1
 	max=50
 	desc=true

@@ -107,9 +107,9 @@
 		<legend>Informations obligatoires</legend>
 		<dl>
 			{{if $input_labels|count == 1}}
-				{{:input type="select" name="operation" label="Type" required=true options=$input_labels}}
+				{{:input type="select" name="operation" label="Type d'entrée" required=true options=$input_labels}}
 			{{else}}
-				{{:input type="select" name="operation" label="Type" required=true default_empty="— Aucun —" options=$input_labels|sort}}
+				{{:input type="select" name="operation" label="Type d'entrée" required=true default_empty="— Aucun —" options=$input_labels|sort}}
 			{{/if}}
 			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
 			{{:input type="number" name="amount" label="Quantité" required=true min=1 default=1}}

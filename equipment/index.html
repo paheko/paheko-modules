@@ -1,41 +1,51 @@
 {{* -*- brindille -*- *}}
 
-{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
+{{#restrict section="accounting" level="write"}}
+	{{:assign is_admin=true}}
+{{else}}
+	{{:assign is_admin=false}}
+{{/restrict}}
 
 {{:admin_header title="Gestion des matériels" custom_css="./style.css" current="module_equipment"}}
 
-{{* barre de navigation *}}
-{{if $_GET.prop == null || $_GET.prop}}
-	{{:assign proprio="proprio"}}
+{{if ! $is_admin}}
+	{{:assign var="user.id" value=$logged_user.id}}
+	{{:include file="snippets/my_details.html"}}
 {{else}}
-	{{:assign proprio="nonproprio"}}
-{{/if}}
+	{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
 
-{{#load type="category" count=true assign="result"}}{{/load}}
-{{:include file="_nav.html" current="inventaire" cat="%d"|args:$result.count subcurrent="%s"|args:$proprio}}
-
-{{if $_GET.ok}}
-	{{if $_GET.msg == "ajout" }}
-		<p class="block confirm">Ajout effectué</p>
-	{{elseif $_GET.msg == "modification" }}
-		<p class="block confirm">Modification effectuée</p>
-	{{elseif $_GET.msg == "suppression" }}
-		<p class="block confirm">Suppression effectuée</p>
-	{{elseif $_GET.msg == "supprmvtmat" }}
-		<p class="block confirm">Mouvement supprimé - Matériel supprimé</p>
-	{{/if}}
-{{elseif $_GET.err}}
-	<p class="block error">Modification refusée</p>
-{{/if}}
-
-{{if $result.count == 0}}
-	<p class="block alert">Il n'y a aucune catégorie : vous devez en ajouter.</p>
-{{else}}
-	{{if $_GET.prop == null || $_GET.prop == "1"}}
-		{{:include file="./_inventory.html"}}
+	{{if $_GET.prop == null || $_GET.prop}}
+		{{:assign proprio="proprio"}}
 	{{else}}
-		{{:include file="./_temp_inventory.html"}}
+		{{:assign proprio="nonproprio"}}
 	{{/if}}
-{{/if}}
 
-{{:admin_footer}}
+	{{#load type="category" count=true assign="result"}}{{/load}}
+	{{:include file="_nav.html" current="inventaire" cat="%d"|args:$result.count subcurrent="%s"|args:$proprio}}
+
+	{{if $_GET.ok}}
+		{{if $_GET.msg == "ajout" }}
+			<p class="block confirm">Ajout effectué</p>
+		{{elseif $_GET.msg == "modification" }}
+			<p class="block confirm">Modification effectuée</p>
+		{{elseif $_GET.msg == "suppression" }}
+			<p class="block confirm">Suppression effectuée</p>
+		{{elseif $_GET.msg == "supprmvtmat" }}
+			<p class="block confirm">Mouvement supprimé - Matériel supprimé</p>
+		{{/if}}
+	{{elseif $_GET.err}}
+		<p class="block error">Modification refusée</p>
+	{{/if}}
+
+	{{if $result.count == 0}}
+		<p class="block alert">Il n'y a aucune catégorie : vous devez en ajouter.</p>
+	{{else}}
+		{{if $_GET.prop == null || $_GET.prop == "1"}}
+			{{:include file="./_inventory.html"}}
+		{{else}}
+			{{:include file="./_temp_inventory.html"}}
+		{{/if}}
+	{{/if}}
+
+	{{:admin_footer}}
+{{/if}}

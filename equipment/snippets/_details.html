@@ -1,7 +1,5 @@
 {{* -*- brindille -*- *}}
 
-{{#restrict section="users" level="read"}}{{/restrict}}
-
 {{* lecture config (défaut ou enregistrée) *}}
 {{:include file="../_get_config.html" keep="config, directions"}}
 
@@ -46,9 +44,9 @@
 			json_extract(mvt.document, '$.amount') AS qte,
 			json_extract(mvt.document, '$.return_date') AS return_date,
 			json_extract(mvt.document, '$.operation') AS operation
-			FROM {!$module.table} AS mvt
+			FROM !table AS mvt
 			INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-			INNER JOIN {!$module.table} AS eqpmt ON json_extract(mvt.document, '$.equipment') = eqpmt.key
+			INNER JOIN !table AS eqpmt ON json_extract(mvt.document, '$.equipment') = eqpmt.key
 			WHERE
 				users.id = :user
 			AND
@@ -59,6 +57,7 @@
 				json_extract(mvt.document, '$.operation') IN !input_types)
 			ORDER BY eqpmt_name, date
 			;
+			!table=$module.table
 			:user = $user.id
 			!output_types=$output_types.temporaire
 			!input_types=$input_types.retour
@@ -167,15 +166,16 @@
 			json_extract(mvt.document, '$.operation') as operation,
 			MIN(json_extract(mvt.document, '$.date')) as date,
 			SUM(json_extract(mvt.document, '$.amount')) as amount
-			FROM {!$module.table} AS mvt
+			FROM !table AS mvt
 			INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
-			INNER JOIN {!$module.table} AS eqpmt
+			INNER JOIN !table AS eqpmt
 			ON json_extract(mvt.document, '$.equipment') = eqpmt.key
 			WHERE users.id = :user
 			AND json_extract(mvt.document, '$.operation') IN !output_types
 			GROUP BY eqpmt_key, operation
 			ORDER BY eqpmt_name, date
 			;
+			!table=$module.table
 			:user = $user.id
 			!output_types=$output_types.définitif
 			assign="def_mat."
