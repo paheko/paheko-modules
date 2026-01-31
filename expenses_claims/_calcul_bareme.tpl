@@ -44,7 +44,6 @@
 	{{:break}}
 {{/foreach}}
 
-
-{{:assign calcul_maths=$calcul|replace:"x":"*"|replace:",":"."|replace:"d":$distance|regexp_replace:"/[^0-9\.*]/":""}}
+{{:assign calcul_maths=$calcul|replace:"x":"*"|replace:",":"."|replace:"d":$distance|regexp_replace:"/[^0-9\.+*]+/":""}}
 
 {{:assign resultat="round(%s*%f, 2)"|math:$calcul_maths:$bonus}}
