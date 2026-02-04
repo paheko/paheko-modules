@@ -56,7 +56,11 @@
 	{{/if}}
 {{/if}}
 
-{{:assign title="Note de frais n°%d — %s"|args:$claim.number:$claim.label}}
+{{:assign title="Note de frais n°%d"|args:$claim.number}}
+
+{{if $claim.label}}
+	{{:assign title=$title|cat:" — "|cat:$claim.label}}
+{{/if}}
 
 {{if $_GET.print === 'pdf'}}
 	{{:http type="pdf" download="%s.pdf"|args:$title}}
@@ -65,7 +69,13 @@
 {{:admin_header title=$title}}
 
 {{if $_GET.print === 'pdf'}}
-	<h2>{{$title}}</h2>
+	{{if $config.files.logo}}
+	<figure class="logo">
+		<img src="{{$config.files.logo}}&150px" />
+	</figure>
+	{{/if}}
+
+	<h2>{{$config.org_name}} — {{$title}}</h2>
 {{/if}}
 
 <form method="post" action="">
