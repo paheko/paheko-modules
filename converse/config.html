@@ -1,0 +1,49 @@
+{{:admin_header title="Configuration"}}
+
+{{:assign var="themes"
+	classic="Classique (clair)"
+	nordic="Nordique (clair)"
+	dracula="Dracula (sombre)"
+	cyberpunk="Cyberpunk (sombre)"
+}}
+
+{{#form on="save"}}
+	{{if !$themes|has_key:$_POST.theme}}
+		{{:error message="Thème inconnu"}}
+	{{/if}}
+
+	{{:save key="config"
+		theme=$_POST.theme
+	}}
+	{{:redirect to="?ok=1"}}
+{{/form}}
+
+{{if $_GET.ok}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+
+<fieldset>
+	<legend>Configuration générale</legend>
+	<dl>
+		{{:input type="select" label="Thème" required=true}}
+	</dl>
+</fieldset>
+
+<fieldset>
+	<legend>Configuration du serveur Jabber (XMPP)</legend>
+	<dl>
+		{{:input type="text" name="default_domain" label="Serveur par défaut" required=true}}
+	</dl>
+</fieldset>
+
+<p class="submit">
+	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+</p>
+
+</form>
+
+{{:admin_footer}}

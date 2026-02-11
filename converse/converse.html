@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdn.conversejs.org/12.0.0/dist/converse.min.css">
+<script src="https://cdn.conversejs.org/12.0.0/dist/converse.min.js" charset="utf-8"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+converse.initialize({
+	allow_adhoc_commands: false,
+	allow_dragresize: false,
+	//allow_registration: false,
+	auto_away: 300,
+	auto_xa: 3600,
+	//auto_join_rooms: ['room@example.org', 'room2@example.org'],
+	authentication: 'login',
+	//jid: 'xxxx@movim.eu',
+	//allow_logout: false,
+	// https://conversejs.org/docs/html/configuration.html#credentials-url
+	//credentials_url: '.../p/converse/login.php',
+	//auto_reconnect: true,
+	default_domain: 'movim.eu',
+	locked_domain: 'movim.eu',
+	//i18n: 'fr',
+	//locales: ['fr', 'en'],
+	nickname: 'Coucou',
+	colorize_username: true,
+	view_mode: 'fullscreen',
+	visible_toolbar_buttons: {
+		call: false, //TODO later: add call button for jitsi
+		spoiler: false,
+		emoji: true,
+	},
+	theme: {{$module.config.theme|or:"classic"|escape:'js'}},
+	show_background: false
+});
+</script>
+
+</body>
+</html>
