@@ -17,7 +17,7 @@
 			<h4>Écriture n°{{if $reference}}{{$reference}}{{else}}{{$id}}{{/if}} — {{$date|date_short}}</h4>
 
 			<div style="display: flex; text-align: center; gap: 1em; margin: 1em 0; align-items: center; font-size: 1.2em;">
-				{{#transaction_lines transaction=$id where="credit > 0"}}
+				{{#transaction_lines transaction=$id where="credit > 0" limit=1}}
 					<p>Compte d'attente&nbsp;:<br /><strong>{{$account_label}}</strong></p>
 				{{/transaction_lines}}
 
@@ -25,7 +25,7 @@
 					&rarr;
 				</p>
 
-				{{#transaction_lines transaction=$id where="debit > 0"}}
+				{{#transaction_lines transaction=$id where="debit > 0" limit=1}}
 					<p>Compte de dépôt&nbsp;:<br /><strong>{{$account_label}}</strong></p>
 				{{:assign account_id=$id_account}}
 				{{/transaction_lines}}
