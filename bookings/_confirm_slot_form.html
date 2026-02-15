@@ -2,6 +2,13 @@
 	{{:error admin="Missing mandatory variable"}}
 {{/if}}
 
+{{if $_GET.slot_key}}
+	{{#load key=$_GET.slot_key type="slot" assign="slot"}}
+	{{else}}
+		{{:error message="Créneau introuvable"}}
+	{{/load}}
+{{/if}}
+
 {{:form_errors}}
 
 {{:assign date=$_GET.slot_time|parse_datetime}}
@@ -33,7 +40,18 @@
 				{{:input type="checkbox" name="notify" value="1" label="Recevoir une confirmation d'inscription par e-mail" onchange="g.toggle('dl.email', this.checked);" help="facultatif"}}
 			{{/if}}
 			{{if $event.max_seats_per_booking > 1}}
-				{{:input type="number" name="seats" max=$event.max_seats_per_booking min=1 default=1 label="Combien de personnes serez-vous ?" help="Indiquez le nombre de places à réserver." required=true}}
+				{{if $slot.seats > 0}}
+					{{* Calculer le nombre de places réservables, même si max_seats_per_booking est supérieur au nombre de places restantes *}}
+					{{#load select="SUM(COALESCE($$.seats, 1)) AS count" event=$event.key where="datetime($$.date) = datetime(:date)" slot=$slot.key :date=$_GET.slot_time type="booking"}}
+						{{:assign count=$count}}
+					{{/load}}
+
+					{{:assign available="%d-%d"|math:$slot.seats:$count}}
+					{{:assign max="min(%d,%d)"|math:$event.max_seats_per_booking:$available}}
+				{{else}}
+					{{:assign max=$event.max_seats_per_booking}}
+				{{/if}}
+				{{:input type="number" name="seats" max=$max min=1 default=1 label="Combien de personnes serez-vous ?" help="Indiquez le nombre de places à réserver." required=true}}
 			{{/if}}
 		</dl>
 		{{if !$event.email && !$_POST.notify}}
