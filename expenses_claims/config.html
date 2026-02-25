@@ -1,14 +1,6 @@
 {{#restrict block=true section="config" level="admin"}}{{/restrict}}
 {{:include file="./_config_default.tpl" keep="module.config,vehicles"}}
 
-{{#form on="save"}}
-	{{:save key="config"
-		notify_users=$_POST.notify_users|arrayval
-		extra_user_fields=$_POST.extra_user_fields|arrayval
-	}}
-	{{:redirect to="./config.html?msg=ok"}}
-{{/form}}
-
 {{:admin_header title="Catégories des notes de frais"}}
 
 <nav class="tabs">

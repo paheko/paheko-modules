@@ -5,6 +5,7 @@
 	{{:save key="config"
 		notify_users=$_POST.notify_users|arrayval
 		extra_user_fields=$_POST.extra_user_fields|arrayval
+		accept_account_code=$_POST.accept_account_code|keys|value:0
 	}}
 	{{:redirect to="./config.html?msg=ok"}}
 {{/form}}
@@ -18,15 +19,33 @@
 	</ul>
 </nav>
 
+{{if !$module.config.accept_account_code}}
+	{{:assign var="module.config.accept_account_code" value="4110"}}
+{{/if}}
+
+{{:assign var="accept_account_code.%s"|args:$module.config.accept_account_code value=$module.config.accept_account_code}}
 
 {{:form_errors}}
 <form method="post" action="">
 
 	<fieldset>
+		<legend>Comptabilité</legend>
+		<dl>
+			{{:input type="list" name="accept_account_code" default=$accept_account_code label="Compte de tiers" help="Il est recommandé d'utiliser le compte 4110 ici." required=true target="!acc/charts/accounts/selector.php?types=4&key=code"}}
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Champs supplémentaires</legend>
+		<dl>
+			{{:input type="list" name="extra_user_fields" source=$module.config label="Champs de la fiche membre à afficher sur une note de frais" help="Tout champ sélectionné ici sera affiché sur la note de frais. Utile pour indiquer un IBAN pour le paiement par exemple." required=false multiple=true target="!config/users/field_selector.php" max=10}}
+		</dl>
+	</fieldset>
+
+	<fieldset>
 		<legend>Notifications</legend>
 		<dl>
 			{{:input type="list" name="notify_users" source=$module.config label="Membres à notifier lors du dépôt d'une nouvelle note de frais" help="Si ce champ est laissé vide, la notification sera envoyée à l'adresse e-mail de l'association. Maximum 10 membres." required=false multiple=true target="!users/selector.php" max=10}}
-			{{:input type="list" name="extra_user_fields" source=$module.config label="Champs de la fiche membre à afficher sur une note de frais" help="Tout champ sélectionné ici sera affiché sur la note de frais. Utile pour indiquer un IBAN pour le paiement par exemple." required=false multiple=true target="!config/users/field_selector.php" max=10}}
 		</dl>
 	</fieldset>
 
