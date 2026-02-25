@@ -11,6 +11,13 @@
 		{{:linkbutton href="%scarte.html?id=%d&print=yes&mode=print"|args:$module.url:$user.id target="_blank" label="Imprimer" shape="print"}}
 		{{if $pdf_enabled && $user._email}}
 			{{:linkbutton href="%senvoyer.html?id=%d"|args:$module.url:$user.id target="_dialog" label="Envoyer" shape="mail"}}
+			<span style="font-size: .9em; text-align: center; padding: .5em; color: #666">
+				{{#load id_user=$user.id}}
+					Envoyée le {{$sent|date_short}}
+				{{else}}
+					Jamais envoyée
+				{{/load}}
+			</span>
 		{{/if}}
 	</p>
 </div>
