@@ -1,4 +1,8 @@
-{{if !$_POST}}
+{{if $_GET && !$_GET.tplid}}
+	{{:assign skip=true}}
+{{/if}}
+
+{{if !$_POST && !$skip}}
 
 <div id="templateSelector">
 	<div>
@@ -30,7 +34,7 @@
 		}}
 	{{/load}}
 
-	{{:dropdown options=$options value=$_GET.tplid|strval title="Sélectionner un modèle"}}
+	{{:dropdown options=$options value=$_GET.tplid|intval title="Sélectionner un modèle"}}
 
 	<div style="text-align: right">
 		{{:linkbutton shape="edit" href=$module.url label="Modifier les modèles"}}
