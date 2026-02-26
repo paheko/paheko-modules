@@ -88,12 +88,10 @@
 		:id_search=$id
 		:nom=$nom
 	}}
-		<tr class="{{if $annule}}disabled crossed{{/if}}">
+		<tr class="{{if $annule}}disabled crossed{{/if}}{{if $envoi}} sent{{else}}unsent{{/if}}">
 			<td class="check">
-				{{if !$envoi}}
-					{{:assign has_checks=true}}
-					{{:input type="checkbox" name="selected[]" value=$id}}
-				{{/if}}
+				{{:assign has_checks=true}}
+				{{:input type="checkbox" name="selected[]" value=$id}}
 			</td>
 			<td class="num">
 				{{:link href="recu.html?id=%d"|args:$id label=$id target="_dialog"}}
@@ -149,6 +147,9 @@
 			{{:button type="submit" name="check" label="Marquer comme envoyés" shape="check"}}
 			{{:button type="submit" name="send" label="Envoyer" shape="mail"}}
 		</p>
+		<p>
+			{{:button type="button" shape="check" label="Cocher les reçus non envoyés" id="check_unset"}}
+		</p>
 	{{/if}}
 	</form>
 
@@ -171,6 +172,10 @@
 			g.downloadAsZip('Reçus fiscaux', files);
 		});
 		return false;
+	};
+	$('#check_unset').onclick = () => {
+		document.querySelectorAll('table input[type=checkbox]:checked').forEach(f => f.click());
+		document.querySelectorAll('table tr.unsent input[type=checkbox]').forEach(f => f.click());
 	};
 	</script>
 
