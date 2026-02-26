@@ -376,18 +376,13 @@
 			<legend>Versements</legend>
 			<dl>
 				{{:input type="money" name="montant" required=true label="Montant des versements" default=$default.total}}
-			</dl>
-
-			{{if $module.config.type_asso === 'syndicat'}}
-				<input type="hidden" name="numeraire" value="1" id="f_numeraire_1" />
-			{{else}}
-				<dl>
-					<dt>Type de don</dt>
-					{{:input type="checkbox" name="numeraire" value="1" label="Don en numéraire (en euros)" default=1}}
-					{{:input type="checkbox" name="abandon_frais" value="1" label="Frais engagés par les bénévoles, dont ils renoncent expressément au remboursement" default=$default.abandon_frais}}
-					{{:input type="checkbox" name="nature" value="1" label="Don en nature" help="Par exemple don de matériel, prêt de local, prestation de service…" default=$defaut.nature}}
-				</dl>
+				<dt>Type de don</dt>
+				{{:input type="checkbox" name="numeraire" value="1" label="Don en numéraire (en euros)" default=1}}
+			{{if $module.config.type_asso !== 'syndicat'}}
+				{{:input type="checkbox" name="abandon_frais" value="1" label="Frais engagés par les bénévoles, dont ils renoncent expressément au remboursement" default=$default.abandon_frais}}
+				{{:input type="checkbox" name="nature" value="1" label="Don en nature" help="Par exemple don de matériel, prêt de local, prestation de service…" default=$defaut.nature}}
 			{{/if}}
+			</dl>
 		</fieldset>
 
 		<fieldset class="entreprise">
@@ -401,11 +396,9 @@
 
 		<fieldset class="hidden type-numeraire">
 			<legend>Moyens de paiement</legend>
-			{{if $module.config.type_asso !== 'syndicat'}}
 			<p class="help">
 				Pour les dons en numéraire (en euros).
 			</p>
-			{{/if}}
 			<dl>
 				{{:input type="checkbox" name="moyens_especes" value=1 label="Espèces" default=$default.total_especes|boolval}}
 				{{:input type="checkbox" name="moyens_cheques" value=1 label="Chèques" default=$default.total_cheques|boolval}}
