@@ -18,6 +18,14 @@
 	{{:assign var="r.periode_annee" value=$r.annees}}
 {{/if}}
 
+{{if !$r.periode_annee && !$r.periode_date}}
+	{{:error message="Aucune période n'a été fournie" admin=true}}
+{{elseif !$r.date}}
+	{{:error message="Aucune date n'a été fournie" admin=true}}
+{{elseif !$r.montant}}
+	{{:error message="Aucune montant n'a été fourni" admin=true}}
+{{/if}}
+
 {{:include file="./_config_default.tpl" keep="module.config,types_asso"}}
 
 {{:assign var="type" from="types_asso.%s"|args:$module.config.type_asso}}
