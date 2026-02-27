@@ -33,6 +33,10 @@ figure, article, aside, section, header, footer, img {
 	margin: 0 auto;
 	margin-bottom: 30px;
 }
+#content {
+	max-width: 700px;
+	margin: 0 auto;
+}
 a {
 	color: #009;
 	text-decoration: underline;
@@ -146,8 +150,10 @@ a {
 		</div>
 	</div>
 
-	{{* The real email content is in the $html variable. Don't delete this or the email will be empty! *}}
-	{{$html|raw}}
+	<div id="content">
+		{{* The real email content is in the $html variable. Don't delete this or the email will be empty! *}}
+		{{$html|raw}}
+	</div>
 
 </div>
 
