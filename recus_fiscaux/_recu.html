@@ -22,8 +22,8 @@
 	{{:error message="Aucune période n'a été fournie" admin=true}}
 {{elseif !$r.date}}
 	{{:error message="Aucune date n'a été fournie" admin=true}}
-{{elseif !$r.montant}}
-	{{:error message="Aucune montant n'a été fourni" admin=true}}
+{{elseif !$r.montant && !$r.montant_nature && !$r.montant_numeraire}}
+	{{:error message="Aucun montant n'a été fourni"}}
 {{/if}}
 
 {{:include file="./_config_default.tpl" keep="module.config,types_asso"}}
