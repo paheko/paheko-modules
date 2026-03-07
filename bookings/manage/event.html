@@ -34,13 +34,18 @@
 
 {{#form on="save"}}
 	{{#foreach from=$_POST.fields|array_transpose item="field"}}
-		{{if !$field.label|trim || !$field.type}}
+		{{:assign label=$field.label|trim}}
+		{{if !$label || !$field.type}}
 			{{:continue}}
 		{{/if}}
 		{{if !$types|keys|has:$field.type}}
 			{{:error message="Type inconnu: %s"|args:$field.type}}
 		{{/if}}
-		{{:assign var="fields." required=$field.required|boolval type=$field.type label=$field.label help=$field.help|or:null}}
+		{{if $fields_labels|has:$label}}
+			{{:error message="Il a plusieurs champs avec le même libellé \"%s\". Un seul champ avec le même libellé est autorisé."|args:$label}}
+		{{/if}}
+		{{:assign var="fields_labels." value=$label}}
+		{{:assign var="fields." required=$field.required|boolval type=$field.type label=$field.label|trim help=$field.help|or:null}}
 	{{/foreach}}
 	{{#foreach from=$_POST.notify_email|explode:";" item="email"}}
 		{{if !$email|trim}}
