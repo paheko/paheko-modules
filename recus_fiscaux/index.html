@@ -159,7 +159,7 @@
 		g.script('scripts/zip.js', () => {
 			var files = [];
 
-			document.querySelectorAll('table input[type=checkbox]:checked').forEach((f) => {
+			document.querySelectorAll('table tbody input[type=checkbox]:checked').forEach((f) => {
 				var row = f.parentNode.parentNode;
 				files.push({extension: 'pdf', url: row.querySelector('a[href*="recu.html"]').href + '&print=pdf', name: row.querySelector('th').innerText});
 			});
