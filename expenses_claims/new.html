@@ -50,7 +50,7 @@
 			<dt>Membre</dt>
 			<dd>{{$logged_user._name}}</dd>
 		{{/if}}
-			{{:input type="radio-btn" name="user_preferred_resolution" value="pay" label="Je demande le remboursement des frais" required=true prefix_title="Préférence pour le remboursement" default="pay"}}
+			{{:input type="radio-btn" name="user_preferred_resolution" value="pay" label="Je demande le remboursement des frais" required=true prefix_label="Préférence pour le remboursement" default="pay"}}
 			{{:input type="radio-btn" name="user_preferred_resolution" value="abandon" label="Je préfère ne pas être remboursé (abandon des frais)" required=true}}
 			{{:input type="radio-btn" name="user_preferred_resolution" value="" label="Je n'ai pas de préférence" required=true}}
 			{{:input type="text" name="label" label="Objet de la note de frais" required=false help="Courte description de l'objet de la note de frais."}}
