@@ -19,10 +19,19 @@
 	<p class="confirm block">La configuration a été enregistrée.</p>
 {{/if}}
 
+{{#load type="category" where="$$.account IS NOT NULL"}}
+	{{:assign code=$account|values|value:0|regexp_replace:"/^(\w+)\s+.*$/i":"$1"}}
+	{{if $account|keys|value:0 != $code}}
+		{{:assign var="new_account" value=null}}
+		{{:assign var="new_account.%s"|args:$code value=$account|values|value:0}}
+		{{:save key=$key type="category" account=$new_account}}
+	{{/if}}
+{{/load}}
 
-{{#list type="category" schema="./category.schema.json" columns="label" order="label" disable_user_sort=true}}
+{{#list type="category" schema="./category.schema.json" columns="label,account" order="label" disable_user_sort=true}}
 	<tr>
-		<th>{{$label}}</th>
+		<th scope="row">{{$label}}</th>
+		<td>{{$account|keys|value:0}}-->{{$account|values|value:0}}</td>
 		<td class="actions">
 			{{:linkbutton shape="edit" href="./cat_edit.html?key=%s"|args:$key label="Modifier"}}
 			{{:linkbutton shape="delete" href="./cat_delete.html?key=%s"|args:$key label="Supprimer" target="_dialog"}}

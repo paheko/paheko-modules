@@ -15,6 +15,20 @@
 		{{:error message="Le nom de la catégorie ne peut être laissé vide."}}
 	{{/if}}
 
+	{{if $_POST.account}}
+		{{:assign code=$_POST.account|keys|value:0}}
+		{{:assign label_code=$_POST.account|values|value:0|regexp_replace:"/^(\w+)\s+.*$/i":"$1"}}
+
+		{{if $code != $label_code}}
+			{{:error admin=true message="Invalid account code: %s (!= %s)"|args:$code:$label_code}}
+		{{/if}}
+
+		{{#select 1 FROM acc_accounts WHERE code = {$code} LIMIT 1;}}
+		{{else}}
+			{{:error message="Compte inconnu, merci de re-sélectionner un compte"}}
+		{{/select}}
+	{{/if}}
+
 	{{:save type="category"
 		validate_schema="./category.schema.json"
 		key=$key
