@@ -19,7 +19,8 @@
 	<p class="confirm block">La configuration a été enregistrée.</p>
 {{/if}}
 
-{{* FIX: for some organizations the account number was incorrectly saved with the ID *}}
+{{* FIX: for some organizations the account number was incorrectly saved with the ID
+ FIXME: move this code in a migration *}}
 {{#load type="category" where="$$.account IS NOT NULL"}}
 	{{:assign code=$account|values|value:0|regexp_replace:"/^(\w+)\s+.*$/i":"$1"}}
 	{{if $account|keys|value:0 != $code}}
