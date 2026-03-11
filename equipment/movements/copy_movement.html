@@ -207,12 +207,25 @@
 		transactions=$transactions
 		return_date=$return_date|parse_date
 	}}
-	{{if $_GET.from == "lh"}}
-		{{:assign from="../loan_history.html"}}
-	{{else}}
-		{{:assign from="../equipment_history.html"}}
+
+	{{if $_GET.from|substr:0:1 == "l"}}
+		{{:assign output_type="loan"}}
+	{{elseif $_GET.from|substr:0:1 == "r"}}
+		{{:assign output_type="rent"}}
 	{{/if}}
-	{{:redirect force="%s?ok=1&key=%s&prop=%s&msg=copie"|args:$from:$eqpmt_key:$prop}}
+	{{if $_GET.from|substr:1:1 == "h"}}
+		{{:assign suffix="history"}}
+	{{elseif $_GET.from|substr:1:1 == "m"}}
+		{{:assign suffix="movements"}}
+	{{/if}}
+
+	{{if $_GET.from == "eh"}}
+		{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=copie"|args:$eqpmt_key:$prop}}
+	{{elseif $suffix == null}}
+		{{:redirect force="../index.html"}}
+	{{else}}
+		{{:redirect force="../loan_%s.html?output_type=%s&ok=1&key=%s&prop=%s&msg=copie"|args:$suffix:$output_type:$eqpmt_key:$prop}}
+	{{/if}}
 {{/form}}
 
 {{if $mvt_new.direction == "input"}}
@@ -278,7 +291,7 @@
 					max=1
 				}}
 			{{/if}}
-			{{if $mvt_new.direction == "input"}}
+			{{if $mvt_new.direction == "input" && $storage != null}}
 				{{:input type="select" name="storage" default=$mvt_new.storage label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
 			{{/if}}
 			{{if $type_mvt != "retour"}}

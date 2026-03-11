@@ -8,20 +8,26 @@
 
 {{:admin_header title="Historique des mouvements" custom_css="./style.css" current="module_equipment"}}
 
-{{:include file="./_nav.html" current="historique" subcurrent="tous"}}
+{{:include file="./_nav.html" current="historique"}}
 
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="./_get_config.html" keep="config"}}
 
 {{* filtrer selon la catégorie *}}
+{{:assign saved_filters=$module.config.filters}}
+{{:assign var="user_filters" from="saved_filters.%s"|args:$logged_user.id}}
+
 {{if $_GET.cat_key == null}}
-	{{:assign selected_category=$module.config.hist_cat_key}}
-{{elseif $_GET.cat_key == -1}}
-	{{:assign selected_category=null}}
-	{{:save key="config" hist_cat_key=null}}
+	{{:assign selected_category=$user_filters.hist_cat_key}}
 {{else}}
-	{{:assign selected_category=$_GET.cat_key}}
-	{{:save key="config" hist_cat_key=$selected_category}}
+	{{if $_GET.cat_key == -1}}
+		{{:assign selected_category=null}}
+	{{else}}
+		{{:assign selected_category=$_GET.cat_key}}
+	{{/if}}
+	{{:assign var="user_filters.hist_cat_key" value=$selected_category}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
 {{/if}}
 
 {{* condition de filtrage *}}
@@ -35,7 +41,64 @@
 	{{:assign cat_condition=1}}
 {{/if}}
 
-{{* Sélecteur catégories *}}
+{{* filtrer selon appartenance *}}
+{{if $_GET.prop == null}}
+	{{:assign selected_prop=$user_filters.hist_prop}}
+{{else}}
+	{{if $_GET.prop == -1}}
+		{{:assign selected_prop=null}}
+	{{else}}
+		{{:assign selected_prop=$_GET.prop}}
+	{{/if}}
+	{{:assign var="user_filters.hist_prop" value=$selected_prop}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
+{{/if}}
+
+{{* déterminer les types de mouvements selon l'appartenance du matériel *}}
+{{#foreach from=$config.input_nature key="key"}}
+	{{if $selected_prop == null}}
+		{{* les deux sortes de matériel *}}
+		{{:assign var="mvt_keys." value=$key|quote_sql}}
+	{{elseif $selected_prop == 1}}
+		{{* matériel propriété de l'asso *}}
+		{{if $type != 'temporaire'}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
+		{{/if}}
+	{{else}}
+		{{* matériel non propriété de l'asso *}}
+		{{if $type == 'temporaire'}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
+		{{/if}}
+	{{/if}}
+{{/foreach}}
+
+{{#foreach from=$config.output_nature key="key"}}
+	{{if $selected_prop == null}}
+		{{* les deux sortes de matériel *}}
+		{{:assign var="mvt_keys." value=$key|quote_sql}}
+	{{elseif $selected_prop == 1}}
+		{{* matériel propriété de l'asso *}}
+		{{if $type != 'retour'}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
+		{{/if}}
+	{{else}}
+		{{* matériel non propriété de l'asso *}}
+		{{if $type == 'retour'}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
+		{{/if}}
+	{{/if}}
+{{/foreach}}
+{{:assign key_cond=$mvt_keys|implode:","}}
+{{:assign key_cond="("|cat:$key_cond|cat:")"}}
+
+{{if $selected_prop == null}}
+	{{:assign prop_condition="1"}}
+{{else}}
+	{{:assign prop_condition="$$.operation in %s"|args:$key_cond}}
+{{/if}}
+
+{{* sélecteurs de catégorie et d'appartenance  *}}
 {{:assign var="cat_options." value="" label="Toutes les catégories" href="?cat_key=-1"}}
 {{#load type="category" order="$$.name"}}
 	{{:assign var="categories.%s"|args:$key value=$name}}
@@ -53,6 +116,19 @@
 		title="Filtrer par catégorie"
 		options=$cat_options
 		value="%s"|args:$selected_category
+	}}
+</fieldset>
+
+{{:assign var="prop_options." value=""  label="Tous les matériels" href="?prop=-1"}}
+{{:assign var="prop_options." value="1" label="Matériels propriété de l'association" href="?prop=1"}}
+{{:assign var="prop_options." value="0" label="Matériels NON propriété de l'association" href="?prop=0"}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par appartenance</legend>
+	{{:dropdown
+		title="Filtrer par appartenance"
+		options=$prop_options
+		value="%s"|args:$selected_prop
 	}}
 </fieldset>
 
@@ -78,9 +154,9 @@
 				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
 				ELSE ''
 			END as 'Stockage';
-		$$.comment AS 'Commentaire'
+		$$.comment AS 'Remarque'
 	"|args:$config.user_fields.name_sql
-	where="%s"|args:$cat_condition
+	where="%s AND %s"|args:$cat_condition:$prop_condition
 	order=1
 	max=50
 	desc=true

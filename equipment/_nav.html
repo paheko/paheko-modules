@@ -3,36 +3,43 @@
 <nav class="tabs">
 	{{if $current == 'inventaire'}}
 		<aside>
-			{{if $subsubcurrent == null && $cat == 0}}
-				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
+			{{if $subcurrent == 'stock' && $cat == 0}}
+					{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
 			{{else}}
+				{{if $subcurrent == 'stock'}}
+					{{:exportmenu right=true}}
+				{{/if}}
 				{{:linkbutton label="Ajouter un nouveau matériel" shape="plus" href="movements/add_new_equipment.html" target="_dialog"}}
 			{{/if}}
 		</aside>
 	{{/if}}
 
 	<ul>
-		<li {{if $current == 'inventaire'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=1">Inventaire</a></li>
+		<li {{if $current == 'inventaire'}} class="current"{{/if}}><a href="{{$module.url}}index.html">Inventaire</a></li>
 		<li {{if $current == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}global_history.html">Historique</a></li>
+		<li {{if $current == 'prêt'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=loan">Prêts</a></li>
+		<li {{if $current == 'location'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=rent">Locations</a></li>
 		<li {{if $current == 'archives'}} class="current"{{/if}}><a href="{{$module.url}}archives.html">Archives</a></li>
 		<li {{if $current == 'config'}} class="current"{{/if}}><a href="{{$module.url}}categories/index.html">Configuration</a></li>
 	</ul>
 
 	{{if $current == 'inventaire'}}
-		<ul class="sub">
-			<li {{if $subcurrent == 'proprio'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=1">Matériels permanents</a></li>
-			<li {{if $subcurrent == 'nonproprio'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=0">Matériels temporaires</a></li>
-		</ul>
-
-		{{if $subsubcurrent == 'historique'}}
+		{{if $subcurrent == 'historique'}}
 			<ul class="sub">
 				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
 			</ul>
 		{{/if}}
-	{{elseif $current == 'historique'}}
+	{{elseif $current == 'prêt'}}
 		<ul class="sub">
-			<li {{if $subcurrent == 'tous'}} class="current"{{/if}}><a href="{{$module.url}}global_history.html">Tous</a></li>
-			<li {{if $subcurrent == 'prêts'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html">Prêts</a></li>
+			<li {{if $subcurrent == 'encours'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=loan">En cours</a></li>
+			<li {{if $subcurrent == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}loan_movements.html?output_type=loan">Historique</a></li>
+			<li {{if $subcurrent == 'membres'}} class="current"{{/if}}><a href="{{$module.url}}member_loan.html?output_type=loan">Membres</a></li>
+		</ul>
+	{{elseif $current == 'location'}}
+		<ul class="sub">
+			<li {{if $subcurrent == 'encours'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=rent">En cours</a></li>
+			<li {{if $subcurrent == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}loan_movements.html?output_type=rent">Historique</a></li>
+			<li {{if $subcurrent == 'membres'}} class="current"{{/if}}><a href="{{$module.url}}member_loan.html?output_type=rent">Membres</a></li>
 		</ul>
 	{{elseif $current == 'archives'}}
 		{{if $subsubcurrent == 'historique'}}

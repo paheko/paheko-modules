@@ -12,14 +12,6 @@
 	- msg : message de retour
 *}}
 
-
-{{* barre de navigation *}}
-{{if $_GET.prop == 1}}
-	{{:assign proprio="proprio"}}
-{{else}}
-	{{:assign proprio="nonproprio"}}
-{{/if}}
-
 {{:assign equipment_key=$_GET.key|trim}}
 {{#load key=$equipment_key assign="equipment"}}
 {{else}}
@@ -33,12 +25,13 @@
 
 {{:admin_header title="Gestion des matériels" custom_css="./style.css" current="module_equipment"}}
 
+{{* barre de navigation *}}
 {{if $_GET.current != null}}
 	{{:assign current=$_GET.current}}
 {{else}}
 	{{:assign current="inventaire"}}
 {{/if}}
-{{:include file="./_nav.html" current=$current subcurrent=$proprio subsubcurrent="historique" eqpmt=$equipment.name category=$category.name}}
+{{:include file="./_nav.html" current=$current subcurrent="historique" eqpmt=$equipment.name category=$category.name}}
 
 {{if $_GET.ok}}
 	{{if $_GET.msg == "modification"}}
@@ -61,34 +54,75 @@
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="./_get_config.html" keep="config"}}
 
-{{* déterminer les types de mouvements selon l'affection du matériel *}}
-{{#foreach from=$config.input_nature}}
-	{{if $_GET.prop}}
+{{* filtrer selon appartenance *}}
+{{:assign saved_filters=$module.config.filters}}
+{{:assign var="user_filters" from="saved_filters.%s"|args:$logged_user.id}}
+
+{{if $_GET.prop == null}}
+	{{:assign selected_prop=$user_filters.eqpmt_hist_prop}}
+{{else}}
+	{{if $_GET.prop == -1}}
+		{{:assign selected_prop=null}}
+	{{else}}
+		{{:assign selected_prop=$_GET.prop}}
+	{{/if}}
+	{{:assign var="user_filters.eqpmt_hist_prop value=$selected_prop}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
+{{/if}}
+
+{{* déterminer les types de mouvements selon l'appartenance du matériel *}}
+{{#foreach from=$config.input_nature key="key"}}
+	{{if $selected_prop == null}}
+		{{* les deux sortes de matériel *}}
+		{{:assign var="mvt_keys." value=$key|quote_sql}}
+		{{if $type == 'temporaire'}}
+			{{:assign var="temp_inputs." value=$key|quote_sql}}
+		{{/if}}
+	{{elseif $selected_prop == 1}}
 		{{* matériel propriété de l'asso *}}
 		{{if $type != 'temporaire'}}
-			{{:assign var="input_types." value=$label}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
 		{{/if}}
 	{{else}}
 		{{* matériel non propriété de l'asso *}}
 		{{if $type == 'temporaire'}}
-			{{:assign var="input_types." value=$label}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
+			{{:assign var="temp_inputs." value=$key|quote_sql}}
 		{{/if}}
 	{{/if}}
 {{/foreach}}
 
-{{#foreach from=$config.output_nature}}
-	{{if $_GET.prop}}
+{{#foreach from=$config.output_nature key="key"}}
+	{{if $selected_prop == null}}
+		{{* les deux sortes de matériel *}}
+		{{:assign var="mvt_keys." value=$key|quote_sql}}
+		{{if $type == "temporaire"}}
+			{{:assign var="temp_outputs." value=$key|quote_sql}}
+		{{/if}}
+	{{elseif $selected_prop == 1}}
 		{{* matériel propriété de l'asso *}}
 		{{if $type != 'retour'}}
-			{{:assign var="output_types." value=$label}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
+			{{if $type == "temporaire"}}
+				{{:assign var="temp_outputs." value=$key|quote_sql}}
+			{{/if}}
 		{{/if}}
 	{{else}}
 		{{* matériel non propriété de l'asso *}}
 		{{if $type == 'retour'}}
-			{{:assign var="output_types." value=$label}}
+			{{:assign var="mvt_keys." value=$key|quote_sql}}
 		{{/if}}
 	{{/if}}
 {{/foreach}}
+{{:assign key_cond=$mvt_keys|implode:","}}
+{{:assign key_cond="("|cat:$key_cond|cat:")"}}
+
+{{if $selected_prop == null}}
+	{{:assign prop_condition="1"}}
+{{else}}
+	{{:assign prop_condition="$$.operation in %s"|args:$key_cond}}
+{{/if}}
 
 {{* calculer et mémoriser les quantités pour que le tri de la liste affiche les valeurs correctes *}}
 {{:assign stock=0}}
@@ -122,27 +156,10 @@
 	{{:assign var="quantites.%s.nonproprio"|args:$id value=$nonproprio}}
 {{/load}}
 
-{{if $current != "archives"}}
-	<nav class="tabs">
-		<aside>
-			{{if $_GET.prop && $dispo_final > 0}}
-				{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
-			{{/if}}
-			{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
-		</aside>
-	</nav>
-{{/if}}
-
-{{* lister tous les mouvements du matériel passé en paramètre *}}
-{{if $_GET.prop}}
-	{{* calculer la quantité temporairement l'extérieur de chaque matériel *}}
-	{{#foreach from=$config.output_nature key=key}}
-		{{if $type == "temporaire"}}
-			{{:assign var="temp_outputs." value=$key|quote_sql}}
-		{{/if}}
-	{{/foreach}}
-	{{:assign operations=$temp_outputs|implode:","}}
-	{{:assign operations="("|cat:$operations|cat:")"}}
+{{if $selected_prop == null || $selected_prop}}
+	{{* calculer la quantité sortie temporairement de chaque matériel *}}
+	{{:assign output_ops=$temp_outputs|implode:","}}
+	{{:assign output_ops="("|cat:$output_ops|cat:")"}}
 
 	{{#select
 		mvt.key AS mvt_key,
@@ -156,97 +173,17 @@
 		GROUP by mvt.key
 		;
 		!table=$module.table
-		!op = $operations
+		!op = $output_ops
 		:eqpmt_key = $_GET.key
 	}}
 		{{:assign var="reste.%s"|args:$mvt_key value=$reste}}
 	{{/select}}
+{{/if}}
 
-	{{#list
-		type="movement"
-		select="
-			($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
-			CASE $$.direction WHEN 'input' THEN 'Entrée' WHEN 'output' THEN 'Sortie' END AS 'Mouvement';
-			$$.operation AS 'Opération';
-			$$.amount AS 'Quantité';
-			'' AS 'Stock';
-			'' AS 'Sorti';
-			'' AS 'Disponible';
-			CASE WHEN $$.user NOT NULL
-				THEN (SELECT %s AS nom FROM users WHERE id = $$.user)
-				ELSE ''
-			END AS 'Dépositaire';
-			CASE WHEN $$.storage NOT NULL
-				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
-				ELSE ''
-			END AS 'Stockage';
-			'' AS 'Documents';
-			$$.transactions AS 'Écritures'
-		"|args:$config.user_fields.name_sql
-		equipment=$equipment_key
-		order=1
-		}}
-		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
-		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
-
-		{{if $direction === "input" && $op_label|in:$input_types ||
-			 $direction === "output"&& $op_label|in:$output_types
-		}}
-			{{:assign var="stock" from="quantites.%s.stock"|args:$id}}
-			{{:assign var="exterieur" from="quantites.%s.exterieur"|args:$id}}
-			{{:assign var="dispo" from="quantites.%s.dispo"|args:$id}}
-
-			{{:assign file_path="%s/%s/"|args:$module.storage_root:$key}}
-			{{:assign file_path=$file_path|cat:"%"}}
-			{{#select count(*) AS nb FROM files WHERE path LIKE :file_path ; :file_path=$file_path}}
-				{{:assign nb_files=$nb}}
-			{{/select}}
-			<tr>
-				<td>{{$date|date_short}}</td>
-				<td>{{$col2}}</td>
-				<td class="nosort">{{$op_label}}</td>
-				<td class="num">{{$amount}}</td>
-				<td class="num nosort">{{$stock}}</td>
-				<td class="num nosort">{{$exterieur}}</td>
-				<td class="num nosort">{{$dispo}}</td>
-				<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$col8}}</td>
-				<td>{{$col9}}</td>
-				<td class="num nosort">{{if $nb_files > 0}}{{:icon shape="attach"}}{{/if}}</td>
-				<td class="num">{{if $transactions|count > 0}}{{:icon shape="money"}}{{/if}}</td>
-				<td class="actions">
-					{{if $current != "archives"}}
-						{{if $direction == "output" && $type_mvt == "temporaire"}}
-							{{:assign var="temp_ext" from="reste.%s"|args:$key}}
-							{{if $temp_ext != null && $temp_ext > 0}}
-								{{:linkbutton
-								label="Retour"
-								href="movements/output_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
-								shape="reset"
-								target="_dialog"}}
-							{{/if}}
-						{{/if}}
-						{{:linkbutton
-							label="Détails"
-							href="movements/movement_details.html?key=%s&prop=%s&from=eh"|args:$key:$_GET.prop
-							shape="eye"
-						}}
-					{{/if}}
-				</td>
-			</tr>
-		{{/if}}
-	{{/list}}
-	{{if $dispo_final === 0}}
-		<span class="help">Il n'y a aucun matériel disponible, il n'est donc pas possible d'effectuer une sortie</span>
-	{{/if}}
-{{else}}
+{{if $selected_prop == null || ! $selected_prop}}
 	{{* calculer la quantité présente temporairement de chaque matériel *}}
-	{{#foreach from=$config.input_nature key=key}}
-		{{if $type == "temporaire"}}
-			{{:assign var="temp_inputs." value=$key|quote_sql}}
-		{{/if}}
-	{{/foreach}}
-	{{:assign operations=$temp_inputs|implode:","}}
-	{{:assign operations="("|cat:$operations|cat:")"}}
+	{{:assign input_ops=$temp_inputs|implode:","}}
+	{{:assign input_ops="("|cat:$input_ops|cat:")"}}
 
 	{{#select
 		mvt.key AS mvt_key,
@@ -260,71 +197,163 @@
 		GROUP by mvt.key
 		;
 		!table=$module.table
-		!op = $operations
+		!op = $input_ops
 		:eqpmt_key = $_GET.key
 	}}
 		{{:assign var="present.%s"|args:$mvt_key value=$present}}
 	{{/select}}
+{{/if}}
 
-	{{#list
-		type="movement"
-		select="($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
-			CASE $$.direction WHEN 'input' THEN 'Entrée' WHEN 'output' THEN 'Sortie' END AS 'Mouvement';
-			$$.operation AS 'Opération';
-			$$.amount AS 'Quantité';
-			"" as 'Présent';
-			CASE WHEN $$.storage NOT NULL
-				THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
-				ELSE ''
-			END as 'Stockage';
-			'' AS 'Documents';
-			$$.transactions AS 'Écritures'
-		"
-		equipment=$equipment_key
-		order=1
+{{:assign
+	select_debut="
+		($$.date || '_' || substr('000000' || id, -6, 6)) AS 'Date';
+		CASE $$.direction WHEN 'input' THEN 'Entrée' WHEN 'output' THEN 'Sortie' END AS 'Mouvement';
+		$$.operation AS 'Opération';
+		$$.amount AS 'Quantité';"
+}}
+{{:assign
+	select_prop="'' AS 'Stock';
+		'' AS 'Sorti';
+		'' AS 'Disponible';"
+}}
+{{:assign
+	select_depositaire="CASE WHEN $$.user NOT NULL
+			THEN (SELECT %s AS nom FROM users WHERE id = $$.user)
+			ELSE ''
+		END AS 'Dépositaire';
+	"|args:$config.user_fields.name_sql
+}}
+{{:assign
+	select_non_prop="'' as 'Temporaire';"
+}}
+{{:assign select_final="
+	CASE WHEN $$.storage NOT NULL
+		THEN (SELECT $$.name FROM @TABLE as storage WHERE storage.key = @TABLE.$$.storage)
+		ELSE ''
+	END AS 'Stockage';
+	'' AS 'Documents';
+	$$.transactions AS 'Écritures'
+	"
+}}
+
+{{if $selected_prop == null}}
+	{{:assign select_clause=$select_debut|cat:$select_prop|cat:$select_non_prop|cat:$select_depositaire|cat:$select_final}}
+{{elseif $selected_prop}}
+	{{:assign select_clause=$select_debut|cat:$select_prop|cat:$select_depositaire|cat:$select_final}}
+{{else}}
+	{{:assign select_clause=$select_debut|cat:$select_non_prop|cat:$select_final}}
+{{/if}}
+
+{{:assign var="prop_options." value=""  label="Tous les matériels" href="?key=%s&prop=-1"|args:$_GET.key}}
+{{:assign var="prop_options." value="1" label="Matériels propriété de l'association" href="?key=%s&prop=1"|args:$_GET.key}}
+{{:assign var="prop_options." value="0" label="Matériels NON propriété de l'association" href="?key=%s&prop=0"|args:$_GET.key}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par appartenance</legend>
+	{{:dropdown
+		title="Filtrer par appartenance"
+		options=$prop_options
+		value="%s"|args:$selected_prop
 	}}
-		{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$col3}}
-		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+</fieldset>
 
-		{{if $direction === "input" && $op_label|in:$input_types ||
-			 $direction === "output"&& $op_label|in:$output_types
-		}}
-			{{:assign var="stock" from="quantites.%s.nonproprio"|args:$id}}
+{{if $current != "archives"}}
+	<nav class="tabs">
+		<aside>
+			{{if $dispo_final > 0 && $selected_prop == null || $selected_prop}}
+				{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+			{{/if}}
+			{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$_GET.key target="_dialog"}}
+		</aside>
+	</nav>
+{{/if}}
 
-			{{:assign file_path="%s/%s/"|args:$module.storage_root:$key}}
-			{{:assign file_path=$file_path|cat:"%"}}
-			{{#select count(*) AS nb FROM files WHERE path LIKE :file_path ; :file_path=$file_path}}
-				{{:assign nb_files=$nb}}
-			{{/select}}
-			<tr>
-				<td>{{$date|date_short}}</td>
-				<td>{{$col2}}</td>
-				<td class="nosort">{{$op_label}}</td>
-				<td class="num">{{$amount}}</td>
-				<td class="num nosort">{{$stock}}</td>
-				<td>{{$col6}}</td>
-				<td class="num nosort">{{if $nb_files > 0}}{{:icon shape="attach"}}{{/if}}</td>
-				<td class="num">{{if $transactions|count > 0}}{{:icon shape="money"}}{{/if}}</td>
-				<td class="actions">
-					{{if $direction == "input" && $type_mvt == "temporaire"}}
-						{{:assign var="temp_in" from="present.%s"|args:$key}}
-						{{if $temp_in != null && $temp_in > 0}}
-							{{:linkbutton
-							label="Retour"
-							href="movements/input_return.html?key=%s&prop=%s"|args:$key:$_GET.prop
-							shape="reset"
-							target="_dialog"}}
-						{{/if}}
-					{{/if}}
-					{{:linkbutton
-						label="Détails"
-						href="movements/movement_details.html?key=%s&prop=%s&from=eh"|args:$key:$_GET.prop
-						shape="eye"
-					}}
-				</td>
-			</tr>
+{{* lister les mouvements du matériel passé en paramètre *}}
+{{#list
+	type="movement"
+	select="%s"|args:$select_clause
+	where="%s"|args:$prop_condition
+	equipment=$equipment_key
+	order=1
+}}
+	{{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$direction:$operation}}
+	{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+
+	{{:assign var="stock" from="quantites.%s.stock"|args:$id}}
+	{{:assign var="exterieur" from="quantites.%s.exterieur"|args:$id}}
+	{{:assign var="dispo" from="quantites.%s.dispo"|args:$id}}
+	{{:assign var="tempo" from="quantites.%s.nonproprio"|args:$id}}
+
+	{{:assign file_path="%s/%s/"|args:$module.storage_root:$key}}
+	{{:assign file_path=$file_path|cat:"%"}}
+	{{#select count(*) AS nb FROM files WHERE path LIKE :file_path ; :file_path=$file_path}}
+		{{:assign nb_files=$nb}}
+	{{/select}}
+
+	{{if $selected_prop == null}}
+		{{:assign user_details=$col9}}
+		{{:assign storage=$col10}}
+	{{elseif $selected_prop}}
+		{{:assign user_details=$col8}}
+		{{:assign storage=$col9}}
+	{{else}}
+		{{:assign user_details=$col6}}
+		{{:assign storage=$col6}}
+	{{/if}}
+
+	<tr>
+		<td>{{$date|date_short}}</td>
+		<td>{{$col2}}</td>
+		<td class="nosort">{{$op_label}}</td>
+		<td class="num">{{$amount}}</td>
+		{{if $selected_prop == null || $selected_prop}}
+			<td class="num nosort">{{$stock}}</td>
+			<td class="num nosort">{{$exterieur}}</td>
+			<td class="num nosort">{{$dispo}}</td>
 		{{/if}}
-	{{/list}}
+		{{if $selected_prop == null || ! $selected_prop}}
+			<td class="num nosort">{{$tempo}}</td>
+		{{/if}}
+		{{if $selected_prop == null || $selected_prop}}
+			<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$user_details}}</td>
+		{{/if}}
+		<td>{{$storage}}</td>
+		<td class="num nosort">{{if $nb_files > 0}}{{$nb_files}}{{/if}}</td>
+		<td class="num">{{if $transactions|count > 0}}{{"Oui"}}{{/if}}</td>
+		<td class="actions">
+			{{if $current != "archives"}}
+				{{if $direction == "output" && $type_mvt == "temporaire"}}
+					{{:assign var="temp_ext" from="reste.%s"|args:$key}}
+					{{if $temp_ext != null && $temp_ext > 0}}
+						{{:linkbutton
+						label="Retour"
+						href="movements/output_return.html?key=%s&prop=%s"|args:$key:$selected_prop
+						shape="reset"
+						target="_dialog"}}
+					{{/if}}
+				{{/if}}
+				{{if $direction == "input" && $type_mvt == "temporaire"}}
+					{{:assign var="temp_in" from="present.%s"|args:$key}}
+					{{if $temp_in != null && $temp_in > 0}}
+						{{:linkbutton
+						label="Retour"
+						href="movements/input_return.html?key=%s&prop=%s"|args:$key:$selected_prop
+						shape="reset"
+						target="_dialog"}}
+					{{/if}}
+				{{/if}}
+				{{:linkbutton
+					label="Détails"
+					href="movements/movement_details.html?key=%s&prop=%s&from=eh"|args:$key:$selected_prop
+					shape="eye"
+				}}
+			{{/if}}
+		</td>
+	</tr>
+{{/list}}
+
+{{if $dispo_final == 0 && $stock > 0 && $current != "archives"}}
+	<span class="help">Il n'y a aucun matériel disponible, il n'est donc pas possible d'effectuer une sortie</span>
 {{/if}}
 
 {{:admin_footer}}

@@ -16,15 +16,13 @@
 	{{:assign var="nature" from="module.config.%s_nature"|args:$direction}}
 	{{if $nature != null}}
 		{{#foreach from=$nature item="elem"}}
-			{{:assign var="item" label=$label type=$type}}
-			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$item}}
+			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$elem}}
 		{{/foreach}}
 	{{else}}
 		{{* pas de config enregistrée : utiliser la config par défaut *}}
 		{{:assign var="nature" from="config_defaut.%ss"|args:$direction}}
 		{{#foreach from=$nature item="elem"}}
-			{{:assign var="item" label=$label type=$type}}
-			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$item}}
+			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$elem}}
 		{{/foreach}}
 	{{/if}}
 {{/foreach}}

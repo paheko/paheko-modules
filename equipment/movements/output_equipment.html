@@ -5,6 +5,7 @@
 {{*
 	paramètres :
 	- key		: clé du matériel à sortir
+	- output_type : loan (prêt), rent (location), rien (cas général)
 *}}
 
 {{* récupérer la config des entrées/sorties *}}
@@ -12,7 +13,17 @@
 
 {{* types de sorties *}}
 {{#foreach from=$config.output_nature key=key}}
-	{{if $type != 'retour'}}
+	{{if $type == 'retour'}}
+		{{:continue}}
+	{{/if}}
+	{{if $type == 'temporaire' && $fee == 'payant'}}
+		{{:assign var="paid_keys." value=$key}}
+	{{/if}}
+	{{if $_GET.output_type == null}}
+		{{:assign var="output_labels.%s"|args:$key value=$label}}
+	{{elseif $type == 'temporaire' && $_GET.output_type == "loan" && $fee != 'payant'}}
+		{{:assign var="output_labels.%s"|args:$key value=$label}}
+	{{elseif $type == 'temporaire' && $_GET.output_type == "rent" && $fee == 'payant'}}
 		{{:assign var="output_labels.%s"|args:$key value=$label}}
 	{{/if}}
 {{/foreach}}
@@ -193,17 +204,17 @@
 		<fieldset class="sortie">
 			<legend>Informations obligatoires</legend>
 			<dl>
+				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
+				{{:input type="number" name="amount" label="Quantité" required=true default=1 min=1 max=$dispo}}
 				{{if $output_labels|count == 1}}
 					{{:input type="select" name="operation" label="Type de sortie" required=true options=$output_labels}}
 				{{else}}
 					{{:input type="select" name="operation" label="Type de sortie" required=true default_empty="— Aucun —" options=$output_labels|sort}}
 				{{/if}}
-				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
-				{{:input type="number" name="amount" label="Quantité" required=true default=1 min=1 max=$dispo}}
 			</dl>
 		</fieldset>
 		<fieldset class="entree">
-			<legend>Informations facultatives</legend>
+			<legend>Autres informations</legend>
 			<dl>
 				{{:input
 					type="list"
@@ -234,7 +245,10 @@
 {{:admin_footer}}
 
 <script type="text/javascript" src="../scripts.js"></script>
+
 <script type="text/javascript">
+var paid_keys = {{$paid_keys|json_encode|raw}};
+
 function changeVisibility(evt, idcheck = 'f_set_return_date_1', fields = ['div_return_date']) {
 	toggleVisibility(idcheck, fields);
 }

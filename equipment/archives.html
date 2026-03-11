@@ -9,11 +9,30 @@
 	<p class="block confirm">Matériel remis en service</p>
 {{/if}}
 
+{{* filtrer selon la catégorie *}}
+{{if $_GET.cat_key == null}}
+	{{:assign selected_category=$module.config.archive_cat_key}}
+{{elseif $_GET.cat_key == -1}}
+	{{:assign selected_category=null}}
+	{{:save key="config" archive_cat_key=null}}
+{{else}}
+	{{:assign selected_category=$_GET.cat_key}}
+	{{:save key="config" archive_cat_key=$selected_category}}
+{{/if}}
+
+{{* condition de filtrage *}}
+{{if $selected_category == null}}
+	{{:assign cat_condition="1"}}
+{{else}}
+	{{:assign cat_key=$selected_category|quote_sql}}
+	{{:assign cat_condition="$$.category == %s"|args:$cat_key}}
+{{/if}}
+
 {{* Sélecteur catégories *}}
-{{:assign var="options." value="" label="Toutes les catégories" href="?prop=1"}}
+{{:assign var="cat_options." value="" label="Toutes les catégories" href="?cat_key=-1"}}
 {{#load type="category" order="$$.name"}}
 	{{:assign
-		var="options."
+		var="cat_options."
 		value=$key
 		label=$name
 		href="?cat_key=%s"|args:$key
@@ -24,22 +43,14 @@
 	<legend>Filtrer par catégorie</legend>
 	{{:dropdown
 		title="Filtrer par catégorie"
-		options=$options
-		value="%s"|args:$_GET.cat_key
+		options=$cat_options
+		value="%s"|args:$selected_category
 	}}
 </fieldset>
 
 <div class="shortFormLeft">
 	<p class="help">Matériels qui ne sont plus dans l'association</p>
 </div>
-
-{{* filtrer selon la catégorie *}}
-{{if $_GET.cat_key == null}}
-	{{:assign condition="1"}}
-{{else}}
-	{{:assign cat_key=$_GET.cat_key|quote_sql}}
-	{{:assign condition="$$.category == %s"|args:$cat_key}}
-{{/if}}
 
 {{* Liste des matériels archivés *}}
 {{#list
@@ -50,7 +61,7 @@
 			WHERE cat.key = @TABLE.$$.category) AS "Catégorie"
 	"
 	type="equipment"
-	where="$$.status='archived' AND %s"|args:$condition
+	where="$$.status='archived' AND %s"|args:$cat_condition
 	order=1
 }}
 

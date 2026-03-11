@@ -224,12 +224,25 @@
 		transactions=$transactions
 		return_date=$return_date|parse_date
 	}}
-	{{if $_GET.from == "lh"}}
-		{{:assign from="../loan_history.html"}}
-	{{else}}
-		{{:assign from="../equipment_history.html"}}
+
+	{{if $_GET.from|substr:0:1 == "l"}}
+		{{:assign output_type="loan"}}
+	{{elseif $_GET.from|substr:0:1 == "r"}}
+		{{:assign output_type="rent"}}
 	{{/if}}
-	{{:redirect force="%s?ok=1&key=%s&prop=%s&msg=modification"|args:$from:$eqpmt_key:$prop}}
+	{{if $_GET.from|substr:1:1 == "h"}}
+		{{:assign suffix="history"}}
+	{{elseif $_GET.from|substr:1:1 == "m"}}
+		{{:assign suffix="movements"}}
+	{{/if}}
+
+	{{if $_GET.from == "eh"}}
+		{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=modification"|args:$eqpmt_key:$prop}}
+	{{elseif $suffix == null}}
+		{{:redirect force="../index.html"}}
+	{{else}}
+		{{:redirect force="../loan_%s.html?output_type=%s&ok=1&key=%s&prop=%s&msg=modification"|args:$suffix:$output_type:$eqpmt_key:$prop}}
+	{{/if}}
 {{/form}}
 
 {{if $mvt_new.direction == "input"}}
@@ -278,13 +291,13 @@
 	<fieldset>
 		<legend>Informations obligatoires</legend>
 		<dl>
+			{{:input type="date" name="date" label="Date" required=true default=$mvt_new.date}}
+			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
 			{{if $mvt_new.direction == "input"}}
 				{{:input type="select" name="operation" label="Type" required=true options=$input_labels|sort default=$mvt_new.operation}}
 			{{else}}
 				{{:input type="select" name="operation" label="Type" required=true options=$output_labels|sort default=$mvt_new.operation}}
 			{{/if}}
-			{{:input type="date" name="date" label="Date" required=true default=$mvt_new.date}}
-			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
 		</dl>
 	</fieldset>
 

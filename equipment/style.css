@@ -24,3 +24,7 @@
 table.list > thead th[class~=nosort] a:hover {
 	background-color : rgba(var(--gSecondColor), 0.);
 }
+
+.nombre {
+	text-align: right !important;
+}

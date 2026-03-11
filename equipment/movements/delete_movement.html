@@ -23,11 +23,25 @@
 {{:include file="../_get_config.html" keep="config"}}
 
 {{#form on="delete"}}
-	{{if $_GET.from == "lh"}}
-		{{:assign from="../loan_history.html"}}
-	{{else}}
-		{{:assign from="../equipment_history.html"}}
+	{{if $_GET.from|substr:0:1 == "l"}}
+		{{:assign output_type="loan"}}
+	{{elseif $_GET.from|substr:0:1 == "r"}}
+		{{:assign output_type="rent"}}
 	{{/if}}
+	{{if $_GET.from|substr:1:1 == "h"}}
+		{{:assign suffix="history"}}
+	{{elseif $_GET.from|substr:1:1 == "m"}}
+		{{:assign suffix="movements"}}
+	{{/if}}
+	{{if $_GET.from == "eh"}}
+		{{:assign from="../equipment_history.html"}}
+	{{elseif $suffix == null}}
+		{{:assign from="../index.html"}}
+	{{else}}
+		{{:assign from="../loan_%s.html"|args:$suffix}}
+		{{:assign param="&output_type=%s"|args:$output_type}}
+	{{/if}}
+
 	{{* vérifier s'il est possible de supprimer le mouvement *}}
 	{{if $mvt_suppr.direction == 'input'}}
 		{{:assign var="type_operation" from="config.input_nature.%s.type"|args:$mvt_suppr.operation}}
@@ -36,7 +50,7 @@
 				{{:assign link_key=$key}}
 			{{/load}}
 			{{if $link_key != null}}
-				{{:redirect force="%s?key=%s&prop=%s&err=1&msg=suppression"|args:$from:$mvt_suppr.equipment:$_GET.prop}}
+				{{:redirect force="%s?key=%s&prop=%s&err=1&msg=suppression%s"|args:$from:$mvt_suppr.equipment:$_GET.prop:$param}}
 			{{/if}}
 		{{else}}
 			{{:assign dispo=0}}
@@ -69,7 +83,7 @@
 
 					{{* problème ? *}}
 					{{if $dispo < 0 || $nonprop < 0}}
-						{{:redirect force="%s?key=%s&prop=%s&err=1&msg=suppression"|args:$from:$mvt_suppr.equipment:$_GET.prop}}
+						{{:redirect force="%s?key=%s&prop=%s&err=1&msg=suppression%s"|args:$from:$mvt_suppr.equipment:$_GET.prop:$param}}
 					{{/if}}
 				{{/if}}
 			{{/load}}
@@ -90,7 +104,7 @@
 				{{:assign link_key=$key}}
 			{{/load}}
 			{{if $link_key != null}}
-				{{:redirect force="%s?key=%s&prop=%s&err=1&msg=suppression"|args:$from:$mvt_suppr.equipment:$_GET.prop}}
+				{{:redirect force="%s?key=%s&prop=%s&err=1&msg=suppression%s"|args:$from:$mvt_suppr.equipment:$_GET.prop:$param}}
 			{{/if}}
 		{{elseif $type_operation == 'retour'}}
 			{{#load type="link" where="$$.return = :key" :key=$_GET.key}}
@@ -155,11 +169,11 @@
 			out=$curr_eqpmt.out
 			notowned=$curr_eqpmt.notowned
 		}}
-		{{:redirect force="%s?ok=1&key=%s&prop=%s&msg=suppression"|args:$from:$mvt_suppr.equipment:$_GET.prop}}
+		{{:redirect force="%s?ok=1&key=%s&prop=%s&msg=suppression%s"|args:$from:$mvt_suppr.equipment:$_GET.prop:$param}}
 	{{else}}
 		{{* supprimer le matériel *}}
 		{{:delete key=$curr_eqpmt.key}}
-		{{:redirect force="../index.html?ok=1&msg=supprmvtmat"}}
+		{{:redirect force="%s?ok=1&msg=supprmvtmat%s"|args:$from:$param}}
 	{{/if}}
 {{/form}}
 
