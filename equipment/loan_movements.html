@@ -1,0 +1,232 @@
+{{* -*- brindille -*- *}}
+
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
+
+{{*
+	Afficher l'historique des prêts ou locations
+*}}
+
+{{if $_GET.output_type == "loan"}}
+	{{:assign label="prêt"}}
+{{elseif $_GET.output_type == "rent"}}
+	{{:assign label="location"}}
+{{else}}
+	{{:error message="Cette page n'existe pas !"}}
+{{/if}}
+
+{{:admin_header title="Historique des %ss"|args:$label custom_css="./style.css" current="module_equipment"}}
+{{:include file="./_nav.html" current="%s"|args:$label subcurrent="historique"}}
+
+{{*
+	vérifier l'existence de la table du module
+	eh oui, il se peut qu'elle ne soit pas encore créée si aucune donnée n'a été ajoutée dedans
+*}}
+{{#load limit="1"}}
+	{{:assign table_presente=true}}
+{{else}}
+	{{:assign table_presente=false}}
+{{/load}}
+
+{{if $table_presente}}
+{{if $_GET.ok}}
+	{{if $_GET.msg == "modification"}}
+		<p class="block confirm">Modification enregistrée</p>
+	{{elseif $_GET.msg == "copie"}}
+		<p class="block confirm">Mouvement copié</p>
+	{{elseif $_GET.msg == "suppression"}}
+		<p class="block confirm">Mouvement supprimé</p>
+	{{/if}}
+{{elseif $_GET.err}}
+	{{if $_GET.msg == "suppression"}}
+		<p class="block error">Ce mouvement ne peut être supprimé</p>
+	{{/if}}
+{{/if}}
+
+{{* récupérer la config des entrées/sorties *}}
+{{:include file="./_get_config.html" keep="config"}}
+
+{{* filtrer selon la catégorie *}}
+{{:assign saved_filters=$module.config.filters}}
+{{:assign var="user_filters" from="saved_filters.%s"|args:$logged_user.id}}
+
+{{if $_GET.cat_key == null}}
+	{{:assign var="selected_category" from="user_filters.%s_cat_key"|args:$_GET.output_type}}
+{{else}}
+	{{if $_GET.cat_key == -1}}
+		{{:assign selected_category=null}}
+	{{else}}
+		{{:assign selected_category=$_GET.cat_key}}
+	{{/if}}
+	{{:assign var="user_filters.%s_cat_key"|args:$_GET.output_type value=$selected_category}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
+{{/if}}
+
+{{* condition de filtrage *}}
+{{if $selected_category != null}}
+	{{:assign cat_key=$selected_category|quote_sql}}
+	{{:assign cat_condition="category = %s"|args:$cat_key}}
+{{else}}
+	{{:assign cat_condition=1}}
+{{/if}}
+
+{{* déterminer les types de mouvements *}}
+{{#foreach from=$config.output_nature key="key"}}
+	{{if $type != 'temporaire'}}
+		{{:continue}}
+	{{/if}}
+	{{if $_GET.output_type == "loan" && $fee != 'payant'}}
+		{{:assign var="out_keys." value=$key|quote_sql}}
+	{{elseif $_GET.output_type == "rent" && $fee == 'payant'}}
+		{{:assign var="out_keys." value=$key|quote_sql}}
+	{{/if}}
+{{/foreach}}
+{{:assign out_keys=$out_keys|implode:","}}
+{{:assign out_keys="("|cat:$out_keys|cat:")"}}
+
+{{* sélecteur de catégorie  *}}
+{{:assign var="cat_options." value="" label="Toutes les catégories" href="?output_type=%s&cat_key=-1"|args:$_GET.output_type}}
+{{#load type="category" order="$$.name"}}
+	{{:assign
+		var="cat_options."
+		value=$key
+		label=$name
+		href="?output_type=%s&cat_key=%s"|args:$_GET.output_type:$key
+	}}
+{{/load}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par catégorie</legend>
+	{{:dropdown
+		title="Filtrer par catégorie"
+		options=$cat_options
+		value="%s"|args:$selected_category
+	}}
+</fieldset>
+
+<div class="shortFormLeft">
+	<p class="help">Historique des {{$label}}s</p>
+</div>
+
+{{* lister les mouvements *}}
+{{:assign premier=true}}
+{{#select * FROM
+	(WITH
+	sorties AS
+	(SELECT
+		mvt.key,
+		json_extract(mvt.document, '$.date') AS date,
+		json_extract(mvt.document, '$.direction') AS direction,
+		json_extract(mvt.document, '$.operation') AS operation,
+		json_extract(mat.document, '$.name') AS materiel,
+		json_extract(mat.document, '$.category') AS category,
+		json_extract(mvt.document, '$.amount') AS amount,
+		users.id AS user_id,
+		users.nom AS user,
+		json_extract(storage.document, '$.name') AS stockage,
+		json_extract(mvt.document, '$.transactions') AS transactions,
+		json_extract(mvt.document, '$.comment') AS comment,
+		json_extract(mvt.document, '$.return_date') AS return_date
+		FROM !table AS mvt
+		INNER JOIN !table AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
+		LEFT JOIN users ON users.id = json_extract(mvt.document, '$.user')
+		LEFT JOIN !table AS storage ON storage.key = json_extract(mvt.document, '$.storage')
+		WHERE json_extract(mvt.document, '$.type') = 'movement'
+		AND json_extract(mvt.document, '$.operation') IN !op
+		AND !cat_condition
+	),
+	entrees AS
+	(SELECT
+		mvt.key,
+		json_extract(mvt.document, '$.date') AS date,
+		json_extract(mvt.document, '$.direction') AS direction,
+		json_extract(mvt.document, '$.operation') AS operation,
+		json_extract(mat.document, '$.name') AS materiel,
+		json_extract(mat.document, '$.category') AS category,
+		json_extract(mvt.document, '$.amount') AS amount,
+		users.id AS user_id,
+		users.nom AS user,
+		json_extract(storage.document, '$.name') AS stockage,
+		json_extract(mvt.document, '$.transactions') AS transactions,
+		json_extract(mvt.document, '$.comment') AS comment,
+		json_extract(mvt.document, '$.return_date') AS return_date
+		FROM !table AS mvt
+		INNER JOIN !table AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
+		LEFT JOIN users ON users.id = json_extract(mvt.document, '$.user')
+		LEFT JOIN !table AS storage ON storage.key = json_extract(mvt.document, '$.storage')
+		INNER JOIN (
+			SELECT json_extract(links.document, '$.return') AS return_key
+			FROM !table AS links
+			INNER JOIN sorties ON json_extract(links.document, '$.temp_key') = sorties.key
+		) AS filtered_links ON filtered_links.return_key = mvt.key
+		WHERE !cat_condition
+	)
+	SELECT * FROM sorties UNION SELECT * FROM entrees
+	)
+	ORDER BY date DESC, user
+	;
+	!table=$module.table
+	!op = $out_keys
+	!cat_condition=$cat_condition
+}}
+	{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
+	{{:assign file_path="%s/%s/"|args:$module.storage_root:$key}}
+	{{:assign file_path=$file_path|cat:"%"}}
+	{{#select count(*) AS nb FROM files WHERE path LIKE :file_path ; :file_path=$file_path}}
+		{{:assign nb_files=$nb}}
+	{{/select}}
+
+	{{if $premier}}
+		<table class="list">
+		<thead>
+			<tr>
+				<td>Date</td>
+				<td>Mouvement</td>
+				<td>Opération</td>
+				<td>Matériel</td>
+				<td class="num">Quantité</td>
+				<td>Dépositaire</td>
+				<td>Stockage</td>
+				<td>Documents</td>
+				<td>Écritures</td>
+				<td>Remarque</td>
+				<td class="actions"></td>
+			</tr>
+		</thead>
+		<tbody>
+		{{:assign premier=false}}
+	{{/if}}
+
+	<tr>
+		<td>{{$date|date_short}}</td>
+		<td>{{if $direction == "input"}}Entrée{{else}}Sortie{{/if}}</td>
+		<td>{{$op_label}}</td>
+		<td>{{$materiel}}</td>
+		<td class="num">{{$amount}}</td>
+		<td>{{:link href="/admin/users/details.php?id=%s"|args:$user_id label="%s"|args:$user}}</td>
+		<td>{{$stockage}}</td>
+		<td class="num">{{if $nb_files > 0}}{{$nb_files}}{{/if}}</td>
+		<td class="num">{{if $transactions != null}}{{"Oui"}}{{/if}}</td>
+		<td>{{$comment}}</td>
+		<td class="actions">
+			{{if $_GET.output_type == "loan"}}
+				{{:assign from="lm"}}
+			{{elseif $_GET.output_type == "rent"}}
+				{{:assign from="rm"}}
+			{{/if}}
+			{{:linkbutton
+				label="Détails"
+				href="movements/movement_details.html?key=%s&prop=1&from=%s"|args:$key:$from
+				shape="eye"
+			}}
+		</td>
+	</tr>
+{{else}}
+	<p class="block alert">Aucun mouvement.</p>
+{{/select}}
+	</tbody>
+</table>
+{{else}}
+	<p class="block alert">Aucun mouvement.</p>
+{{/if}}
+{{:admin_footer}}
