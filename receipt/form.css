@@ -61,6 +61,7 @@ h6  { font-size: 0.8em; }
 
 dl, ul, ol, h1, h2, h3, h4, h5, h6, pre, p, blockquote, figure, table {
 	margin-bottom: .75rem;
+	break-inside: avoid;
 }
 
 body {
@@ -201,6 +202,7 @@ td.money {
 
 figure.signature {
 	text-align: center;
+	margin-top: .5em;
 }
 
 figure.signature img {
@@ -260,4 +262,15 @@ ul.checkboxes li::before {
 	background-size: contain;
 	margin-right: .5em;
 	display: inline-block;
+}
+
+.address.block {
+	margin-top: 2cm;
+	margin-left: 10cm;
+	margin-bottom: 1cm;
+}
+
+.columns {
+	columns: 2;
+	column-gap: 1.5em;
 }
