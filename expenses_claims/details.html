@@ -120,16 +120,21 @@
 	</div>
 {{/if}}
 
+{{if $logged_user.id !== $claim.user_id || !$module.config.restrict_self_accept}}
+	{{:assign can_accept=true}}
+{{/if}}
 
-{{if $is_admin}}
-	{{if $claim.status === 'waiting'}}
-		<fieldset>
-			<legend>Accepter cette note de frais ?</legend>
-			<p class="submit">{{:linkbutton href="accept.html?claim=%s"|args:$claim.key shape="check" label="Accepter cette note de frais" class="main"}}</p>
-			<p class="help">Une confirmation sera demandée. Il sera possible de modifier les comptes associés.</p>
-			<p class="submit">{{:linkbutton href="deny.html?claim=%s"|args:$claim.key shape="delete" label="Refuser cette note de frais"}}</p>
-		</fieldset>
-	{{/if}}
+{{if $is_admin && $claim.status === 'waiting' && $can_accept}}
+	<fieldset>
+		<legend>Accepter cette note de frais ?</legend>
+		<p class="submit">{{:linkbutton href="accept.html?claim=%s"|args:$claim.key shape="check" label="Accepter cette note de frais" class="main"}}</p>
+		<p class="help">Une confirmation sera demandée. Il sera possible de modifier les comptes associés.</p>
+		<p class="submit">{{:linkbutton href="deny.html?claim=%s"|args:$claim.key shape="delete" label="Refuser cette note de frais"}}</p>
+	</fieldset>
+{{elseif $is_admin && $claim.status === 'waiting'}}
+	<p class="alert block">
+		Seul un⋅e autre responsable comptable peut accepter ou refuser cette note de frais.
+	</p>
 {{/if}}
 
 <dl class="describe">
