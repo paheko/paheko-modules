@@ -1,0 +1,73 @@
+{{#restrict section="users" level="admin" block=true}}{{/restrict}}
+
+{{if $_GET.id}}
+	{{#load table="ballots" id=$_GET.id|intval assign="ballot"}}{{/load}}
+{{/if}}
+
+{{if !$ballot}}
+	{{:admin_header title="Nouveau scrutin"}}
+{{else}}
+	{{:admin_header title="Modifier un scrutin"}}
+{{/if}}
+
+{{#form on="save"}}
+	{{if !$_POST.label|trim}}
+		{{:error message="Le libellé ne peut rester vide"}}
+	{{/if}}
+
+	{{:assign
+		start_date="%s %s"|args:$_POST.start_date:$_POST.start_date_time|parse_datetime|strtotime
+		end_date="%s %s"|args:$_POST.end_date:$_POST.end_date_time|parse_datetime|strtotime
+	}}
+
+	{{if $start_date >= $end_date}}
+		{{:error message="La date de clôture ne peut être après la date d'ouverture du vote."}}
+	{{/if}}
+
+	{{:save
+		table="ballots"
+		id=$ballot.id
+		label=$_POST.label|strval|trim
+		description=$_POST.description|strval|trim|or:null
+		start_date=$start_date
+		end_date=$end_date
+		id_service=$_POST.id_service|intval|or:null
+		id_category=$_POST.id_category|intval|or:null
+		assign="ballot"
+	}}
+	{{:redirect to="./questions.html?id=%d"|args:$ballot.id}}
+{{/form}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Informations du scrutin</legend>
+		<dl>
+			{{:input type="text" required=true name="label" label="Libellé" source=$ballot}}
+			{{:input type="textarea" cols=50 rows=5 name="description" label="Description" source=$ballot}}
+			{{:input type="datetime" name="start_date" required=true label="Date de début du vote" source=$ballot}}
+			{{:input type="datetime" name="end_date" required=true label="Date de fin du vote" source=$ballot}}
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Restriction d'accès au vote</legend>
+		<dl>
+			{{#select id, label FROM services}}
+				{{:assign var="services.%s"|args:$id value=$label}}
+			{{/select}}
+			{{:input type="select" name="id_service" label="Seuls les membres inscrits à et jour de cette activité peuvent voter" source=$ballot options=$services default_empty="— Aucune —"}}
+			{{#select id, name FROM users_categories}}
+				{{:assign var="categories.%s"|args:$id value=$name}}
+			{{/select}}
+			{{:input type="select" name="id_category" label="Seuls les membres de cette catégorie peuvent voter" default_empty="— Aucune —" source=$ballot options=$categories}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" shape="right" label="Enregistrer" name="save" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

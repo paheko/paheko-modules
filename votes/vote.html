@@ -1,0 +1,45 @@
+{{#load table="ballots" id=$_GET.id|intval assign="ballot"}}
+{{else}}
+	{{:error message="Aucun scrutin sélectionné"}}
+{{/load}}
+
+{{:admin_header title=$ballot.label}}
+
+{{#form on="save"}}
+	{{#load table="ballots_questions" id_ballot=$ballot.id}}
+		{{if !$_POST.votes|has_key:$id}}
+			{{:error message="Vous n'avez pas voté pour '%s'"|args:$label}}
+		{{/if}}
+
+		{{:save table="ballots_votes" id_ballot=$ballot.id id_ballot_question=$id vote=$_POST.votes|value:$key|intval id_user=$logged_user.id}}
+	{{/load}}
+
+	{{:redirect to="./"}}
+{{/form}}
+
+
+{{if $scrutin.desc}}
+<div class="help block">
+	{{$scrutin.desc|markdown|raw}}
+</div>
+{{/if}}
+
+<form method="post" action="">
+	{{#load table="ballots_questions" id_ballot=$ballot.id}}
+	<fieldset class"vote">
+		<legend>{{$label}}</legend>
+		{{$description|markdown|raw}}
+		<dl>
+			{{:input type="radio-btn" name="votes[%s]"|args:$key value=0 label="Blanc / abstention" prefix_title="Mon vote" prefix_required=true}}
+			{{:input type="radio-btn" name="votes[%s]"|args:$key value=1 label="Pour"}}
+			{{:input type="radio-btn" name="votes[%s]"|args:$key value=-1 label="Contre"}}
+		</dl>
+	</fieldset>
+	{{/load}}
+
+	<p class="submit">
+		{{:button type="submit" shape="right" label="Valider le vote" name="save" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

@@ -1,0 +1,32 @@
+{{:admin_header title="Liste des scrutins"}}
+
+{{#restrict section="users" level="admin"}}
+	<nav class="tabs">
+		<aside>
+			{{:linkbutton href="edit.html" label="Nouveau scrutin" shape="plus"}}
+		</aside>
+	</nav>
+{{/restrict}}
+
+{{:assign var="columns" label="Scrutin"}}
+
+{{#list table="ballots" columns=$columns order="label"}}
+	<tr>
+		<th><a href="ballot.html?id={{$id}}">{{$label}}</a></th>
+		<td class="actions">
+			{{if $can_vote}}
+				{{:linkbutton href="vote.html?id=%d"|args:$id label="Voter" shape="check"}}
+			{{/if}}
+			{{:linkbutton href="ballot.html?id=%d"|args:$id label="Scrutin" shape="eye"}}
+			{{#restrict section="users" level="admin"}}
+				{{:linkbutton href="edit.html?id=%d"|args:$id label="Modifier" shape="edit"}}
+			{{/restrict}}
+		</td>
+	</tr>
+{{else}}
+	<p class="alert block">
+		Aucun scrutin.
+	</p>
+{{/list}}
+
+{{:admin_footer}}
