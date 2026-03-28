@@ -107,7 +107,7 @@
 
 		{{:assign .="slots.%d"|args:$timestamp}}
 
-		{{if $repeat > 1 && $frequency !== 'only'}}
+		{{if $repeat >= 1 && $frequency !== 'only'}}
 			{{if $frequency !== 'this'}}
 				{{* Change week repeat into month repeat for monthly events *}}
 				{{:assign slot_repeat='round(%d/4.3)'|math:$repeat|intval}}

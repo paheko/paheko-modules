@@ -6,6 +6,7 @@
 		notify_users=$_POST.notify_users|arrayval
 		extra_user_fields=$_POST.extra_user_fields|arrayval
 		accept_account_code=$_POST.accept_account_code|keys|value:0
+		restrict_self_accept=$_POST.restrict_self_accept|boolval
 	}}
 	{{:redirect to="./config.html?msg=ok"}}
 {{/form}}
@@ -27,6 +28,14 @@
 
 {{:form_errors}}
 <form method="post" action="">
+
+	<fieldset>
+		<legend>Permissions</legend>
+		<dl>
+			{{:input type="checkbox" value=1 name="restrict_self_accept" source=$module.config label="Empêcher les responsables d'accepter leurs propres notes de frais"}}
+			<dd class="help">Si coché, un⋅e reponsable de la comptabilité ne pourra pas accepter les notes de frais à son nom, un⋅e autre responsable devra le faire.</dd>
+		</dl>
+	</fieldset>
 
 	<fieldset>
 		<legend>Comptabilité</legend>
