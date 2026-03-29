@@ -10,6 +10,9 @@
 
 {{:assign var="columns" label="Scrutin"}}
 
+{{:table export="ballots" assign="table"}}
+{{:debug t=$table}}
+
 {{#list table="ballots" columns=$columns order="label"}}
 	<tr>
 		<th><a href="ballot.html?id={{$id}}">{{$label}}</a></th>
