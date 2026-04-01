@@ -38,12 +38,14 @@
 {{if !$event}}
 
 	{{#list select="$$.label AS 'Événement';
+		$$.archived AS 'Archivé';
 		(SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date >= date()) AS 'Inscriptions à venir';
 		(SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date < date()) AS 'Inscriptions passées'"
 		where="$$.type = 'event'"
 		order=1}}
-		<tr>
+		<tr{{if $archived}} class="disabled"{{/if}}>
 			<th><a href="?event={{$key}}">{{$label}}</a></th>
+			<td>{{if $archived}}Archivé{{/if}}</td>
 			<td>{{:link href="?event=%s"|args:$key label=$col2 class="num"}}</td>
 			<td>{{:link href="?event=%s&past=1"|args:$key label=$col3 class="num"}}</td>
 			<td class="actions">{{:linkbutton shape="menu" label="Liste des inscriptions" href="?event=%s"|args:$key}}</td>
