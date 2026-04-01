@@ -28,7 +28,7 @@
 <section class="articles">
 	{{#articles parent=$page.path order="published DESC"}}
 	<article>
-		<h3><a href="{{$url}}">{{$title}}</a></h3>
+		<h3><a href="{{$url}}">{{$title|remove_leading_number}}</a></h3>
 		<h5>{{$published|date_long}}</h5>
 		<p>{{$html|raw|strip_tags|truncate:200}}</p>
 	</article>
