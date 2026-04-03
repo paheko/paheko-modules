@@ -1,0 +1,18 @@
+organisme,filiere,code,nom
+Ecologic,EEE,PAM,Petits appareils en mélange
+Ecologic,EEE,GHF,"Gros électroménager hors froid (cuisinière, lave-linge…)"
+Ecologic,EEE,GEF,"Gros électroménager froid (frigo, congélateur…)"
+Ecologic,EEE,ECRAN,Écrans
+Ecologic,ASL,ASL1,Cycles et EDP non motorisés
+Ecologic,ASL,ASL2,ASL hors cycles et EDP
+Ecologic,ABJth,TONA,
+Ecologic,ABJth,TONM,
+Ecologic,ABJth,AUT,
+Ecomaison,ABJ,,Matériel de bricolage dont l’outillage à main
+Ecomaison,ABJ,,Articles d’entretien et d’aménagement du jardin
+Ecomaison,JOUET,,Jouets et jeux
+Ecomaison,EA,,Assises / sièges
+Ecomaison,EA,,Couchages
+Ecomaison,EA,,Tables et plans de travail
+Ecomaison,EA,,Rangements
+Ecomaison,EA,,Décoration textile

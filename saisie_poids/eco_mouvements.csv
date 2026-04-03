@@ -1,0 +1,4 @@
+organisme,type,code,nom
+Ecologic,exit,DEC_REE,Déclaration du réemploi effectué
+Ecologic,entry,LIV,"Entrées sur votre site (hors déchetterie et rachat)"
+Ecologic,entry,PRE,"Prélèvement en déchetterie conventionnée"
