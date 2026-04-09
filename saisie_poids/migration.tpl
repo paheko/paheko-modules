@@ -1,6 +1,6 @@
 {{if !$module.db_version}}
 	{{:table create="eco_organisations"
-		name="TEXT NOT NULL COMMENT 'Nom' UNIQUE"
+		name="TEXT NOT NULL UNIQUE COMMENT 'Nom'"
 	}}
 
 	{{:table create="eco_movements" comment="Catégories de mouvements"
