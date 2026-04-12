@@ -25,7 +25,8 @@
 			<article>
 				<h5>Vous allez réserver pour&nbsp;:</h5>
 				<h2>{{$event.label}}</h2>
-				<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+				<h3>{{$date|date_long}}{{if !$slot.label}} à <span>{{$date|date_hour}}</span>{{/if}}</h3>
+				{{if $slot.label}}<h3>{{$slot.label}}</h3>{{/if}}
 				<p>{{:linkbutton shape="left" label="Annuler" href="?event=%s"|args:$event.key}}
 			</article>
 		</section>

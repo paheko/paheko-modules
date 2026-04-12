@@ -48,6 +48,7 @@
 		validate_schema="../slot.schema.json"
 		type="slot"
 		event=$event
+		label=$_POST.label|trim|or:null
 		frequency=$_POST.frequency
 		day=$day
 		date=$date|or:null
@@ -73,6 +74,13 @@
 		</dl>
 		<dl>
 			{{:input type="time" name="open" required=true label="Heure de début" source=$slot}}
+		</dl>
+		<dl class="freq-only">
+			{{:input type="text" name="label" label="Libellé du créneau" source=$slot}}
+			<dd class="help">
+				Si renseigné, le bouton portera ce libellé, à la place de l'horaire.<br />
+				Utile par exemple pour un événement se déroulant sur plusieurs jours («&nbsp;Atelier Linux du vendredi 6 au dimanche 8 septembre&nbsp;»). Dans ce cas l'horaire indiquera l'horaire de début de l'événement.
+			</dd>
 		</dl>
 	</fieldset>
 

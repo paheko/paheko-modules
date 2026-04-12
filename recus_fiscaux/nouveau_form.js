@@ -32,6 +32,7 @@ if (y && y.tagName.toUpperCase() === 'SELECT' && typeof user_years !== 'undefine
 
 		let id = y.value;
 		let d = user_years[id] ?? null;
+		$('#f_periode_annee').value = d.year;
 		$('#f_montant').value = g.formatMoney(d.total);
 
 		$('#f_moyens_especes_1').checked = d.total_especes > 0;
@@ -50,7 +51,6 @@ if (y && y.tagName.toUpperCase() === 'SELECT' && typeof user_years !== 'undefine
 		$('#f_abandon_frais_1').checked = d.total_abandon_frais > 0;
 		$('#f_montant_numeraire').value = g.formatMoney(d.total_numeraire);
 		$('#f_montant_nature').value = g.formatMoney(d.total_nature + d.total_abandon_frais);
-		$('#f_periode_annee').value = d.year;
 
 		selectType();
 	}

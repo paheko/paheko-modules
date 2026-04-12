@@ -38,14 +38,16 @@
 {{if !$event}}
 
 	{{#list select="$$.label AS 'Événement';
+		$$.archived AS 'Archivé';
 		(SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date >= date()) AS 'Inscriptions à venir';
 		(SELECT SUM(COALESCE($$.seats, 1)) FROM @TABLE b WHERE $$.type = 'booking' AND $$.event = @TABLE.key AND $$.date < date()) AS 'Inscriptions passées'"
 		where="$$.type = 'event'"
 		order=1}}
-		<tr>
+		<tr{{if $archived}} class="disabled"{{/if}}>
 			<th><a href="?event={{$key}}">{{$label}}</a></th>
-			<td>{{:link href="?event=%s"|args:$key label=$col2 class="num"}}</td>
-			<td>{{:link href="?event=%s&past=1"|args:$key label=$col3 class="num"}}</td>
+			<td>{{if $archived}}{{:tag label="Archivé"}}{{/if}}</td>
+			<td>{{:link href="?event=%s"|args:$key label=$col3 class="num"}}</td>
+			<td>{{:link href="?event=%s&past=1"|args:$key label=$col4 class="num"}}</td>
 			<td class="actions">{{:linkbutton shape="menu" label="Liste des inscriptions" href="?event=%s"|args:$key}}</td>
 		</tr>
 	{{else}}
@@ -93,7 +95,7 @@
 			}}
 		{{/if}}
 		{{#list select="date($$.date) AS 'Date';
-			$$.date AS 'Heure';
+			COALESCE((SELECT $$.label FROM @TABLE b WHERE key = @TABLE.$$.slot), $$.date) AS 'Heure';
 			%s
 			$$.name AS 'Nom';
 			%s
@@ -115,7 +117,11 @@
 						{{:assign current_day=$col1 current_hour=null}}
 					{{/if}}
 				</td>
-				{{:assign hour=$date|date_hour}}
+				{{if $col2|regexp_match:"/^\d{4}/"}}
+					{{:assign hour=$date|date_hour}}
+				{{else}}
+					{{:assign hour=$col2}}
+				{{/if}}
 				{{if $hour !== $current_hour}}
 					<td>
 						{{$hour}}

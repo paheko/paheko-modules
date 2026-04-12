@@ -77,6 +77,7 @@
 		notify_email=$notify_emails|or:null
 		not_open_before=$_POST.not_open_before|parse_datetime:"LOCAL"|or:null
 		not_open_after=$_POST.not_open_after|parse_datetime:"LOCAL"|or:null
+		email_body=$_POST.email_body|trim|or:null
 	}}
 
 	{{if $_GET.copy}}
@@ -109,6 +110,7 @@
 			{{:input type="checkbox" label="Archiver cet événement" name="archived" source=$event value=1}}
 			<dd class="help">Si coché, cet événement ne sera plus visible dans la liste et ne pourra plus être réservé.</dd>
 			{{:input type="text" label="Adresses e-mail de notification" help="Si renseigné, chaque adresse (séparée par un point virgule) recevra un message pour chaque réservation et chaque annulation. Laisser vide pour ne pas recevoir de notification." name="notify_email" default=$event.notify_email|implode:";"}}
+			{{:input type="textarea" name="email_body" cols=70 rows=5 label="Texte à ajouter aux e-mails de confirmation" help="Ce texte sera ajouté à la fin du message envoyé par e-mail aux personnes qui s'inscrivent.\nLe message comportera déjà le nom de l'événement, la date du créneau réservé, et un lien de désinscription." source=$event}}
 			{{:input type="number" min=1 step=1 max=26 name="max_weeks" label="Nombre de semaines réservables" source=$event default=1 required=true}}
 			<dd class="help">
 				Par exemple, pour un événement tous les vendredis, inscrire le chiffre 2 ici permettra de réserver pour ce vendredi, et le vendredi suivant.<br />
