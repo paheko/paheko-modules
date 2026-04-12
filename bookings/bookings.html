@@ -95,7 +95,7 @@
 			}}
 		{{/if}}
 		{{#list select="date($$.date) AS 'Date';
-			$$.date AS 'Heure';
+			COALESCE((SELECT $$.label FROM @TABLE b WHERE key = @TABLE.$$.slot), $$.date) AS 'Heure';
 			%s
 			$$.name AS 'Nom';
 			%s
@@ -117,7 +117,11 @@
 						{{:assign current_day=$col1 current_hour=null}}
 					{{/if}}
 				</td>
-				{{:assign hour=$date|date_hour}}
+				{{if $col2|regexp_match:"/^\d{4}/"}}
+					{{:assign hour=$date|date_hour}}
+				{{else}}
+					{{:assign hour=$col2}}
+				{{/if}}
 				{{if $hour !== $current_hour}}
 					<td>
 						{{$hour}}
