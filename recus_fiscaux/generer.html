@@ -34,9 +34,8 @@
 
 		{{if $row.id_transaction|trim|strlen}}
 			{{:assign id_transaction=$row.id_transaction|explode:','|map:intval}}
-			{{:assign in_transaction="value"|sql_where:'IN':$id_transaction}}
-			{{#load each="linked_transactions" where="$$.linked_transactions IS NOT NULL AND $$.annule = 0 AND %s"|args:$in_transaction}}
-				{{:assign var="skipped." value="- ligne %d : le reçu n°%d a déjà été créé pour l'écriture #%d"|args:$line:$id:$value}}
+			{{#load table="receipts_transactions" where="id_transaction"|sql_where:"IN":$id_transaction limit=1}}
+				{{:assign var="skipped." value="- ligne %d : le reçu n°%d a déjà été créé pour l'écriture #%d"|args:$line:$id_receipt:$id_transaction}}
 				{{:assign skip=true}}
 			{{/load}}
 		{{/if}}
@@ -56,11 +55,13 @@
 			date=$now|date_format:'%Y-%m-%d'
 			montant=$row.montant
 			linked_user=$row.id_user
-			linked_transactions=$row.id_transaction|explode:','|map:intval
 			annule=false
 			id_year=$row.id_year|intval|or:null
 			recu=$recu
 		}}
+		{{#foreach from=$row.id_transaction|explode:','|map:intval item="id_transaction"}}
+			{{:save table="receipts_transactions" id_receipt=$new_id id_transaction=$id_transaction}}
+		{{/foreach}}
 	{{/foreach}}
 
 	{{if $skipped}}
@@ -153,10 +154,13 @@
 	{{:assign var="count" value=0}}
 
 	{{if $module.table}}
-		{{:assign join_existing="LEFT JOIN %s m ON json_extract(m.document, '$.linked_user') = u.id
-				AND json_extract(m.document, '$.annule') = 0
-				AND t.id IN (SELECT value FROM json_each(m.document, '$.linked_transactions'))"|args:$module.table
+		{{:assign link_table_name=$module.tables|key:"receipts_transactions"}
+		{{:assign join_existing="LEFT JOIN %s ml ON ml.id_transaction = t.id
+				LEFT JOIN %s m ON ml.id_receipt = m.id
+					AND json_extract(m.document, '$.linked_user') = u.id
+					AND json_extract(m.document, '$.annule') = 0"|args:$link_table_name:$module.table
 			select_existing="m.id AS existing"}}
+		}
 	{{else}}
 		{{:assign select_existing="NULL AS existing"}}
 	{{/if}}

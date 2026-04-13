@@ -71,14 +71,14 @@
 	{{/if}}
 
 	<form method="post" action="envoyer_tout.html">
+	{{* FIXME: better #list to be able to display the transaction ids *}}
 	{{#list
 		select="id AS 'Numéro';
 			$$.nom AS 'Nom du bénéficiaire';
 			$$.date AS 'Date d''émission';
 			$$.montant AS 'Montant';
 			$$.envoi AS 'Envoyé le';
-			CASE WHEN $$.annule = 1 THEN 'Annulé' ELSE '' END AS 'Annulé ?';
-			$$.linked_transactions AS 'Écritures'"
+			CASE WHEN $$.annule = 1 THEN 'Annulé' ELSE '' END AS 'Annulé ?'"
 		where=$where
 		order=1
 		desc=true
@@ -115,11 +115,13 @@
 			<td>
 				{{if $annule}}<span class="alert">Annulé</span>{{/if}}
 			</td>
+			{{* FIXME transaction IDs
 			<td>
 				{{#foreach from=$linked_transactions item="id"}}
 					{{:link href="!acc/transactions/details.php?id=%d"|args:$id class="num" label="#%d"|args:$id}}
 				{{/foreach}}
 			</td>
+			*}}
 			<td class="actions">
 				{{if !$annule}}
 					{{:linkbutton shape="delete" label="Annuler" href="annuler.html?id=%d"|args:$id target="_dialog"}}

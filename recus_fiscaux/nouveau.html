@@ -69,9 +69,8 @@
 
 	{{if $_POST.id_transaction|trim|strlen}}
 		{{:assign id_transaction=$_POST.id_transaction|explode:','|map:intval}}
-		{{:assign in_transaction="value"|sql_where:'IN':$id_transaction}}
-		{{#load each="linked_transactions" where="$$.linked_transactions IS NOT NULL AND $$.annule = 0 AND %s"|args:$in_transaction}}
-			{{:error message="L'écriture #%d est déjà utilisée dans le reçu n°%d. Il faut déjà annuler ce reçu pour pouvoir le re-créer."|args:$value:$id}}
+		{{#load table="receipts_transactions" where="id_transaction"|sql_where:"IN":$id_transaction limit=1}}
+			{{:error message="L'écriture #%d est déjà utilisée dans le reçu n°%d. Il faut déjà annuler ce reçu pour pouvoir le re-créer."|args:$id_transaction:$id_receipt}}
 		{{/load}}
 	{{/if}}
 
@@ -90,12 +89,15 @@
 		date=$_POST.date|parse_date
 		montant=$total
 		linked_user=$_POST.id_user|intval|or:null
-		linked_transactions=$id_transaction
 		id_year=$_POST.id_year|intval|or:null
 		annule=false
 		entreprise=$_POST.entreprise|boolval
 		recu=$recu|trim|minify
 	}}
+
+	{{#foreach from=$id_transaction item="id"}}
+		{{:save table="receipts_transactions" id_receipt=$new_id id_transaction=$id}}
+	{{/foreach}}
 
 	{{if !$dialog}}
 		{{:redirect to="voir.html?id=%d"|args:$new_id}}
