@@ -73,7 +73,13 @@
 
 	<li>
 		<a{{if !$disabled}} href="?event={{$event.key}}&amp;slot_key={{$slot.key}}&amp;slot_time={{$this_datetime}}"{{/if}} class="available_{{$slot.available}} {{if $disabled}}disabled{{/if}}">
-			<strong>{{$timestamp|date_hour}}</strong>
+			<strong>
+				{{if $slot.label}}
+					{{$slot.label}}
+				{{else}}
+					{{$timestamp|date_hour}}
+				{{/if}}
+			</strong>
 			<em>{{$label}}</em>
 		</a>
 	</li>

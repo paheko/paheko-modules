@@ -9,10 +9,12 @@
 <section class="my_bookings">
 	{{#load type="booking" id_user=$logged_user.id where="key != :booking AND $$.date >= date()" :booking=$_GET.b|or:''}}
 		{{#load type="event" key=$event assign="e"}}{{/load}}
+		{{#load type="slot" key=$slot assign="s"}}{{/load}}
 		<article>
 			<h5>Vous avez réservé&nbsp;:</h5>
 			<h2>{{$e.label}}</h2>
-			<h3>{{$date|date_long}} à <span>{{$date|date_hour}}</span></h3>
+			<h3>{{$date|date_long}}{{if !$s.label}} à <span>{{$date|date_hour}}</span>{{/if}}</h3>
+			{{if $s.label}}<h3>{{$s.label}}</h3>{{/if}}
 			<h5>(Au nom de&nbsp;: {{$name}})</h5>
 			{{if $fields}}
 				<ul>
