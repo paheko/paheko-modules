@@ -11,7 +11,7 @@
 {{:assign var="columns" label="Scrutin"}}
 
 {{:table export="ballots" assign="table"}}
-{{:debug t=$table}}
+{{:debug t=$table all=$module.tables}}
 
 {{#list table="ballots" columns=$columns order="label"}}
 	<tr>
