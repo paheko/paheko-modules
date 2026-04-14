@@ -1,10 +1,11 @@
 {{if $show === null}}
-	{{#foreach from=$transaction_lines item="line"}}
-		{{if $line.account_code|regexp_match:'/^7|^4/' && $line.credit}}
-			{{:assign show=true}}
-			{{:break}}
-		{{/if}}
-	{{/foreach}}
+	{{#select 1 FROM acc_transactions_lines l
+		INNER JOIN acc_accounts a ON a.id = l.id_account
+		WHERE l.id_transaction = {$transaction.id} AND l.credit != 0 AND a.type IN (4, 6)
+		LIMIT 1;
+	}}
+		{{:assign show=1}}
+	{{/select}}
 {{/if}}
 
 {{if $show}}

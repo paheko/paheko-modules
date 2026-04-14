@@ -4,22 +4,17 @@
 	{{:include file="../_upgrade.tpl" keep="module.config.accounts"}}
 {{/if}}
 
-{{#foreach from=$transaction_lines item="line"}}
-	{{if !$line.credit}}
-		{{:continue}}
-	{{/if}}
 
-	{{#foreach from=$module.config.accounts key="code"}}
-		{{if $line.account_code|strpos:$code === 0}}
-			{{:assign show=true}}
-			{{:break}}
-		{{/if}}
-	{{/foreach}}
+{{:assign accounts=$module.config.accounts|keys}}
 
-	{{if $show}}
-		{{:break}}
-	{{/if}}
-{{/foreach}}
+{{#select 1 FROM acc_transactions_lines l
+	INNER JOIN acc_accounts a ON a.id = l.id_account
+	WHERE l.id_transaction = {$transaction.id} AND l.credit != 0 AND a.!codes_list
+	LIMIT 1;
+	!codes_list="code"|sql_where:"IN":$accounts
+}}
+	{{:assign show=1}}
+{{/select}}
 
 {{if $show}}
 	<h2 class="ruler">{{$module.label}}</h2>
