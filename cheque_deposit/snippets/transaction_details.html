@@ -8,7 +8,7 @@
 
 {{#select 1 FROM acc_transactions_lines l
 	INNER JOIN acc_accounts a ON a.id = l.id_account
-	WHERE l.id_transaction = {$transaction.id} AND line.credit != 0 AND a.!codes_list
+	WHERE l.id_transaction = {$transaction.id} AND l.credit != 0 AND a.!codes_list
 	LIMIT 1;
 	!codes_list="code"|sql_where:"IN":$accounts
 }}
