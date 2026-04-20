@@ -26,7 +26,12 @@
 {{/if}}
 
 <section class="articles">
-	{{#articles parent=$page.path order="published DESC"}}
+	{{if $page.list_order === 'title'}}
+		{{:assign order="title" desc=false}}
+	{{else}}
+		{{:assign order="published DESC"}}
+	{{/if}}
+	{{#articles parent=$page.path order=$order}}
 	<article>
 		<h3><a href="{{$url}}">{{$title|remove_leading_number}}</a></h3>
 		<h5>{{$published|date_long}}</h5>
