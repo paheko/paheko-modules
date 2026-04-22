@@ -1,0 +1,105 @@
+{{* -*- brindille -*- *}}
+
+{{#restrict block=true section="accounting" level="write"}}{{/restrict}}
+
+{{*
+	paramètres :
+	- id : id membre
+*}}
+
+{{if $_GET.output_type == "loan"}}
+	{{:assign label="prêt"}}
+{{elseif $_GET.output_type == "rent"}}
+	{{:assign label="location"}}
+{{else}}
+	{{:error message="Cette page n'existe pas !"}}
+{{/if}}
+
+{{:admin_header title="%ss aux membres"|args:$label|ucfirst custom_css="./style.css" current="module_equipment"}}
+{{:include file="./_nav.html" current="%s"|args:$label subcurrent="membres"}}
+
+{{*	vérifier l'existence de la table du module *}}
+{{#load limit="1"}}
+	{{:assign table_presente=true}}
+{{else}}
+	{{:assign table_presente=false}}
+{{/load}}
+
+{{if $table_presente}}
+{{:include file="./_get_config.html" keep="config"}}
+
+{{* déterminer les types de mouvements *}}
+{{#foreach from=$config.output_nature key="key"}}
+	{{if $type != 'temporaire'}}
+		{{:continue}}
+	{{/if}}
+	{{if $_GET.output_type == "loan" && $fee != 'payant'}}
+		{{:assign var="out_keys." value=$key|quote_sql}}
+	{{elseif $_GET.output_type == "rent" && $fee == 'payant'}}
+		{{:assign var="out_keys." value=$key|quote_sql}}
+	{{/if}}
+{{/foreach}}
+{{:assign out_keys=$out_keys|implode:","}}
+{{:assign out_keys="("|cat:$out_keys|cat:")"}}
+
+{{:assign premier=true}}
+{{#select
+	nom, user, GROUP_CONCAT(mat_name, ", ") AS materiel, SUM(remain) AS quantite
+	FROM
+	(SELECT users.nom AS nom,
+		users.id AS user,
+		json_extract(mat.document, '$.name') AS mat_name,
+		json_extract(mvt.document, '$.amount') - IFNULL(SUM(json_extract(retour.document, '$.amount')), 0) AS remain
+		FROM !table AS mvt
+		INNER JOIN users ON json_extract(mvt.document, '$.user') = users.id
+		LEFT JOIN !table AS links ON mvt.key = json_extract(links.document, '$.temp_key')
+		LEFT JOIN !table AS retour ON retour.key = json_extract(links.document, '$.return')
+		INNER JOIN !table AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
+		WHERE json_extract(mvt.document, '$.type') = 'movement'
+		AND	json_extract(mvt.document, '$.operation') IN !op
+		GROUP BY mvt.key
+		HAVING remain != 0
+	)
+	GROUP BY user
+	ORDER BY nom
+	;
+	!table=$module.table
+	!op = $out_keys
+	}}
+
+	{{if $premier}}
+		<table class="list">
+		<thead>
+			<tr>
+				<td>Membre</td>
+				<td class="nombre">Quantité</td>
+				<td>Matériels</td>
+			</tr>
+		</thead>
+		<tbody>
+		{{:assign premier=false}}
+	{{/if}}
+
+	<tr>
+		<td>{{:link href="/admin/users/details.php?id=%s"|args:$user label="%s"|args:$nom}}</td>
+		<td class="nombre">{{$quantite}}</td>
+		<td>{{$materiel}}</td>
+	</tr>
+{{else}}
+	{{if $label == "prêt"}}
+		<p class="block alert">Aucun {{$label}} en cours.</p>
+	{{elseif $label == "location"}}
+		<p class="block alert">Aucune {{$label}} en cours.</p>
+	{{/if}}
+{{/select}}
+	</tbody>
+</table>
+{{else}}
+	{{if $label == "prêt"}}
+		<p class="block alert">Aucun {{$label}} en cours.</p>
+	{{elseif $label == "location"}}
+		<p class="block alert">Aucune {{$label}} en cours.</p>
+	{{/if}}
+{{/if}}
+
+{{:admin_footer}}
