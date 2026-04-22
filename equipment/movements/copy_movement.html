@@ -16,7 +16,7 @@
 {{/load}}
 
 {{* récupérer la config des entrées/sorties *}}
-{{:include file="../_get_config.html" keep="config, directions, loan_duration"}}
+{{:include file="../_get_config.html" keep="config, directions"}}
 {{:assign var="type_mvt" from="config.%s_nature.%s.type"|args:$mvt_new.direction:$mvt_new.operation}}
 
 {{* interdire de dupliquer un retour => utiliser le bouton « Retour » *}}
@@ -95,8 +95,12 @@
 	{{:assign var="mvt_new.amount" value=$_POST.amount}}
 	{{:assign var="mvt_new.date" value=$_POST.date|parse_date}}
 	{{:assign var="mvt_new.comment" value=$_POST.comment}}
-	{{if $_POST.set_return_date != null}}
-		{{:assign return_date=$_POST.return_date}}
+
+	{{if $_POST.return_date != null}}
+		{{:assign return_date=$_POST.return_date|parse_date}}
+		{{if $return_date < $_POST.date|parse_date}}
+			{{:error message="La date de retour doit être postérieure à la date de sortie !"}}
+		{{/if}}
 	{{else}}
 		{{:assign return_date=null}}
 	{{/if}}
@@ -205,14 +209,27 @@
 		user=$user.id
 		storage=$_POST.storage
 		transactions=$transactions
-		return_date=$return_date|parse_date
+		return_date=$return_date
 	}}
-	{{if $_GET.from == "lh"}}
-		{{:assign from="../loan_history.html"}}
-	{{else}}
-		{{:assign from="../equipment_history.html"}}
+
+	{{if $_GET.from|substr:0:1 == "l"}}
+		{{:assign output_type="loan"}}
+	{{elseif $_GET.from|substr:0:1 == "r"}}
+		{{:assign output_type="rent"}}
 	{{/if}}
-	{{:redirect force="%s?ok=1&key=%s&prop=%s&msg=copie"|args:$from:$eqpmt_key:$prop}}
+	{{if $_GET.from|substr:1:1 == "h"}}
+		{{:assign suffix="history"}}
+	{{elseif $_GET.from|substr:1:1 == "m"}}
+		{{:assign suffix="movements"}}
+	{{/if}}
+
+	{{if $_GET.from == "eh"}}
+		{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=%s&msg=copie"|args:$eqpmt_key:$prop}}
+	{{elseif $suffix == null}}
+		{{:redirect force="../index.html"}}
+	{{else}}
+		{{:redirect force="../loan_%s.html?output_type=%s&ok=1&key=%s&prop=%s&msg=copie"|args:$suffix:$output_type:$eqpmt_key:$prop}}
+	{{/if}}
 {{/form}}
 
 {{if $mvt_new.direction == "input"}}
@@ -227,7 +244,6 @@
 	-------------------- Préparer la saisie --------------------
 *}}
 
-{{* récupérer les infos de la catégorie *}}
 {{#load key=$equipment.category assign="category"}}{{/load}}
 {{:assign var="op_label" from="config.%s_nature.%s.label"|args:$mvt_new.direction:$mvt_new.operation}}
 
@@ -255,17 +271,18 @@
 	<fieldset>
 		<legend>Informations obligatoires</legend>
 		<dl>
+			{{:input type="date" name="date" label="Date" required=true default=$mvt_new.date}}
+			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
 			{{if $mvt_new.direction == "input"}}
 				{{:input type="select" name="operation" label="Type" required=true options=$input_labels|sort default=$mvt_new.operation}}
 			{{else}}
 				{{:input type="select" name="operation" label="Type" required=true options=$output_labels|sort default=$mvt_new.operation}}
 			{{/if}}
-			{{:input type="date" name="date" label="Date" required=true default=$mvt_new.date}}
-			{{:input type="number" name="amount" label="Quantité" min=1 required=true default=$mvt_new.amount}}
 		</dl>
 	</fieldset>
+
 	<fieldset class="entree">
-		<legend>Informations facultatives</legend>
+		<legend>Autres informations</legend>
 		<dl>
 			{{if $prop == 1 && $mvt_new.direction == "output"}}
 				{{:input
@@ -278,28 +295,26 @@
 					max=1
 				}}
 			{{/if}}
-			{{if $mvt_new.direction == "input"}}
-				{{:input type="select" name="storage" default=$mvt_new.storage label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
+			{{if $mvt_new.direction == "input" && $storage != null}}
+				{{:input type="select" name="storage" label="Lieu de stockage" default=$mvt_new.storage default_empty="— Aucun —" options=$storage required=false}}
 			{{/if}}
 			{{if $type_mvt != "retour"}}
 				{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 			{{/if}}
-			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false default=$mvt_new.comment}}
-			{{if $mvt_new.direction == "output" && $type_mvt == "temporaire"}}
+			{{:input type="textarea" name="comment" label="Remarques" cols="40" rows="3" required=false default=$mvt_new.comment}}
+			{{if $mvt_new.direction == "output"}}
 				{{if $mvt_new.return_date != null}}
-					{{:assign checked="checked"}}
-					{{:assign visibility="visible"}}
 					{{:assign return_date=$mvt_new.return_date}}
 				{{else}}
-					{{:assign visibility="hidden"}}
-					{{:assign ts_sortie=$mvt_new.date|strtotime}}
-					{{:assign ts_retour="%d+%d*(60*60*24)"|math:$ts_sortie:$loan_duration}}
-					{{:assign return_date=$ts_retour|date_short}}
+					{{if $module.config.loan_duration != null && $module.config.loan_duration > 0}}
+						{{:assign ts_sortie=$mvt_new.date|strtotime}}
+						{{:assign ts_retour="%d+%d*(60*60*24)"|math:$ts_sortie:$module.config.loan_duration}}
+						{{:assign return_date=$ts_retour|date_short}}
+					{{/if}}
 				{{/if}}
-				{{:input id="set_return_date" type="checkbox" value=1 name="set_return_date" label="Fixer une date de retour" help="Cocher pour fixer une date de retour" checked="%s"|args:$checked}}
-				<div id="div_return_date" style="visibility:{{$visibility}}">
+				<div id="div_return_date">
 					{{:input type="date" name="return_date" label="Date de retour" default=$return_date}}
-					<input type="hidden" id="loan_duration" name="loan_duration" value="{{$loan_duration}}">
+					<input type="hidden" id="loan_duration" name="loan_duration" value="{{$module.config.loan_duration}}">
 				</div>
 			{{/if}}
 		</dl>
@@ -314,9 +329,17 @@
 {{:admin_footer}}
 
 <script type="text/javascript" src="../scripts.js"></script>
+
 <script type="text/javascript">
-function changeVisibility(evt, idcheck = 'f_set_return_date_1', fields = ['div_return_date']) {
-	toggleVisibility(idcheck, fields);
+let output_nature = {{$config.output_nature|json_encode|raw}};
+
+function changeVisibility(evt,
+						  id_date = 'f_date',
+						  id_type = 'f_operation',
+						  div = 'div_return_date',
+						  id_return_date = 'f_return_date')
+{
+	toggleVisibility(id_date, id_type, div, id_return_date);
 }
 
 function changeReturnDate(evt, id_date = 'f_date', id_return_date = 'f_return_date', id_loan_duration='loan_duration')
@@ -325,7 +348,8 @@ function changeReturnDate(evt, id_date = 'f_date', id_return_date = 'f_return_da
 }
 
 (function () {
-	document.getElementById('f_set_return_date_1').onclick = changeVisibility;
+	document.getElementById('f_operation').onchange = changeVisibility;
 	document.getElementById('f_date').onchange = changeReturnDate;
+	document.getElementById('f_operation').onchange();
 })();
 </script>

@@ -11,15 +11,22 @@
 	<p class="block confirm">Configuration enregistrée.</p>
 {{/if}}
 
-{{* lecture config (défaut ou enregistrée) *}}
-{{:include file="./_get_config.html" keep="config, directions"}}
+{{* lecture config *}}
+{{:include file="./_get_config.html" keep="config_defaut, config, directions"}}
+
+{{* interdire la modification et la suppression des types de mouvement prédéfinis *}}
+{{#foreach from=$directions key="direction"}}
+	{{:assign var="nature" from="config_defaut.%ss"|args:$direction}}
+	{{#foreach from=$nature item="elem"}}
+		{{:assign var="default_keys." value=$key}}
+	{{/foreach}}
+{{/foreach}}
 
 {{#foreach from=$directions key="direction" item="item"}}
 
 	{{* types de mouvements qui ne peuvent être supprimés *}}
 	{{#load type="movement" where="$$.direction='%s'"|args:$direction group="$$.operation"}}
-		{{:assign var="op_label" from="config.%s_nature.%s.label"|args:$direction:$operation}}
-		{{:assign var="locked_%ss."|args:$direction value=$op_label}}
+		{{:assign var="locked." value=$operation}}
 	{{/load}}
 
 	<h2 class="ruler">{{$item|ucfirst}}s</h2>
@@ -34,15 +41,23 @@
 		<tbody>
 			{{:assign var="nature" from="config.%s_nature"|args:$direction}}
 			{{#foreach from=$nature key=key}}
+				{{:assign sortie_temp=false}}
+				{{if $direction == 'output'}}
+					{{:assign var="type" from="nature.%s.type"|args:$key}}
+					{{if $type == 'temporaire'}}
+						{{:assign sortie_temp=true}}
+					{{/if}}
+				{{/if}}
 				<tr>
 					<td>{{$label}}</td>
 					<td>{{$type}}</td>
 					<td class="actions">
-						{{:assign var="locked" from="locked_%ss"|args:$direction}}
-						{{if ! $locked|has:$label}}
+						{{if ! $default_keys|has:$key && ! $locked|has:$key}}
 							{{:linkbutton label="Supprimer" shape="delete" href="config/delete_movement_type.html?dir=%s&op_key=%s"|args:$direction:$key target="_dialog"}}
 						{{/if}}
+						{{if ! $default_keys|has:$key || $sortie_temp}}
 							{{:linkbutton label="Modifier" shape="edit" href="config/modify_movement_type.html?dir=%s&op_key=%s"|args:$direction:$key target="_dialog"}}
+						{{/if}}
 					</td>
 				</tr>
 			{{/foreach}}

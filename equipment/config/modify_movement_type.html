@@ -5,27 +5,38 @@
 {{*
 	paramètres :
 	- dir : input ou output
-	- op_key : clé du type de mouvement dont on veut modifier le libellé
+	- op_key : clé du type de mouvement dont on veut modifier le libellé ou le tarif
 *}}
 
 {{* lecture config (défaut ou enregistrée) *}}
-{{:include file="../_get_config.html" keep="config, directions"}}
+{{:include file="../_get_config.html" keep="config_defaut, config, directions"}}
 
 {{#form on="save"}}
+	{{if $_POST.tarif == null && $_POST.name == null}}
+		{{:redirect to="./config.html"}}
+	{{/if}}
 	{{#foreach from=$directions key="direction"}}
 		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
-		{{#foreach from=$nature key="key"}}
-			{{:assign var="%s_nature.key"|args:$direction value=$key}}
-			{{if $_GET.dir == $direction}}
-				{{if $key == $_GET.op_key}}
-					{{:assign var="%s_nature.label"|args:$direction value=$_POST.name|trim}}
-				{{else}}
-					{{:assign var="%s_nature.label"|args:$direction value=$label}}
-				{{/if}}
+		{{#foreach from=$nature key="key" item="elem"}}
+			{{if $_POST.name == null}}
+				{{:assign label=$elem.label}}
 			{{else}}
-				{{:assign var="%s_nature.label"|args:$direction value=$label}}
+				{{if $_GET.dir == $direction && $key != $_GET.op_key &&
+					$_POST.name|trim|tolower == $elem.label|trim|tolower}}
+					{{:error message="Le libellé « %s » est déjà présent"|args:$_POST.name}}
+				{{/if}}
+				{{if $_GET.dir == $direction && $key == $_GET.op_key}}
+					{{:assign label=$_POST.name|trim}}
+				{{else}}
+					{{:assign label=$elem.label}}
+				{{/if}}
 			{{/if}}
-			{{:assign var="%s_nature.type"|args:$direction value=$type}}
+			{{:assign var="%s_nature"|args:$direction value=$elem}}
+			{{:assign var="%s_nature.label"|args:$direction value=$label}}
+			{{:assign var="%s_nature.key"|args:$direction value=$key}}
+			{{if $_POST.tarif != null && $key == $_GET.op_key}}
+				{{:assign var="%s_nature.fee"|args:$direction value=$_POST.tarif}}
+			{{/if}}
 			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
 		{{/foreach}}
 	{{/foreach}}
@@ -40,19 +51,71 @@
 {{/form}}
 
 {{:admin_header title="Gestion des matériels" current="module_equipment"}}
-{{* barre de navigation *}}
 {{if ! $dialog}}
 	{{:include file="../_nav.html" current="config" subcurrent="typesES"}}
 {{/if}}
 {{:form_errors}}
 
+{{* vérifier que $_GET.dir est bien une direction connue *}}
+{{if ! $directions|has_key:$_GET.dir}}
+	{{:error message="Direction « %s » inconnue !"|args:$_GET.dir}}
+{{/if}}
+
+{{* vérifier que $_GET.op_key est bien dans la liste des opérations *}}
+{{:assign var="config_nature" from="config.%s_nature"|args:$_GET.dir}}
+{{if ! $config_nature|keys|has:$_GET.op_key}}
+	{{:error message="Type de mouvement inconnu !"}}
+{{/if}}
+
+{{* sortie temporaire ? *}}
+{{:assign sortie_temp=false}}
+{{if $_GET.dir == 'output'}}
+	{{:assign var="elem" from="config_nature.%s"|args:$_GET.op_key}}
+	{{if $elem.type == 'temporaire'}}
+		{{:assign sortie_temp=true}}
+		{{:assign fee=$elem.fee}}
+	{{/if}}
+{{/if}}
+
+{{* mouvement prédéfini ? *}}
+{{:assign var="default_nature" from="config_defaut.%ss"|args:$_GET.dir}}
+{{#foreach from=$default_nature item="elem"}}
+	{{:assign var="default_keys." value=$key}}
+{{/foreach}}
+
+{{:assign label_mod=true}}
+{{if $default_keys|has:$_GET.op_key}}
+	{{:assign label_mod=false}}
+{{/if}}
+
+{{if ! $label_mod && ! $sortie_temp}}
+	{{:error message="Ce type de mouvement ne peut être modifié"}}
+{{/if}}
+
 {{:assign var="default_label" from="config.%s_nature.%s.label"|args:$_GET.dir:$_GET.op_key}}
 <form method="post" action="" data-focus="1">
 	<fieldset>
-		<legend>Modifier le libellé</legend>
+		<legend>Paramètres</legend>
 		<dl>
-		{{:input type="text" name="name" label="Libellé" default=$default_label required=true maxlength="100"}}
+			{{if $label_mod}}
+				{{:input type="text" name="name" label="Libellé" default=$default_label required=true maxlength="100"}}
+			{{/if}}
+			{{if $sortie_temp}}
+				<div>
+					{{:input type="radio-btn" name="tarif" value="gratuit" label="Gratuit" required=true default=$fee prefix_title=Tarif}}
+					{{:input type="radio-btn" name="tarif" value="payant" label="Payant" required=true default=$fee}}
+				</div>
+			{{/if}}
 		</dl>
+		{{if $sortie_temp}}
+			<div class="help block">
+				<h3>Tarification</h3>
+				<ul>
+					<li>Une sortie temporaire gratuite sera classée dans l'onglet Prêt</li>
+					<li>Une sortie temporaire payante sera classée dans l'onglet Locations</li>
+				</ul>
+			</div>
+		{{/if}}
 		<p class="submit">
 			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
 		</p>

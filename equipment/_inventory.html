@@ -1,40 +1,65 @@
 {{* -*- brindille -*- *}}
 
 {{*
-	inventaire des entrées/sorties des matériels permanents
+	Inventaire des matériels en stock dans l'association
 *}}
 
 {{* filtrer selon la catégorie *}}
+{{:assign saved_filters=$module.config.filters}}
+{{:assign var="user_filters" from="saved_filters.%s"|args:$logged_user.id}}
+
 {{if $_GET.cat_key == null}}
-	{{:assign selected_category=$module.config.stock_cat_key}}
-	{{if $module.config.stock_cat_key != null}}
-		{{:assign cat_key=$selected_category|quote_sql}}
-	{{/if}}
-{{elseif $_GET.cat_key == -1}}
-	{{:assign selected_category=null}}
-	{{:save key="config" stock_cat_key=null}}
+	{{:assign selected_category=$user_filters.stock_cat_key}}
 {{else}}
-	{{:assign selected_category=$_GET.cat_key}}
-	{{:assign cat_key=$selected_category|quote_sql}}
-	{{:save key="config" stock_cat_key=$selected_category}}
+	{{if $_GET.cat_key == -1}}
+		{{:assign selected_category=null}}
+	{{else}}
+		{{:assign selected_category=$_GET.cat_key}}
+	{{/if}}
+	{{:assign var="user_filters.stock_cat_key" value=$selected_category}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
 {{/if}}
 
 {{* condition de filtrage *}}
 {{if $selected_category != null}}
+	{{:assign cat_key=$selected_category|quote_sql}}
 	{{:assign cat_condition="$$.category = %s"|args:$cat_key}}
 {{else}}
 	{{:assign cat_condition="1"}}
 {{/if}}
 
-{{* Sélecteur catégories *}}
-{{:assign var="cat_options." value="" label="Toutes les catégories" href="?cat_key=-1&prop=1"}}
+{{* filtrer selon appartenance *}}
+{{if $_GET.prop == null}}
+	{{:assign selected_prop=$user_filters.stock_prop}}
+{{else}}
+	{{if $_GET.prop == -1}}
+		{{:assign selected_prop=null}}
+	{{else}}
+		{{:assign selected_prop=$_GET.prop}}
+	{{/if}}
+	{{:assign var="user_filters.stock_prop" value=$selected_prop}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
+{{/if}}
+
+{{if $selected_prop == null}}
+	{{:assign prop_condition="1"}}
+{{elseif $selected_prop == 1}}
+	{{:assign prop_condition="$$.stock NOT NULL"}}
+{{else}}
+	{{:assign prop_condition="$$.notowned != 0"}}
+{{/if}}
+
+{{* sélecteurs de catégorie et d'appartenance  *}}
+{{:assign var="cat_options." value="" label="Toutes les catégories" href="?cat_key=-1"}}
 {{#load type="category" order="$$.name"}}
 	{{:assign var="categories.%s"|args:$key value=$name}}
 	{{:assign
 		var="cat_options."
 		value=$key
 		label=$name
-		href="?cat_key=%s&prop=1"|args:$key
+		href="?cat_key=%s"|args:$key
 	}}
 {{/load}}
 
@@ -47,8 +72,21 @@
 	}}
 </fieldset>
 
+{{:assign var="prop_options." value="" label="Tous les matériels" href="?prop=-1"}}
+{{:assign var="prop_options." value="1"  label="Matériels propriété de l'association" href="?prop=1"}}
+{{:assign var="prop_options." value="0"  label="Matériels NON propriété de l'association" href="?prop=0"}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par appartenance</legend>
+	{{:dropdown
+		title="Filtrer par appartenance"
+		options=$prop_options
+		value="%s"|args:$selected_prop
+	}}
+</fieldset>
+
 <div class="shortFormLeft">
-	<p class="help">Inventaire des matériels propriété de l'association</p>
+	<p class="help">Inventaire des matériels présents dans l'association</p>
 </div>
 
 {{#list
@@ -58,35 +96,32 @@
 		FROM @TABLE as cat
 		WHERE cat.key = @TABLE.$$.category) AS 'Catégorie' ;
 	$$.stock AS 'Stock' ;
+	(SELECT COALESCE($$.notowned, 0)) AS 'Temp' ;
+	(SELECT $$.stock + COALESCE($$.notowned, 0)) AS 'Total' ;
 	$$.out AS 'Sorti' ;
 	(SELECT $$.stock - $$.out) AS 'Disponible'
 	"
 	type="equipment"
-	where="$$.status <> 'archived' AND $$.stock NOT NULL AND %s"|args:$cat_condition
+	where="$$.status <> 'archived' AND %s AND %s"|args:$cat_condition:$prop_condition
 	order=1
 	}}
 	{{:assign var=cat_name from=categories.%s|args:$category}}
 	<tr>
-		<td>{{:link href="equipment_history.html?key=%s&prop=1"|args:$key" label=$name}}</td>
+		{{if $selected_prop == null}}
+			{{:assign prop=""}}
+		{{else}}
+			{{:assign prop="&prop=%s"|args:$selected_prop}}
+		{{/if}}
+		<td>{{:link href="equipment_history.html?key=%s&prop=%s"|args:$key:$selected_prop label=$name}}</td>
 		<td>{{$cat_name}}</td>
 		<td class="num">{{$stock}}</td>
+		<td class="num">{{$col4}}</td>
+		<td class="num">{{$col5}}
 		<td class="num">{{$out}}</td>
-		<td class="num">{{$col5}}</td>
+		<td class="num">{{$col7}}</td>
 		<td class="actions">
-			{{if $col5 > 0}}
-				{{:linkbutton
-				label="Sortie"
-				shape="minus"
-				href="movements/output_equipment.html?key=%s"|args:$key
-				target="_dialog"}}
-			{{/if}}
-			{{:linkbutton
-			label="Entrée"
-			shape="plus"
-			href="movements/input_equipment.html?key=%s"|args:$key
-			target="_dialog"}}
  			{{:linkbutton
-			label="Historique"
+			label="Mouvements"
 			href="equipment_history.html?key=%s&prop=1"|args:$key
 			shape="table"}}
 			{{:linkbutton

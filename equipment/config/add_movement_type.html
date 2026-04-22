@@ -12,18 +12,28 @@
 {{* lecture config *}}
 {{:include file="../_get_config.html" keep="config, directions, config_defaut"}}
 
+{{if ! $directions|has_key:$_GET.dir}}
+	{{:error message="Direction « %s » inconnue !"|args:$_GET.dir}}
+{{/if}}
+
 {{#form on="save"}}
+	{{if $_POST.output_fields.type == "temporaire"}}
+		{{* vérifier si le tarif a été choisi *}}
+		{{if $_POST.tarif == null}}
+			{{:error message="Vous n'avez pas choisi le tarif"}}
+		{{/if}}
+	{{/if}}
+
 	{{* vérifier s'il existe un libellé de même nom dans la même direction *}}
 	{{#foreach from=$directions key="direction"}}
 		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
-		{{#foreach from=$nature key="key"}}
+		{{#foreach from=$nature key="key" item="elem"}}
 			{{:assign var="fields" from="_POST.%s_fields"|args:$_GET.dir}}
-			{{if $_GET.dir == $direction && $label|trim|tolower == $fields.label|trim|tolower}}
-				{{:error message="Ce libellé est déjà présent"}}
+			{{if $_GET.dir == $direction && $fields.label|trim|tolower == $elem.label|trim|tolower}}
+				{{:error message="Le libellé « %s » est déjà présent"|args:$fields.label}}
 			{{/if}}
+			{{:assign var="%s_nature"|args:$direction value=$elem}}
 			{{:assign var="%s_nature.key"|args:$direction value=$key}}
-			{{:assign var="%s_nature.label"|args:$direction value=$label}}
-			{{:assign var="%s_nature.type"|args:$direction value=$type}}
 			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
 		{{/foreach}}
 
@@ -34,6 +44,13 @@
 			{{:assign var="%s_nature.key"|args:$direction value=""|uuid}}
 			{{:assign var="%s_nature.label"|args:$direction value=$newlabel}}
 			{{:assign var="%s_nature.type"|args:$direction from="_POST.%s_fields.type"|args:$direction}}
+			{{if $_POST.output_fields != null}}
+				{{if $_POST.output_fields.type == "temporaire"}}
+					{{:assign var="output_nature.fee" value=$_POST.tarif}}
+				{{else}}
+					{{:assign var="output_nature.fee" value=null}}
+				{{/if}}
+			{{/if}}
 			{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
 		{{/if}}
 	{{/foreach}}
@@ -104,29 +121,36 @@
 		<fieldset>
 			<legend>Type de sortie</legend>
 			<dl>
-				<td>
-					{{:input type="select"
-						label="Type de sortie"
-						name="output_fields[type]"
-						options=$output_types
-						default=$type
-						required=true
-						default_empty="— Choisir un type —"}}
-				</td>
-				<td>
-					{{:input
-						type="text"
-						label="Libellé de la sortie"
-						name="output_fields[label]"
+				{{:input type="select"
+					label="Type de sortie"
+					name="output_fields[type]"
+					options=$output_types
+					default=$type
+					required=true
+					default_empty="— Choisir un type —"}}
+				{{:input
+					type="text"
+					label="Libellé de la sortie"
+					name="output_fields[label]"
 					required=true}}
-				</td>
+				<div id="tarif">
+					{{:input type="radio-btn" name="tarif" value="gratuit" label="Gratuit" required=true prefix_title="Tarification"}}
+					{{:input type="radio-btn" name="tarif" value="payant" label="Payant" required=true}}
+				</div>
 			</dl>
 			<div class="help block">
 				<h3>Signification du type de sortie</h3>
 				<ul>
 					<li><b>définitif</b> : le matériel n'appartient plus à l'asso (ex : vente, casse, perte, vol, ...)</li>
-					<li><b>temporaire</b> : le matériel sort temporairement de l'asso qui en reste propriétaire (ex : location, prêt)</li>
+					<li><b>temporaire</b> : le matériel sort temporairement de l'asso qui en reste propriétaire (ex : location, prêt) ; dans ce cas, il faut indiquer si ce type de sortie est gratuit ou payant</li>
 					<li><b>retour</b> : le matériel <strong>non propriété de l'asso</strong> est rendu à son propriétaire (ex : retour de location ou d'emprunt)</li>
+				</ul>
+			</div>
+			<div class="help block tarif">
+				<h3>Tarification</h3>
+				<ul>
+					<li>Une sortie temporaire gratuite sera classée dans l'onglet Prêt</li>
+					<li>Une sortie temporaire payante sera classée dans l'onglet Locations</li>
 				</ul>
 			</div>
 		</fieldset>
@@ -135,3 +159,25 @@
 		</p>
 	</form>
 {{/if}}
+
+<script type="text/javascript">
+// afficher/masquer le choix du tarif
+function toggleTarif(event) {
+	const output_fieldstype = document.getElementById('f_output_fieldstype');
+	const value = output_fieldstype.value;
+	if (value == 'temporaire') {
+		g.toggle('#tarif', true);
+		g.toggle('div.tarif', true);
+	} else {
+		g.toggle('#tarif', false);
+		g.toggle('div.tarif', false);
+	}
+}
+toggleTarif();
+
+(function () {
+	const output_fieldstype = document.getElementById('f_output_fieldstype');
+	output_fieldstype.addEventListener("change", toggleTarif);
+})();
+
+</script>

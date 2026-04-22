@@ -26,13 +26,19 @@
 		{
 			"key" : "c9ba00d9-26ee-448b-9f02-73e479ec2980",
 			"label" : "Prêt",
-			"type" : "temporaire"
+			"type" : "temporaire",
+			"fee" : "gratuit"
+		},
+		{
+			"key" : "5c6c20bf-53e9-49dc-bcd6-e3cac23a6786",
+			"label" : "Location",
+			"type" : "temporaire",
+			"fee" : "payant"
 		},
 		{
 			"key" : "fefefa51-1a85-46ca-ab78-b594b10390ff",
 			"label" : "Retour de Location/Emprunt",
 			"type" : "retour"
 		}
-	],
-	"loan_duration" : "30"
+	]
 }

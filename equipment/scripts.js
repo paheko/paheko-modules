@@ -26,18 +26,6 @@ function disableColumSort(liste) {
 	}
 }
 
-function toggleVisibility(idcheck, fields) {
-	const elem = document.getElementById(idcheck);
-	for (let id of fields) {
-		const field = document.getElementById(id);
-		if (elem.checked) {
-			field.style.visibility = "visible";
-		} else {
-			field.style.visibility = "hidden";
-		}
-	}
-}
-
 /**
  * renvoyer la valeur en secondes d'une date au format j/m/a
  * @param {string} date
@@ -59,7 +47,29 @@ function getDate(idelem) {
 function setReturnDate(id_date, id_return_date, id_loan_duration)
 {
 	const loan_duration = document.getElementById(id_loan_duration).value;
-	let nbsec = getDate(id_date) + loan_duration*24*60*60;
-	const date_retour = new Date(nbsec * 1000);
-	document.getElementById(id_return_date).value = date_retour.toLocaleDateString();
+	if (loan_duration !== undefined && loan_duration > 0) {
+		let nbsec = getDate(id_date) + loan_duration*24*60*60;
+		const date_retour = new Date(nbsec * 1000);
+		document.getElementById(id_return_date).value = date_retour.toLocaleDateString();
+	}
+}
+
+/**
+ * changer la visibilité de la date de retour
+ */
+function toggleVisibility(id_date, id_type, div, id_return_date)
+{
+	const key = document.getElementById(id_type).value;
+	let type_sortie;
+	if (key !== undefined && key != '') {
+		type_sortie = output_nature[key].type;
+	}
+	const div_date = document.getElementById(div);
+	if (type_sortie == 'temporaire') {
+		div_date.style.visibility = "visible";
+		document.getElementById(id_date).onchange();
+	} else {
+		div_date.style.visibility = "hidden";
+		document.getElementById(id_return_date).value = null;
+	}
 }

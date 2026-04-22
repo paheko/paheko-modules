@@ -135,9 +135,9 @@
 								{{if $retard < 0}}
 									{{:assign delai="abs(%d)"|math:$retard}}
 									{{"Reste %s jours"|args:$delai}}
-								{{elseif $retard >0 }}
+								{{elseif $retard > 0 }}
 									{{:tag color="darkred" label="Retard %s jours"|args:$retard}}
-								{{else}}
+								{{elseif $return_date != null}}
 									{{:tag color="darkgreen" label="À rendre aujourdh'ui"}}
 								{{/if}}
 							</td>

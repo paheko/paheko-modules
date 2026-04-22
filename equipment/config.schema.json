@@ -36,6 +36,11 @@
 					"type" : {
 						"type" : "string",
 						"enum" : ["définitif", "temporaire", "retour"]
+					},
+					"fee" : {
+						"description" : "tarif sortie temporaire",
+						"type" : ["string", "null"],
+						"enum" : ["gratuit", "payant"]
 					}
 				}
 			}

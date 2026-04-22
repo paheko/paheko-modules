@@ -10,16 +10,28 @@
 
 
 {{* lecture config (défaut ou enregistrée) *}}
-{{:include file="../_get_config.html" keep="config, directions"}}
+{{:include file="../_get_config.html" keep="config_defaut, config, directions"}}
+
+{{if ! $directions|has_key:$_GET.dir}}
+	{{:error message="Direction « %s » inconnue !"|args:$_GET.dir}}
+{{/if}}
+
+{{* interdire la suppression des types de mouvement prédéfinis *}}
+{{:assign var="nature" from="config_defaut.%ss"|args:$_GET.dir}}
+{{#foreach from=$nature item="elem"}}
+	{{:assign var="default_keys." value=$key}}
+{{/foreach}}
+{{if $default_keys|has:$_GET.op_key}}
+	{{:error message="Ce type de mouvement ne peut être supprimé"}}
+{{/if}}
 
 {{#form on="delete"}}
 	{{#foreach from=$directions key="direction"}}
 		{{:assign var="nature" from="config.%s_nature"|args:$direction}}
-		{{#foreach from=$nature key="key"}}
+		{{#foreach from=$nature key="key" item="elem"}}
 			{{if $_GET.dir == $direction && $key != $_GET.op_key || $_GET.dir != $direction}}
+				{{:assign var="%s_nature"|args:$direction value=$elem}}
 				{{:assign var="%s_nature.key"|args:$direction value=$key}}
-				{{:assign var="%s_nature.label"|args:$direction value=$label}}
-				{{:assign var="%s_nature.type"|args:$direction value=$type}}
 				{{:assign var="%s_natures."|args:$direction from="%s_nature"|args:$direction}}
 			{{/if}}
 		{{/foreach}}

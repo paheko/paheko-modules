@@ -2,14 +2,21 @@
 
 {{#restrict block=true section="accounting" level="write"}}{{/restrict}}
 
-{{:admin_header title="Matériels hors de l'asso" custom_css="../style.css" current="module_equipment"}}
-{{:include file="./_nav.html" current="historique" subcurrent="prêts"}}
+{{if $_GET.output_type == "loan"}}
+	{{:assign label="prêt"}}
+{{elseif $_GET.output_type == "rent"}}
+	{{:assign label="location"}}
+{{else}}
+	{{:error message="Cette page n'existe pas !"}}
+{{/if}}
+
+{{:admin_header title="%ss en cours"|args:$label|ucfirst custom_css="../style.css" current="module_equipment"}}
+{{:include file="./_nav.html" current="%s"|args:$label subcurrent="encours"}}
 
 {{*
 	vérifier l'existence de la table du module
 	eh oui, il se peut qu'elle ne soit pas encore créée si aucune donnée n'a été ajoutée dedans
 *}}
-
 {{#load limit="1"}}
 	{{:assign table_presente=true}}
 {{else}}
@@ -31,20 +38,66 @@
 	{{/if}}
 {{/if}}
 
-<div class="shortFormLeft">
-	<p class="help">Historique des prêts de matériel</p>
-</div>
-
-{{* lecture config (défaut ou enregistrée) *}}
+{{* lecture config *}}
 {{:include file="./_get_config.html" keep="config"}}
 
+{{* filtrer selon la catégorie *}}
+{{:assign saved_filters=$module.config.filters}}
+{{:assign var="user_filters" from="saved_filters.%s"|args:$logged_user.id}}
+
+{{if $_GET.cat_key == null}}
+	{{:assign var="selected_category" from="user_filters.%s_hist_cat_key"|args:$_GET.output_type}}
+{{else}}
+	{{if $_GET.cat_key == -1}}
+		{{:assign selected_category=null}}
+	{{else}}
+		{{:assign selected_category=$_GET.cat_key}}
+	{{/if}}
+	{{:assign var="user_filters.%s_hist_cat_key"|args:$_GET.output_type value=$selected_category}}
+	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}
+	{{:save key="config" filters=$saved_filters}}
+{{/if}}
+
+{{* condition de filtrage *}}
+{{if $selected_category != null}}
+	{{:assign cat_key=$selected_category|quote_sql}}
+	{{:assign cat_condition="json_extract(mat.document, '$.category') = %s"|args:$cat_key}}
+{{else}}
+	{{:assign cat_condition=1}}
+{{/if}}
+
 {{#foreach from=$config.output_nature key="key"}}
-	{{if $type == 'temporaire'}}
-		{{:assign var="output_types." value=$key|quote_sql}}
+	{{if $type != 'temporaire'}}
+		{{:continue}}
+	{{/if}}
+	{{if $_GET.output_type == "loan" && $fee != 'payant'}}
+		{{:assign var="out_keys." value=$key|quote_sql}}
+	{{elseif $_GET.output_type == "rent" && $fee == 'payant'}}
+		{{:assign var="out_keys." value=$key|quote_sql}}
 	{{/if}}
 {{/foreach}}
-{{:assign output_ops=$output_types|implode:","}}
-{{:assign output_ops="("|cat:$output_ops|cat:")"}}
+{{:assign out_keys=$out_keys|implode:","}}
+{{:assign out_keys="("|cat:$out_keys|cat:")"}}
+
+{{* sélecteur de catégorie  *}}
+{{:assign var="cat_options." value="" label="Toutes les catégories" href="?output_type=%s&cat_key=-1"|args:$_GET.output_type}}
+{{#load type="category" order="$$.name"}}
+	{{:assign
+		var="cat_options."
+		value=$key
+		label=$name
+		href="?output_type=%s&cat_key=%s"|args:$_GET.output_type:$key
+	}}
+{{/load}}
+
+<fieldset class="shortFormRight">
+	<legend>Filtrer par catégorie</legend>
+	{{:dropdown
+		title="Filtrer par catégorie"
+		options=$cat_options
+		value="%s"|args:$selected_category
+	}}
+</fieldset>
 
 {{:assign premier=true}}
 {{#select
@@ -61,29 +114,29 @@
 	LEFT JOIN !table AS links ON mvt.key = json_extract(links.document, '$.temp_key')
 	LEFT JOIN !table AS retour ON retour.key = json_extract(links.document, '$.return')
 	INNER JOIN !table AS mat ON mat.key = json_extract(mvt.document, '$.equipment')
-	WHERE
-		json_extract(mvt.document, '$.type') = 'movement'
-	AND
-		json_extract(mvt.document, '$.operation') IN !op
+	WHERE json_extract(mvt.document, '$.type') = 'movement'
+	AND	json_extract(mvt.document, '$.operation') IN !op
+	AND !cat_condition
 	GROUP BY mvt.key
 	HAVING remain != 0
-	ORDER BY out_date, nom
+	ORDER BY out_date DESC, nom
 	;
 	!table=$module.table
-	!op = $output_ops
+	!op = $out_keys
+	!cat_condition=$cat_condition
 }}
 	{{if $premier}}
 		<table class="list">
 			<thead>
 				<tr>
-					<th>Matériel</th>
-					<th>Date prêt</th>
-					<th>Quantité</th>
-					<th>Membre</th>
-					<th>Date retour</th>
-					<th>Reste à rendre</th>
-					<th>Remarque</th>
-					<th class="actions"></th>
+					<td>Matériel</td>
+					<td>Date prêt</td>
+					<td>Quantité</td>
+					<td>Membre</td>
+					<td>Date retour</td>
+					<td>Reste à rendre</td>
+					<td>Remarque</td>
+					<td class="actions"></td>
 				</tr>
 			</thead>
 			<tbody>
@@ -122,9 +175,14 @@
 				href="movements/output_return.html?key=%s&prop=1"|args:$mvt_key
 				shape="reset"
 				target="_dialog"}}
+			{{if $_GET.output_type == "loan"}}
+				{{:assign from="lh"}}
+			{{elseif $_GET.output_type == "rent"}}
+				{{:assign from="rh"}}
+			{{/if}}
 			{{:linkbutton
 				label="Détails"
-				href="movements/movement_details.html?key=%s&prop=1&from=lh"|args:$mvt_key
+				href="movements/movement_details.html?key=%s&prop=1&from=%s"|args:$mvt_key:$from
 				shape="eye"
 			}}
 		</td>

@@ -3,63 +3,72 @@
 <nav class="tabs">
 	{{if $current == 'inventaire'}}
 		<aside>
-			{{if $subsubcurrent == null && $cat == 0}}
-				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
-			{{else}}
-				{{:linkbutton label="Ajouter un nouveau matériel" shape="plus" href="movements/add_new_equipment.html" target="_dialog"}}
+			{{if $subcurrent == 'stock'}}
+				{{if $cat == 0}}
+					{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
+				{{else}}
+					{{:exportmenu right=true}}
+					{{:linkbutton label="Ajouter un nouveau matériel" shape="plus" href="movements/add_new_equipment.html" target="_dialog"}}
+				{{/if}}
+			{{elseif $subcurrent == "mouvements"}}
+				{{if $sortie != null}}
+					{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$key target="_dialog"}}
+				{{/if}}
+				{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$key target="_dialog"}}
+			{{/if}}
+		</aside>
+	{{elseif $current == 'config'}}
+		<aside>
+			{{if $subcurrent == 'categories'}}
+				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="add_category.html" target="_dialog"}}
+			{{elseif $subcurrent == 'storage'}}
+				{{:linkbutton label="Ajouter un lieu de stockage" shape="plus" href="add_storage.html" target="_dialog"}}
+			{{elseif $subcurrent == 'typesES'}}
+				{{:linkbutton label="Ajouter un type d'entrée" shape="plus" href="config/add_movement_type.html?dir=input" target="_dialog"}}
+				{{:linkbutton label="Ajouter un type de sortie" shape="plus" href="config/add_movement_type.html?dir=output" target="_dialog"}}
 			{{/if}}
 		</aside>
 	{{/if}}
 
 	<ul>
-		<li {{if $current == 'inventaire'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=1">Inventaire</a></li>
+		<li {{if $current == 'inventaire'}} class="current"{{/if}}><a href="{{$module.url}}index.html">Inventaire</a></li>
 		<li {{if $current == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}global_history.html">Historique</a></li>
+		<li {{if $current == 'prêt'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=loan">Prêts</a></li>
+		<li {{if $current == 'location'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=rent">Locations</a></li>
 		<li {{if $current == 'archives'}} class="current"{{/if}}><a href="{{$module.url}}archives.html">Archives</a></li>
 		<li {{if $current == 'config'}} class="current"{{/if}}><a href="{{$module.url}}categories/index.html">Configuration</a></li>
 	</ul>
 
 	{{if $current == 'inventaire'}}
-		<ul class="sub">
-			<li {{if $subcurrent == 'proprio'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=1">Matériels permanents</a></li>
-			<li {{if $subcurrent == 'nonproprio'}} class="current"{{/if}}><a href="{{$module.url}}index.html?prop=0">Matériels temporaires</a></li>
-		</ul>
-
-		{{if $subsubcurrent == 'historique'}}
+		{{if $subcurrent == 'mouvements'}}
 			<ul class="sub">
-				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
+				<li class="title"><strong>Mouvements — {{$eqpmt}} ({{$category}})</strong></li>
 			</ul>
 		{{/if}}
-	{{elseif $current == 'historique'}}
+	{{elseif $current == 'prêt'}}
 		<ul class="sub">
-			<li {{if $subcurrent == 'tous'}} class="current"{{/if}}><a href="{{$module.url}}global_history.html">Tous</a></li>
-			<li {{if $subcurrent == 'prêts'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html">Prêts</a></li>
+			<li {{if $subcurrent == 'encours'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=loan">En cours</a></li>
+			<li {{if $subcurrent == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}loan_movements.html?output_type=loan">Historique</a></li>
+			<li {{if $subcurrent == 'membres'}} class="current"{{/if}}><a href="{{$module.url}}member_loan.html?output_type=loan">Prêts en cours aux membres</a></li>
+		</ul>
+	{{elseif $current == 'location'}}
+		<ul class="sub">
+			<li {{if $subcurrent == 'encours'}} class="current"{{/if}}><a href="{{$module.url}}loan_history.html?output_type=rent">En cours</a></li>
+			<li {{if $subcurrent == 'historique'}} class="current"{{/if}}><a href="{{$module.url}}loan_movements.html?output_type=rent">Historique</a></li>
+			<li {{if $subcurrent == 'membres'}} class="current"{{/if}}><a href="{{$module.url}}member_loan.html?output_type=rent">Locations en cours aux membres</a></li>
 		</ul>
 	{{elseif $current == 'archives'}}
-		{{if $subsubcurrent == 'historique'}}
+		{{if $subcurrent == 'mouvements'}}
 			<ul class="sub">
 				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
 			</ul>
 		{{/if}}
 	{{elseif $current == 'config'}}
-		{{if $subcurrent == 'categories'}}
-			<aside>
-				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="add_category.html" target="_dialog"}}
-			</aside>
-		{{elseif $subcurrent == 'storage'}}
-			<aside>
-				{{:linkbutton label="Ajouter un lieu de stockage" shape="plus" href="add_storage.html" target="_dialog"}}
-			</aside>
-		{{elseif $subcurrent == 'typesES'}}
-			<aside>
-				{{:linkbutton label="Ajouter un type d'entrée" shape="plus" href="config/add_movement_type.html?dir=input" target="_dialog"}}
-				{{:linkbutton label="Ajouter un type de sortie" shape="plus" href="config/add_movement_type.html?dir=output" target="_dialog"}}
-			</aside>
-		{{/if}}
 		<ul class="sub">
 			<li {{if $subcurrent == 'categories'}} class="current"{{/if}}><a href="{{$module.url}}categories/index.html">Catégories</a></li>
-			<li {{if $subcurrent == 'storage'}} class="current"{{/if}}><a href="{{$module.url}}storage/index.html">Lieux de stockage</a></li>
-			<li {{if $subcurrent == 'typesES'}} class="current"{{/if}}><a href="{{$module.url}}config.html">Types d'entrées/sorties</a></li>
-			<li {{if $subcurrent == 'divers'}} class="current"{{/if}}><a href="{{$module.url}}config/misc.html">Divers</a></li>
+			<li {{if $subcurrent == 'storage'}}    class="current"{{/if}}><a href="{{$module.url}}storage/index.html">Lieux de stockage</a></li>
+			<li {{if $subcurrent == 'typesES'}}    class="current"{{/if}}><a href="{{$module.url}}config.html">Types d'entrées/sorties</a></li>
+			<li {{if $subcurrent == 'divers'}}     class="current"{{/if}}><a href="{{$module.url}}config/misc.html">Divers</a></li>
 		</ul>
 	{{/if}}
 </nav>

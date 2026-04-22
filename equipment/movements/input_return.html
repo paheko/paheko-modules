@@ -204,9 +204,9 @@
 	<fieldset>
 		<legend>Retour de matériel</legend>
 		<dl>
-			{{:input type="select" name="operation" label="Type de mouvement" required=true options=$return_label}}
 			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
 			{{:input type="number" name="amount" label="Quantité" min=1 max=$present required=true default=1}}
+			{{:input type="select" name="operation" label="Type de mouvement" required=true options=$return_label}}
 			{{:input type="textarea" name="comment" label="Remarques" cols="40", rows="3" required=false}}
 		</dl>
 	</fieldset>

@@ -5,14 +5,25 @@
 {{*
 	paramètres :
 	- key		: clé du matériel à sortir
+	- output_type : loan (prêt), rent (location), rien (cas général)
 *}}
 
 {{* récupérer la config des entrées/sorties *}}
-{{:include file="../_get_config.html" keep="config, loan_duration"}}
+{{:include file="../_get_config.html" keep="config"}}
 
 {{* types de sorties *}}
 {{#foreach from=$config.output_nature key=key}}
-	{{if $type != 'retour'}}
+	{{if $type == 'retour'}}
+		{{:continue}}
+	{{/if}}
+	{{if $type == 'temporaire' && $fee == 'payant'}}
+		{{:assign var="paid_keys." value=$key}}
+	{{/if}}
+	{{if $_GET.output_type == null}}
+		{{:assign var="output_labels.%s"|args:$key value=$label}}
+	{{elseif $type == 'temporaire' && $_GET.output_type == "loan" && $fee != 'payant'}}
+		{{:assign var="output_labels.%s"|args:$key value=$label}}
+	{{elseif $type == 'temporaire' && $_GET.output_type == "rent" && $fee == 'payant'}}
 		{{:assign var="output_labels.%s"|args:$key value=$label}}
 	{{/if}}
 {{/foreach}}
@@ -22,22 +33,27 @@
 
 {{* Traiter l'envoi du formulaire *}}
 {{#form on="save"}}
+	{{* vérifier la validité de la saisie *}}
+
 	{{* interdire date dans le futur *}}
 	{{if $_POST.date|parse_date|strtotime > $now}}
 		{{:error message="Impossible de saisir une date dans le futur (%s)"|args:$_POST.date}}
 	{{/if}}
 
-	{{* vérifier les infos saisies *}}
 	{{if $_POST.operation == ""}}
 		{{:error message="Vous devez choisir un type de sortie"}}
 	{{/if}}
 
 	{{:assign var="type_mvt" from="config.output_nature.%s.type"|args:$_POST.operation}}
-	{{if $type_mvt != "temporaire" && $_POST.set_return_date != null}}
+	{{if $type_mvt != "temporaire" && $_POST.return_date != null}}
 		{{:error message="On ne peut associer une date de retour qu'à une sortie temporaire"}}
 	{{/if}}
-	{{if $_POST.set_return_date != null}}
-		{{:assign return_date=$_POST.return_date}}
+
+	{{if $_POST.return_date != null}}
+		{{:assign return_date=$_POST.return_date|parse_date}}
+		{{if $return_date < $_POST.date|parse_date}}
+			{{:error message="La date de retour doit être postérieure à la date de sortie !"}}
+		{{/if}}
 	{{else}}
 		{{:assign return_date=null}}
 	{{/if}}
@@ -158,7 +174,7 @@
 		date=$_POST.date|parse_date
 		comment=$_POST.remarques|trim
 		user=$user.id
-		return_date=$return_date|parse_date
+		return_date=$return_date
 		transactions=$transactions
 	}}
 	{{:redirect force="../equipment_history.html?ok=1&key=%s&prop=1&msg=sortie"|args:$_GET.key}}
@@ -169,13 +185,16 @@
 	{{* barre de navigation *}}
 	{{:include file="../_nav.html" current="sorties"}}
 {{/if}}
+{{:form_errors}}
 
 {{#load key=$equipment.category assign="category"}}{{/load}}
 {{:assign dispo="%d-%d"|math:$equipment.stock:$equipment.out}}
 
 {{if $dispo > 0}}
-	{{:assign ts_retour="%d+%d*(60*60*24)"|math:$now:$loan_duration}}
-	{{:assign date_retour=$ts_retour|date_short}}
+	{{if $module.config.loan_duration != null && $module.config.loan_duration > 0}}
+		{{:assign ts_retour="%d+%d*(60*60*24)"|math:$now:$module.config.loan_duration}}
+		{{:assign date_retour=$ts_retour|date_short}}
+	{{/if}}
 
 	{{* formulaire de sortie de matériel *}}
 	<form method="post" action="">
@@ -193,17 +212,17 @@
 		<fieldset class="sortie">
 			<legend>Informations obligatoires</legend>
 			<dl>
+				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
+				{{:input type="number" name="amount" label="Quantité" required=true default=1 min=1 max=$dispo}}
 				{{if $output_labels|count == 1}}
 					{{:input type="select" name="operation" label="Type de sortie" required=true options=$output_labels}}
 				{{else}}
 					{{:input type="select" name="operation" label="Type de sortie" required=true default_empty="— Aucun —" options=$output_labels|sort}}
 				{{/if}}
-				{{:input type="date" name="date" label="Date de sortie" required=true default=$now|date_short}}
-				{{:input type="number" name="amount" label="Quantité" required=true default=1 min=1 max=$dispo}}
 			</dl>
 		</fieldset>
 		<fieldset class="entree">
-			<legend>Informations facultatives</legend>
+			<legend>Autres informations</legend>
 			<dl>
 				{{:input
 					type="list"
@@ -215,10 +234,9 @@
 				}}
 				{{:input type="list" name="transactions" label="Écritures liées" target="!acc/transactions/selector.php" multiple=true help="par exemple écriture avec facture"}}
 				{{:input type="textarea" name="remarques" label="Remarques" cols="40" rows="3" required=false}}
-				{{:input id="set_return_date" type="checkbox" value=1 name="set_return_date" label="Fixer une date de retour" help="Cocher pour fixer une date de retour"}}
-				<div id="div_return_date" style="visibility:hidden">
+				<div id="div_return_date">
 					{{:input type="date" id="return_date" name="return_date" label="Date de retour" default=$date_retour}}
-					<input type="hidden" id="loan_duration" name="loan_duration" value="{{$loan_duration}}">
+					<input type="hidden" id="loan_duration" name="loan_duration" value="{{$module.config.loan_duration}}">
 				</div>
 			</dl>
 		</fieldset>
@@ -230,13 +248,20 @@
 	<p class="block error">Il n'y a aucune unité de ce matériel disponible à la date du {{$now|date_short}}</p>
 {{/if}}
 
-{{:form_errors}}
 {{:admin_footer}}
 
 <script type="text/javascript" src="../scripts.js"></script>
+
 <script type="text/javascript">
-function changeVisibility(evt, idcheck = 'f_set_return_date_1', fields = ['div_return_date']) {
-	toggleVisibility(idcheck, fields);
+let output_nature = {{$config.output_nature|json_encode|raw}};
+
+function changeVisibility(evt,
+						  id_date = 'f_date',
+						  id_type = 'f_operation',
+						  div = 'div_return_date',
+						  id_return_date = 'f_return_date')
+{
+	toggleVisibility(id_date, id_type, div, id_return_date);
 }
 
 function changeReturnDate(evt, id_date = 'f_date', id_return_date = 'f_return_date', id_loan_duration='loan_duration')
@@ -245,8 +270,8 @@ function changeReturnDate(evt, id_date = 'f_date', id_return_date = 'f_return_da
 }
 
 (function () {
-	document.getElementById('f_set_return_date_1').checked = false;
-	document.getElementById('f_set_return_date_1').onclick = changeVisibility;
+	document.getElementById('f_operation').onchange = changeVisibility;
 	document.getElementById('f_date').onchange = changeReturnDate;
+	document.getElementById('f_operation').onchange();
 })();
 </script>

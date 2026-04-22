@@ -106,17 +106,17 @@
 	<fieldset class="entree">
 		<legend>Informations obligatoires</legend>
 		<dl>
+			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
+			{{:input type="number" name="amount" label="Quantité" required=true min=1 default=1}}
 			{{if $input_labels|count == 1}}
 				{{:input type="select" name="operation" label="Type d'entrée" required=true options=$input_labels}}
 			{{else}}
 				{{:input type="select" name="operation" label="Type d'entrée" required=true default_empty="— Aucun —" options=$input_labels|sort}}
 			{{/if}}
-			{{:input type="date" name="date" label="Date" required=true default=$now|date_short}}
-			{{:input type="number" name="amount" label="Quantité" required=true min=1 default=1}}
 		</dl>
 	</fieldset>
 	<fieldset class="entree">
-		<legend>Informations facultatives</legend>
+		<legend>Autres informations</legend>
 		<dl>
 			{{if $storage != null}}
 				{{:input type="select" name="storage" label="Lieu de stockage" default_empty="— Aucun —" options=$storage required=false}}
