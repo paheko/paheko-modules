@@ -4,12 +4,34 @@
 	inventaire des entrées/sorties des matériels temporaires
 *}}
 
+{{* filtrer selon la catégorie *}}
+{{if $_GET.cat_key == null}}
+	{{:assign selected_category=$module.config.temp_cat_key}}
+	{{if $module.config.temp_cat_key != null}}
+		{{:assign cat_key=$selected_category|quote_sql}}
+	{{/if}}
+{{elseif $_GET.cat_key == -1}}
+	{{:assign selected_category=null}}
+	{{:save key="config" temp_cat_key=null}}
+{{else}}
+	{{:assign selected_category=$_GET.cat_key}}
+	{{:assign cat_key=$selected_category|quote_sql}}
+	{{:save key="config" temp_cat_key=$selected_category}}
+{{/if}}
+
+{{* condition de filtrage *}}
+{{if $selected_category != null}}
+	{{:assign cat_condition="$$.category = %s"|args:$cat_key}}
+{{else}}
+	{{:assign cat_condition="1"}}
+{{/if}}
+
 {{* Sélecteur catégories *}}
-{{:assign var="options." value="" label="Toutes les catégories" href="?prop=0"}}
+{{:assign var="cat_options." value="" label="Toutes les catégories" href="?cat_key=-1&prop=0"}}
 {{#load type="category" order="$$.name"}}
 	{{:assign var="categories.%s"|args:$key value=$name}}
 	{{:assign
-		var="options."
+		var="cat_options."
 		value=$key
 		label=$name
 		href="?cat_key=%s&prop=0"|args:$key
@@ -20,22 +42,14 @@
 	<legend>Filtrer par catégorie</legend>
 	{{:dropdown
 		title="Filtrer par catégorie"
-		options=$options
-		value="%s"|args:$_GET.cat_key
+		options=$cat_options
+		value="%s"|args:$selected_category
 	}}
 </fieldset>
 
 <div class="shortFormLeft">
 	<p class="help">Inventaire des matériels empruntés ou loués</p>
 </div>
-
-{{* filtrer selon la catégorie *}}
-{{if $_GET.cat_key == null}}
-	{{:assign condition="1"}}
-{{else}}
-	{{:assign cat_key=$_GET.cat_key|quote_sql}}
-	{{:assign condition="$$.category = %s"|args:$cat_key}}
-{{/if}}
 
 {{#list
 	select="
@@ -46,7 +60,7 @@
 	$$.notowned AS 'Quantité'
 	"
 	type="equipment"
-	where="$$.status <> 'archived' AND $$.notowned != 0 AND %s"|args:$condition
+	where="$$.status <> 'archived' AND $$.notowned != 0 AND %s"|args:$cat_condition
 	order=1
 	}}
 	{{:assign var=cat_name from=categories.%s|args:$category}}

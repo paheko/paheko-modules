@@ -12,10 +12,13 @@ compta ou un fichier.
 
 Un matériel appartenant à l'association peut sortir :
 - temporairement (prêt, ...) : il est possible de lui associer un lieu
-  de stockage ainsi qu'un membre dépositaire du matériel ; il peut
-  ensuite revenir dans l'association.
+  de stockage ainsi qu'un membre dépositaire du matériel et une date
+  de retour ; il peut ensuite revenir dans l'association.
 - définitivement (vente, ...) : il est possible de lui associer un
   membre bénéficiaire du matériel.
+
+Il est possible de suivre les matériels prêtés ou loués et de savoir
+si la date de retour est proche ou dépassée.
 
 Un matériel présent temporairement dans l'association peut être
 retourné à son propriétaire.
