@@ -1,0 +1,276 @@
+{{* -*- brindille -*- *}}
+
+{{#restrict block=true section="users" level="read"}}
+{{/restrict}}
+
+{{:assign user_id=null}}
+
+{{if $_GET.user}}
+  {{#foreach from=$_GET.user key="id" item="label"}}
+    {{:assign user_id=$id|intval}}
+  {{/foreach}}
+{{elseif $_GET.user_id|intval > 0}}
+  {{:assign user_id=$_GET.user_id|intval}}
+{{/if}}
+
+{{:assign subscription_id=$_GET.subscription|intval|or:null}}
+{{:assign payment_ref=$_GET.payment_ref|trim}}
+{{:assign product=$_GET.product|trim}}
+{{:assign page=$_GET.page|intval}}
+{{:assign per_page=20}}
+
+{{if $page < 1}}
+  {{:assign page=1}}
+{{/if}}
+
+{{:assign offset="%d-1"|math:$page}}
+{{:assign offset="%d*%d"|math:$offset:$per_page}}
+
+{{if $payment_ref !== ''}}
+  {{:assign payment_ref_like="%%%s%%"|args:$payment_ref}}
+{{else}}
+  {{:assign payment_ref_like=null}}
+{{/if}}
+
+{{if $product !== ''}}
+  {{:assign product_like="%%%s%%"|args:$product}}
+{{else}}
+  {{:assign product_like=null}}
+{{/if}}
+
+{{:assign has_filters=false}}
+{{if $user_id || $subscription_id || $payment_ref_like || $product_like}}
+  {{:assign has_filters=true}}
+{{/if}}
+
+{{#extension name="caisse"}}
+  {{:assign has_caisse=true}}
+{{else}}
+  {{:assign has_caisse=false}}
+{{/extension}}
+
+{{:admin_header title="Notes de caisse" current="module_caisse_sessions"}}
+
+{{if !$has_caisse}}
+  <p class="block error">
+    L'extension Caisse n'est pas active, ce module ne peut pas fonctionner.
+  </p>
+{{else}}
+  <form method="get" action="">
+    <fieldset>
+      <legend>Filtrer</legend>
+      <dl>
+        {{:input
+          type="list"
+          multiple=false
+          name="user"
+          label="Membre"
+          target="!users/selector.php"
+          default=$_GET.user
+          can_delete=true
+        }}
+
+        {{:input
+          type="text"
+          name="product"
+          label="Produit"
+          default=$product
+          help="Recherche sur le nom du produit enregistré dans la note."
+        }}
+
+        {{:input
+          type="text"
+          name="payment_ref"
+          label="Référence de paiement"
+          default=$payment_ref
+          help="Exemple: numéro de chèque, référence de virement, etc."
+        }}
+      </dl>
+
+      {{if $subscription_id}}
+        <input type="hidden" name="subscription" value="{{$subscription_id}}" />
+      {{/if}}
+
+      <p class="submit">
+        {{:button type="submit" label="Afficher" shape="search" class="main"}}
+        {{:linkbutton href="%sindex.html"|args:$module.url label="Réinitialiser" shape="reset"}}
+      </p>
+    </fieldset>
+  </form>
+
+  {{if $subscription_id}}
+    <p class="block help">
+      Filtre inscription actif (ID #{{$subscription_id}}) via URL.
+      {{:link href="%sindex.html"|args:$module.url label="Retirer ce filtre"}}
+    </p>
+  {{/if}}
+
+  {{#select
+    COUNT(*) AS total_count,
+    CAST((COUNT(*) + :per_page - 1) / :per_page AS INTEGER) AS total_pages
+    FROM plugin_pos_tabs t
+    WHERE (:user_id IS NULL OR t.user_id = :user_id)
+    AND (:subscription_id IS NULL OR EXISTS (
+      SELECT 1
+      FROM plugin_pos_tabs_items i
+      WHERE i.tab = t.id
+        AND i.id_subscription = :subscription_id
+    ))
+    AND (:product_like IS NULL OR EXISTS (
+      SELECT 1
+      FROM plugin_pos_tabs_items i2
+      WHERE i2.tab = t.id
+        AND i2.name LIKE :product_like
+    ))
+    AND (:payment_ref_like IS NULL OR EXISTS (
+      SELECT 1
+      FROM plugin_pos_tabs_payments p
+      WHERE p.tab = t.id
+        AND p.reference IS NOT NULL
+        AND p.reference LIKE :payment_ref_like
+    ));
+    :user_id=$user_id
+    :subscription_id=$subscription_id
+    :product_like=$product_like
+    :payment_ref_like=$payment_ref_like
+    :per_page=$per_page
+  }}
+    {{if $total_count > 0}}
+      <p class="help">{{$total_count}} note(s) trouvée(s).</p>
+    {{/if}}
+
+    <table class="list">
+      <thead>
+        <tr>
+          <th>Note</th>
+          <th>Clôture</th>
+          <th>Produits</th>
+          <th class="money">Total</th>
+          <th>Paiement</th>
+          <th class="actions"></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#select
+          t.id AS tab_id,
+          t.session AS session_id,
+          t.user_id,
+          t.name AS tab_name,
+          t.closed,
+          COALESCE((
+            SELECT SUM(total)
+            FROM plugin_pos_tabs_items
+            WHERE tab = t.id
+          ), 0) AS total,
+          COALESCE((
+            SELECT GROUP_CONCAT(
+              COALESCE(pm.name, 'Inconnu')
+              || ': '
+              || printf('%.2f €', p.amount / 100.0)
+              || CASE
+                WHEN p.reference IS NOT NULL AND TRIM(p.reference) != ''
+                THEN ' (' || p.reference || ')'
+                ELSE ''
+              END,
+              char(10)
+            )
+            FROM plugin_pos_tabs_payments p
+            LEFT JOIN plugin_pos_methods pm ON pm.id = p.method
+            WHERE p.tab = t.id
+          ), '') AS payment_details,
+          COALESCE((
+            SELECT GROUP_CONCAT(line, char(10))
+            FROM (
+              SELECT
+                name
+                || ' ('
+                || printf('%.2f €', SUM(total) / 100.0)
+                || ')' AS line
+              FROM plugin_pos_tabs_items
+              WHERE tab = t.id
+              GROUP BY name
+              ORDER BY name
+            )
+          ), '') AS products_list
+          FROM plugin_pos_tabs t
+          WHERE (:user_id IS NULL OR t.user_id = :user_id)
+          AND (:subscription_id IS NULL OR EXISTS (
+            SELECT 1
+            FROM plugin_pos_tabs_items i
+            WHERE i.tab = t.id
+              AND i.id_subscription = :subscription_id
+          ))
+          AND (:product_like IS NULL OR EXISTS (
+            SELECT 1
+            FROM plugin_pos_tabs_items i2
+            WHERE i2.tab = t.id
+              AND i2.name LIKE :product_like
+          ))
+          AND (:payment_ref_like IS NULL OR EXISTS (
+            SELECT 1
+            FROM plugin_pos_tabs_payments p
+            WHERE p.tab = t.id
+              AND p.reference IS NOT NULL
+              AND p.reference LIKE :payment_ref_like
+          ))
+          ORDER BY t.closed DESC
+          LIMIT :per_page OFFSET :offset;
+          :user_id=$user_id
+          :subscription_id=$subscription_id
+          :product_like=$product_like
+          :payment_ref_like=$payment_ref_like
+          :per_page=$per_page
+          :offset=$offset
+        }}
+          <tr>
+            <td>
+              {{if $user_id}}
+                {{:link href="!users/details.php?id=%d"|args:$user_id label=$tab_name}}
+              {{else}}
+                {{$tab_name|escape|or:'-'}}
+              {{/if}}
+            </td>
+            <td>{{if $closed}}{{$closed|date_short:true}}{{else}}En cours{{/if}}</td>
+            <td>{{if $products_list !== ''}}{{$products_list|escape|nl2br}}{{else}}-{{/if}}</td>
+            <td class="money">{{$total|raw|money_currency}}</td>
+            <td>{{if $payment_details !== ''}}{{$payment_details|escape|nl2br}}{{else}}-{{/if}}</td>
+            <td class="actions">
+              {{:linkbutton shape="menu" label="Note" href="!p/caisse/tab.php?id=%d"|args:$tab_id}}
+              {{:linkbutton shape="right" label="Session" href="!p/caisse/session.php?id=%d"|args:$session_id}}
+            </td>
+          </tr>
+        {{else}}
+          <tr>
+            <td colspan="6">Aucune note trouvée.</td>
+          </tr>
+        {{/select}}
+      </tbody>
+    </table>
+    {{if $total_pages > 1}}
+      {{:assign prev_page="%d-1"|math:$page}}
+      {{:assign next_page="%d+1"|math:$page}}
+      <p class="actions">
+        {{if $page > 1}}
+          {{:linkbutton
+            href="%sindex.html?user_id=%s&product=%s&payment_ref=%s&subscription=%s&page=%s"|args:$module.url:$user_id:$product:$payment_ref:$subscription_id:$prev_page
+            label="Précédent"
+            shape="left"
+          }}
+        {{/if}}
+
+        <span>Page {{$page}} / {{$total_pages}}</span>
+
+        {{if $page < $total_pages}}
+          {{:linkbutton
+            href="%sindex.html?user_id=%s&product=%s&payment_ref=%s&subscription=%s&page=%s"|args:$module.url:$user_id:$product:$payment_ref:$subscription_id:$next_page
+            label="Suivant"
+            shape="right"
+          }}
+        {{/if}}
+      </p>
+    {{/if}}
+  {{/select}}
+{{/if}}
+
+{{:admin_footer}}

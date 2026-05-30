@@ -1,0 +1,87 @@
+{{* -*- brindille -*- *}}
+
+{{#extension name="caisse"}}
+  {{#select
+    COUNT(*) AS tabs_count
+    FROM plugin_pos_tabs t
+    WHERE t.user_id = :user_id;
+    :user_id=$user.id
+  }}
+    {{if $tabs_count > 0}}
+      <h2 class="ruler">Notes de caisse</h2>
+
+      <table class="list">
+        <thead>
+          <tr>
+            <th>Clôture</th>
+            <th>Produits</th>
+            <th class="money">Total</th>
+            <th>Paiement</th>
+            <th class="actions"></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{#select
+            t.id AS tab_id,
+            t.session AS session_id,
+            t.closed,
+            COALESCE((
+              SELECT SUM(total)
+              FROM plugin_pos_tabs_items
+              WHERE tab = t.id
+            ), 0) AS total,
+            COALESCE((
+              SELECT GROUP_CONCAT(
+                COALESCE(pm.name, 'Inconnu')
+                || ': '
+                || printf('%.2f €', p.amount / 100.0)
+                || CASE
+                  WHEN p.reference IS NOT NULL AND TRIM(p.reference) != ''
+                  THEN ' (' || p.reference || ')'
+                  ELSE ''
+                END,
+                char(10)
+              )
+              FROM plugin_pos_tabs_payments p
+              LEFT JOIN plugin_pos_methods pm ON pm.id = p.method
+              WHERE p.tab = t.id
+            ), '') AS payment_details,
+            COALESCE((
+              SELECT GROUP_CONCAT(line, char(10))
+              FROM (
+                SELECT
+                  name
+                  || ' ('
+                  || printf('%.2f €', SUM(total) / 100.0)
+                  || ')' AS line
+                FROM plugin_pos_tabs_items
+                WHERE tab = t.id
+                GROUP BY name
+                ORDER BY name
+              )
+            ), '') AS products_list
+            FROM plugin_pos_tabs t
+            WHERE t.user_id = :user_id
+            ORDER BY t.closed DESC
+            LIMIT 20;
+            :user_id=$user.id
+          }}
+            <tr>
+              <td>{{if $closed}}{{$closed|date_short:true}}{{else}}En cours{{/if}}</td>
+              <td>{{if $products_list !== ''}}{{$products_list|escape|nl2br}}{{else}}-{{/if}}</td>
+              <td class="money">{{$total|raw|money_currency}}</td>
+              <td>{{if $payment_details !== ''}}{{$payment_details|escape|nl2br}}{{else}}-{{/if}}</td>
+              <td class="actions">
+                {{:linkbutton shape="menu" label="Note" href="!p/caisse/tab.php?id=%d"|args:$tab_id}}
+                {{:linkbutton shape="right" label="Session" href="!p/caisse/session.php?id=%d"|args:$session_id}}
+              </td>
+            </tr>
+          {{/select}}
+        </tbody>
+      </table>
+
+      <p class="help">Affichage limité aux 20 notes les plus récentes.</p>
+    {{/if}}
+  {{/select}}
+{{/extension}}
