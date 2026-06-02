@@ -29,7 +29,9 @@
 	{{elseif $_GET.status}}
 		{{:assign status=$_GET.status|quote_sql}}
 		{{:assign where="$$.status = %s"|args:$status}}
-		{{:assign check=true}}
+		{{if $_GET.status === 'payable'}}
+			{{:assign check=true}}
+		{{/if}}
 	{{/if}}
 {{/restrict}}
 
