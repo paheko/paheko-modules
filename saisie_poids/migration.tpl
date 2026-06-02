@@ -50,9 +50,13 @@
 		id_eco_movement="INTEGER NOT NULL REFERENCES eco_movements (id) ON DELETE CASCADE"
 	}}
 
+	{{* Il manque un lien entre éco-catégorie et catégorie (one on one),
+		ce qui permettra de savoir quel éco-organisme affecter et donc quel éco-mouvement lié au type de mouvement *}}
+
 	{{:read csv="./eco_categories.csv" assign="categories"}}
 	{{:read csv="./eco_mouvements.csv" assign="mouvements"}}
 
+	{{:save table="eco_organisations" name="Ecomaison"}}
 	{{:save table="eco_organisations" name="Ecologic" assign="ecologic"}}
 
 	{{#foreach from=$categories item="cat" key="line"}}
