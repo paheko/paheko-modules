@@ -117,7 +117,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
         font-size: 1.2em;
     }
 
-    .layout-2col section.page article {
+    .layout-2col section.page .article {
         margin-bottom: 1em;
         padding: 1em;
         background: var(--bg-color);
@@ -130,7 +130,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section { display: bl
         text-align: left;
     }
 
-    .layout-wide section.articles article, .layout-1col section.articles article {
+    .layout-wide section.articles .article, .layout-1col section.articles .article {
         margin: 1em 0;
         padding-bottom: 1em;
         border-bottom: 2px solid var(--gray-text-color);
@@ -489,33 +489,33 @@ footer.main a#paheko {
 }
 
 /* AFFICHAGE D'UN ARTICLE */
-section.articles article h3, section.articles article h1 {
+.article h3, .article h1 {
     margin-bottom: .3em;
 }
 
-section.articles article::after, article.single::after {
+.article::after {
     content: "";
     display: block;
     height: 0px;
     clear: both;
 }
 
-section.articles article h1 a {
+.article h1 a {
     color: var(--text-color);
     text-decoration: none;
     font-weight: normal;
 }
 
-section.articles article h3 a {
+.article h3 a {
     color: var(--link-color);
     font-weight: normal;
 }
 
-section.articles article h3 a:visited {
+.article h3 a:visited {
     color: var(--visited-link-color);
 }
 
-section.articles article h5 {
+.article h5 {
     color: #666;
     font-weight: normal;
     font-size: .8em;
@@ -528,44 +528,44 @@ section.page > h1 {
 }
 
 /* CONTENU DE L'ARTICLE */
-article > h4 {
+.article > h4 {
     margin-bottom: 1em;
     color: var(--gray-text-color);
     font-weight: normal;
 }
 
-article ul, article ol, article blockquote {
+.article ul, .article ol, .article blockquote {
     margin-left: 2em;
 }
 
-article ul {
+.article ul {
     list-style-type: disc;
 }
 
-article ol {
+.article ol {
     list-style-type: decimal;
 }
 
-article dl dd {
+.article dl dd {
     margin: .5em 0 .5em 2em;
 }
 
-article img {
+.article img {
     max-width: 100%;
 }
 
-article figure {
+.article figure {
     text-align: center;
 }
 
-article figcaption {
+.article figcaption {
     font-style: italic;
     color: #666;
     margin-top: 2pt;
     font-size: .8em;
 }
 
-article > h1 {
+.article > h1 {
     margin-bottom: 1rem;
 }
 
@@ -912,7 +912,7 @@ nav.main article.opening-hours h4 {
         background: none;
     }
 
-    section.page article {
+    section.page .article {
         border-radius: 0;
     }
 
@@ -967,7 +967,7 @@ nav.main article.opening-hours h4 {
         margin: .8em 0;
     }
 
-    .articles article, article.single {
+    .articles .article {
         margin: .5rem 0;
         background: var(--bg-color);
         padding: .5em;

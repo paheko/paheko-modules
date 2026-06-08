@@ -24,7 +24,7 @@
 
 {{if $sticky}}
 	<section class="articles main">
-		<article>
+		<article class="article">
 			<h1><a href="{{ $sticky.url }}">{{ $sticky.title|remove_leading_number }}</a></h1>
 			{{if !$hide_date}}
 			<h5>{{ $sticky.published|relative_date }}</h5>
@@ -36,7 +36,7 @@
 
 {{#articles order="published DESC" limit=9 duplicates=false}}
 <section class="articles">
-	<article>
+	<article class="article">
 		<h3><a href="{{ $url }}">{{ $title|remove_leading_number }}</a></h3>
 		<h5>{{ $published|relative_date }}</h5>
 		<p>{{ $html|raw|strip_tags|truncate:200 }}</p>

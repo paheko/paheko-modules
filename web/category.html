@@ -17,7 +17,7 @@
 </section>
 
 {{if $page.html || $page.has_attachments}}
-	<article class="single">
+	<article class="single article">
 		{{$page.html|raw}}
 
 		{{:include file="./_gallery.html" parent=$page.path}}
@@ -27,7 +27,7 @@
 
 <section class="articles">
 	{{#articles parent=$page.path order="published DESC"}}
-	<article>
+	<article class="article">
 		<h3><a href="{{$url}}">{{$title|remove_leading_number}}</a></h3>
 		<h5>{{$published|date_long}}</h5>
 		<p>{{$html|raw|strip_tags|truncate:200}}</p>
