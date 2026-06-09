@@ -122,11 +122,11 @@
 		<td class="actions">
  			{{:linkbutton
 			label="Mouvements"
-			href="equipment_history.html?key=%s&prop=1"|args:$key
+			href="equipment_history.html?key=%s&prop=%s"|args:$key:$selected_prop
 			shape="table"}}
 			{{:linkbutton
 			label="Modifier"
-			href="modify_equipment.html?key=%s&prop=1"|args:$key
+			href="modify_equipment.html?key=%s&prop=%s"|args:$key:$selected_prop
 			shape="edit"
 			target="_dialog"}}
 		</td>

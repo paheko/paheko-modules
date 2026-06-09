@@ -8,21 +8,22 @@
 {{* config par défaut *}}
 {{:read file="./default.json" assign="config_defaut"}}
 {{:assign config_defaut=$config_defaut|json_decode}}
-
 {{:assign var="directions.input" value="entrée"}}
 {{:assign var="directions.output" value="sortie"}}
 
 {{#foreach from=$directions key="direction"}}
+	{{* config par défaut *}}
+	{{:assign var="nature_defaut" from="config_defaut.%ss"|args:$direction}}
+	{{:assign keys_defaut=$nature_defaut|keys}}
+	{{#foreach from=$nature_defaut item="elem"}}
+		{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$elem}}
+	{{/foreach}}
+
+	{{* config enregistrée *}}
 	{{:assign var="nature" from="module.config.%s_nature"|args:$direction}}
-	{{if $nature != null}}
-		{{#foreach from=$nature item="elem"}}
+	{{#foreach from=$nature item="elem"}}
+		{{if ! $elem.key|in:$keys_defaut}}
 			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$elem}}
-		{{/foreach}}
-	{{else}}
-		{{* pas de config enregistrée : utiliser la config par défaut *}}
-		{{:assign var="nature" from="config_defaut.%ss"|args:$direction}}
-		{{#foreach from=$nature item="elem"}}
-			{{:assign var="config.%s_nature.%s"|args:$direction:$key value=$elem}}
-		{{/foreach}}
-	{{/if}}
+		{{/if}}
+	{{/foreach}}
 {{/foreach}}

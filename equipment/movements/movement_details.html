@@ -68,7 +68,7 @@
 	<dt>Matériel</dt>
 	<dd>{{:link href="../equipment_history.html?key=%s&prop=%s"|args:$equipment.key:$_GET.prop label=$equipment.name}}</dd>
 	<dt>Catégorie</dt>
-	<dd>{{:link href="../index.html?cat_key=%s&prop=1"|args:$category.key label=$category.name}}</dd>
+	<dd>{{:link href="../index.html?cat_key=%s&prop=%s"|args:$category.key:$_GET.prop label=$category.name}}</dd>
 	<dt>Date</dt>
 	<dd>{{$mvt.date|date_short}}</dd>
 	<dt>Quantité</dt>
