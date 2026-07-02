@@ -53,7 +53,7 @@
 		{{:continue}}
 	{{/if}}
 
-	{{if $slot.available > 0 && $slots_available === false}}
+	{{if $slot.available !== 0 && $slots_available === false}}
 		{{:assign slots_available=true}}
 	{{/if}}
 
