@@ -1,5 +1,5 @@
 {{* Mise à jour depuis version 2022 vers 2023 *}}
-{{if $module.config.comptes_don_nature && !$module.config.comptes_don_abandon_frais}}
+{{if $module.config|has_key:'comptes_don_nature' && !$module.config|has_key:'comptes_don_abandon_frais'}}
 	{{:save key="config"
 		validate_schema="./config.schema.json"
 		comptes_don_abandon_frais=$module.config.comptes_don_nature
