@@ -1,0 +1,18 @@
+{{#restrict section="accounting" level="write" block=true}}{{/restrict}}
+{{:admin_header title="Nouveau modèle à partir d'une écriture"}}
+
+<form method="get" action="edit.html">
+<fieldset>
+	<legend>À partir d'une écriture</legend>
+	<dl>
+		{{:input type="number" required=true name="from_transaction" label="Numéro d'écriture"}}
+	</dl>
+	<p class="help">Note : les comptes d'une écriture simplifiée ne seront pas repris.</p>
+</fieldset>
+
+<p class="submit">
+	{{:button type="submit" shape="right" label="Rechercher" class="main"}}
+</p>
+</form>
+
+{{:admin_footer}}
