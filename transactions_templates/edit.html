@@ -8,6 +8,27 @@
 {{elseif $_GET.from}}
 	{{#load assign="tpl" id=$_GET.from|intval}}{{/load}}
 	{{:assign var="tpl.id" value=null}}
+{{elseif $_GET.from_transaction}}
+	{{#transactions id=$_GET.from_transaction}}
+		{{:assign var="tpl"
+			l=$label
+			name="Modèle : %s"|args:$label
+			dt=$date|date_short
+			r=$reference
+			n=$notes
+			a00=$credit
+			pr=$payment_reference
+			t=$type
+		}}
+		{{#transaction_lines transaction=$id}}
+			{{if $type === 0}}
+				{{:assign var="tpl.ll." d=$debit|money_raw c=$credit|money_raw l=$label r=$reference p=$id_project a=$account_code}}
+			{{else}}
+			{{/if}}
+		{{/transaction_lines}}
+	{{else}}
+		{{:error message="Écriture introuvable"}}
+	{{/transactions}}
 {{/if}}
 
 {{if !$tpl}}
