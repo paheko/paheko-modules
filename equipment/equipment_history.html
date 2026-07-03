@@ -26,11 +26,7 @@
 {{:admin_header title="Gestion des matériels" custom_css="./style.css" current="module_equipment"}}
 
 {{* barre de navigation *}}
-{{if $_GET.current != null}}
-	{{:assign current=$_GET.current}}
-{{else}}
-	{{:assign current="inventaire"}}
-{{/if}}
+{{:assign current=$_GET.current|or:"inventaire"}}
 
 {{* récupérer la config des entrées/sorties *}}
 {{:include file="./_get_config.html" keep="config"}}
