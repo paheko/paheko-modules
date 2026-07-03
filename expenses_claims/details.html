@@ -104,6 +104,18 @@
 	{{:assign total=$total}}
 {{/load}}
 
+{{* Check if there have been deleted transactions, changing the status of the claim *}}
+{{if $claim.status === 'paid'}}
+	{{#transactions id=$claim.payments}}
+		{{:assign paid_total="%d+%d"|math:$paid_total:$credit}}
+	{{/transactions}}
+
+	{{if $paid_total < $total}}
+		{{:save key=$claim.key status="payable"}}
+		{{#load assign="claim" key=$_GET.key}}{{/load}}
+	{{/if}}
+{{/if}}
+
 <form method="post" action="">
 
 {{if $claim.status === 'draft' && $total}}
@@ -173,17 +185,17 @@
 	</dd>
 	<dt>Statut</dt>
 	<dd>
-	{{if $claim.status === 'draft'}}
-		Brouillon
-	{{elseif $claim.status === 'waiting'}}
-		En attente d'acceptation
-	{{elseif $claim.status === 'payable'}}
-		Acceptée, en attente de paiement
-	{{elseif $claim.status === 'paid'}}
-		Payée
-	{{elseif $claim.status === 'cancelled'}}
-		Annulée
-	{{/if}}
+		{{if $claim.status === 'waiting'}}
+			{{:tag label="En attente d'acceptation" color="lightcoral"}}
+		{{elseif $claim.status === 'payable'}}
+			{{:tag label="Acceptée, en attente de paiement" color="darkorange"}}
+		{{elseif $claim.status === 'paid'}}
+			{{:tag label="Payée" color="darkseagreen"}}
+		{{elseif $claim.status === 'cancelled'}}
+			{{:tag label="Annulée" color="#999"}}
+		{{else}}
+			{{:tag label="Brouillon" color="tan"}}
+		{{/if}}
 	</dd>
 
 	<dt>Montant total</dt>
