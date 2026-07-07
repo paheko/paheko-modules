@@ -3,11 +3,18 @@
 <nav class="tabs">
 	{{if $current == 'inventaire'}}
 		<aside>
-			{{if $cat == 0}}
-				{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
-			{{else}}
-				{{:linkbutton label="Ajouter un nouveau matériel" shape="plus" href="movements/add_new_equipment.html" target="_dialog"}}
-				{{:exportmenu right=true}}
+			{{if $subcurrent != "mouvements"}}
+				{{if $cat == 0}}
+					{{:linkbutton label="Ajouter une catégorie" shape="plus" href="categories/add_category.html" target="_dialog"}}
+				{{else}}
+					{{:exportmenu right=true}}
+					{{:linkbutton label="Ajouter un nouveau matériel" shape="plus" href="movements/add_new_equipment.html" target="_dialog"}}
+				{{/if}}
+			{{elseif $subcurrent == "mouvements"}}
+				{{if $sortie != null}}
+					{{:linkbutton label="Sortie" shape="minus" href="movements/output_equipment.html?key=%s"|args:$key target="_dialog"}}
+				{{/if}}
+				{{:linkbutton label="Entrée" shape="plus" href="movements/input_equipment.html?key=%s"|args:$key target="_dialog"}}
 			{{/if}}
 		</aside>
 	{{elseif $current == 'archives'}}
@@ -32,9 +39,9 @@
 	</ul>
 
 	{{if $current == 'inventaire'}}
-		{{if $subcurrent == 'historique'}}
+		{{if $subcurrent == 'mouvements'}}
 			<ul class="sub">
-				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
+				<li class="title"><strong>Mouvements — {{$eqpmt}} ({{$category}})</strong></li>
 			</ul>
 		{{/if}}
 	{{elseif $current == 'prêt'}}
@@ -50,9 +57,9 @@
 			<li {{if $subcurrent == 'membres'}} class="current"{{/if}}><a href="{{$module.url}}member_loan.html?output_type=rent">Membres</a></li>
 		</ul>
 	{{elseif $current == 'archives'}}
-		{{if $subsubcurrent == 'historique'}}
+		{{if $subcurrent == 'mouvements'}}
 			<ul class="sub">
-				<li class="title"><strong>Historique — {{$eqpmt}} ({{$category}})</strong></li>
+				<li class="title"><strong>Mouvements — {{$eqpmt}} ({{$category}})</strong></li>
 			</ul>
 		{{/if}}
 	{{elseif $current == 'config'}}
