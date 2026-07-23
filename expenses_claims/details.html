@@ -262,19 +262,6 @@
 	{{:admin_files edit=$edit upload=$upload path=$upload_path use_trash=false}}
 {{/if}}
 
-{{if $claim.status === 'payable'}}
-	<p class="actions-center">
-		{{if $claim.user_preferred_resolution === 'pay'}}
-			{{:assign pay_class="main"}}
-		{{elseif $claim.user_preferred_resolution === 'abandon'}}
-			{{:assign abandon_class="main"}}
-		{{/if}}
-		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key target="_dialog" class=$pay_class}}
-		{{:linkbutton shape="reload" label="Transformer en abandon de frais" href="abandon.html?claim=%s"|args:$claim.key target="_dialog" class=$abandon_class}}
-		{{:linkbutton shape="link" label="Rattacher une écriture existante" href="payment_link.html?claim=%s"|args:$claim.key target="_dialog" class=$pay_class}}
-	</p>
-{{/if}}
-
 {{if $claim.payments}}
 	<table class="list">
 		<thead>
@@ -300,6 +287,18 @@
 		{{/transactions}}
 		</tbody>
 	</table>
+{{/if}}
+
+{{if $claim.status === 'payable'}}
+	<p class="actions-center">
+		{{if $claim.user_preferred_resolution === 'pay'}}
+			{{:assign pay_class="main"}}
+		{{elseif $claim.user_preferred_resolution === 'abandon'}}
+			{{:assign abandon_class="main"}}
+		{{/if}}
+		{{:linkbutton shape="plus" label="Saisir un paiement" href="payment.html?claim=%s"|args:$claim.key target="_dialog" class=$pay_class}}
+		{{:linkbutton shape="reload" label="Transformer en abandon de frais" href="abandon.html?claim=%s"|args:$claim.key target="_dialog" class=$abandon_class}}
+	</p>
 {{/if}}
 
 {{:admin_footer}}
