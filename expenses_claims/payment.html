@@ -24,6 +24,12 @@
 {{/if}}
 
 {{#form on="save"}}
+	{{:assign amount=$_POST.amount|money_int}}
+
+	{{if "%d-%d"|math:$total:$amount < 0}}
+		{{:error message="Il n'est pas possible de rembourser plus que le montant de la note de frais"}}
+	{{/if}}
+
 	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|value:0}}
 	{{:assign var="lines." debit=$_POST.amount account=$debit_account}}
 	{{:api
@@ -40,8 +46,6 @@
 		lines=$lines
 		linked_transactions=$claim.id_transaction|intval
 	}}
-
-	{{:assign amount=$_POST.amount|money_int}}
 
 	{{if "%d-%d"|math:$total:$amount <= 0}}
 		{{* Nothing left to pay *}}
