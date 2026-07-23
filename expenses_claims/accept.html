@@ -14,6 +14,10 @@
 		{{:error message="Le libellé doit être renseigné."}}
 	{{/if}}
 
+	{{if $_POST.date|parse_date|strtotime < $claim.date|strtotime}}
+		{{:error message="La date de l'écriture ne peut être antérieure à la date de la note de frais."}}
+	{{/if}}
+
 	{{:assign total=0}}
 	{{:assign var="upload_path" value="%s/%s"|args:$module.storage_root:$claim.key}}
 

@@ -32,6 +32,10 @@
 		{{:error message="Le libellé doit être renseigné."}}
 	{{/if}}
 
+	{{if $_POST.date|parse_date|strtotime < $claim.date|strtotime}}
+		{{:error message="La date de l'abandon ne peut être antérieure à la date de la note de frais."}}
+	{{/if}}
+
 	{{:assign var="lines." debit=$total|money_raw account=$_POST.account|keys|value:0}}
 	{{:api
 		method="POST"

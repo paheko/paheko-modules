@@ -32,6 +32,10 @@
 		{{:error message="Il n'est pas possible de rembourser plus que le montant de la note de frais"}}
 	{{/if}}
 
+	{{if $_POST.date|parse_date|strtotime < $claim.date|strtotime}}
+		{{:error message="La date du paiement ne peut être antérieure à la date de la note de frais."}}
+	{{/if}}
+
 	{{:assign var="lines." credit=$_POST.amount account=$_POST.account|keys|value:0}}
 	{{:assign var="lines." debit=$_POST.amount account=$debit_account}}
 	{{:api
