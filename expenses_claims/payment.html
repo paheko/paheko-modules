@@ -26,7 +26,9 @@
 {{#form on="save"}}
 	{{:assign amount=$_POST.amount|money_int}}
 
-	{{if "%d-%d"|math:$total:$amount < 0}}
+	{{:assign left="%d-%d"|math:$total:$amount}}
+
+	{{if $left < 0}}
 		{{:error message="Il n'est pas possible de rembourser plus que le montant de la note de frais"}}
 	{{/if}}
 
@@ -47,7 +49,7 @@
 		linked_transactions=$claim.id_transaction|intval
 	}}
 
-	{{if "%d-%d"|math:$total:$amount <= 0}}
+	{{if $left == 0}}
 		{{* Nothing left to pay *}}
 		{{:assign new_status="paid"}}
 	{{else}}
