@@ -10,6 +10,10 @@
 {{/if}}
 
 {{#form on="save"}}
+	{{if !$_POST.label|trim}}
+		{{:error message="Le libellé doit être renseigné."}}
+	{{/if}}
+
 	{{:assign total=0}}
 	{{:assign var="upload_path" value="%s/%s"|args:$module.storage_root:$claim.key}}
 
@@ -23,8 +27,12 @@
 		{{:error message="Cette note de frais ne comporte aucune ligne"}}
 	{{/if}}
 
-	{{if !$_POST.label|trim}}
-		{{:error message="Le libellé doit être renseigné."}}
+	{{#load select="SUM($$.amount) AS total" where="$$.type = 'line' AND $$.claim = :claim" :claim=$claim.key}}
+		{{:assign expected_total=$total}}
+	{{/load}}
+
+	{{if $total !== $expected_total}}
+		{{:error message="Le total de l'écriture ne correspond pas au total de la note de frais."}}
 	{{/if}}
 
 	{{:assign var="lines." credit=$total|money_raw account=$_POST.account|keys|value:0 label="Dette envers le membre"}}
