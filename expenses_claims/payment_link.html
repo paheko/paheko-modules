@@ -1,0 +1,77 @@
+{{#restrict section="accounting" level="write" block=true}}{{/restrict}}
+
+{{#load assign="claim" key=$_GET.claim}}
+{{else}}
+	{{:error message="Cette note de frais n'existe pas"}}
+{{/load}}
+
+{{if $claim.status !== 'payable'}}
+	{{:error message="Cette note de frais n'est pas en attente de paiement: %s"|args:$claim.status}}
+{{/if}}
+
+{{#transactions id=$claim.id_transaction}}
+	{{:assign total=$debit}}
+	{{:assign default_year=$id_year}}
+	{{#transaction_lines transaction=$id where="credit > 0" limit=1}}
+		{{:assign debit_account=$account_code}}
+	{{/transaction_lines}}
+{{/transactions}}
+
+{{if $claim.payments|count}}
+	{{#transactions id=$claim.payments}}
+		{{:assign total="%d-%d"|math:$total:$credit}}
+	{{/transactions}}
+{{/if}}
+
+{{#form on="save"}}
+	{{#transactions id=$_POST.id|intval}}
+		{{:assign amount=$credit id=$id}}
+
+		{{if $lines_count !== 2}}
+			{{:error message="Cette écriture comporte plus de 2 lignes, seules les écritures simples (2 lignes) peuvent être liées à une note de frais."}}
+		{{/if}}
+
+		{{if $date|strtotime < $claim.date|strtotime}}
+			{{*:error message="La date de l'écriture ne peut être antérieure à la date de la note de frais."*}}
+		{{/if}}
+	{{else}}
+		{{:error message="Le numéro d'écriture indiqué ne correspond à aucune écriture existante"}}
+	{{/transactions}}
+
+	{{:assign left="%d-%d"|math:$total:$amount}}
+
+	{{if $left < 0}}
+		{{:error message="Il n'est pas possible de rembourser plus que le montant de la note de frais"}}
+	{{elseif $left == 0}}
+		{{* Nothing left to pay *}}
+		{{:assign new_status="paid"}}
+	{{else}}
+		{{:assign new_status=$claim.status}}
+	{{/if}}
+
+	{{:assign var="claim.payments." value=$id}}
+	{{:save
+		key=$claim.key
+		payments=$claim.payments
+		status=$new_status
+	}}
+	{{:redirect to="./details.html?key=%s"|args:$claim.key}}
+{{/form}}
+
+{{:admin_header title="Rattacher une écriture"}}
+
+{{:form_errors}}
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Rattacher une écriture de paiement existante</legend>
+		<dl>
+			{{:input type="number" name="id" label="Numéro de l'écriture" required=true}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" shape="right" label="Rattacher" name="save" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}
