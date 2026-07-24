@@ -79,9 +79,9 @@
 
 {{:assign var="default_account.%s"|args:$module.config.accept_account_code value=$module.config.accept_account_code}}
 
-{{#years closed=false}}
+{{#years closed=false order="start_date DESC"}}
 	{{:assign var="open_years.%d"|args:$id value=$label}}
-	{{if $start_date <= $now && $end_date >= $now}}
+	{{if $start_date|strtotime <= $now && $end_date|strtotime >= $now}}
 		{{:assign best_year=$id}}
 	{{/if}}
 {{/years}}
