@@ -89,7 +89,16 @@
 {{if $is_admin || $claim.status === 'draft' || $claim.status === 'cancelled'}}
 		{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?claim=%s"|args:$claim.key}}
 {{/if}}
+
 {{if $claim.status === 'draft' || $claim.status === 'cancelled'}}
+	{{:assign can_edit=true}}
+{{elseif $is_admin && $claim.status === 'payable'}}
+	{{:assign can_edit=true}}
+{{elseif $is_admin && $claim.status === 'waiting'}}
+	{{:assign can_edit=true}}
+{{/if}}
+
+{{if $can_edit}}
 		{{:linkbutton shape="edit" label="Modifier" href="./edit.html?claim=%s"|args:$claim.key target="_dialog"}}
 {{/if}}
 	</aside>
