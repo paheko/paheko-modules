@@ -27,7 +27,7 @@
 	{{:assign var="number_field" value=$name}}
 {{/select}}
 
-{{#users id=$_GET.id}}
+{{#users id=$id}}
 	{{:assign title="%s - Carte de membre"|args:$_name}}
 
 	{{if $_GET.print == 'pdf'}}
