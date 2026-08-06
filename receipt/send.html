@@ -1,3 +1,4 @@
+{{#restrict block=true section="accounting" level="read"}}{{/restrict}}
 {{:admin_header title="Envoyer un reçu"}}
 
 {{#transaction_users id_transaction=$_GET.id|intval limit=1 assign="user"}}
