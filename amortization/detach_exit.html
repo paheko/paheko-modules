@@ -1,0 +1,21 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Supprimer l'association entre une écriture d'immobilisation et
+	une écriture de sortie de bilan
+	@param immo_doc_id : id du doc associé à l'immo
+	@param exit_line_id : id de la ligne de sortie de bilan
+*}}
+
+{{:include file="_common_detach.html" immo_doc_id=$_GET.immo_doc_id line_id=$_GET.exit_line_id}}
+
+{{* supprimer le doc de liaison entre les lignes *}}
+{{#load type="exit_link"
+	where="$$.immo_doc_id = :immo_doc_id AND $$.exit_line_id = :exit_line_id"
+	:immo_doc_id=$_GET.immo_doc_id|intval
+	:exit_line_id = $_GET.exit_line_id|intval
+}}
+	{{:delete id=$id}}
+{{/load}}
+
+{{:redirect to="exit_step4.html?immo_doc_id=%s&from=exit&ok=1&msg=detach_exit"|args:$_GET.immo_doc_id}}

@@ -1,0 +1,23 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Récupérer la config
+*}}
+
+{{* config par défaut *}}
+{{:read file="./defaut.json" assign="config_defaut"}}
+{{:assign config_defaut=$config_defaut|json_decode}}
+
+{{if $module.config.prefixes == null}}
+	{{:assign var="module.config.prefixes" value=$config_defaut.prefixes}}
+{{/if}}
+
+{{if $module.config.unfinished == null}}
+	{{:assign var="module.config.unfinished" value=$config_defaut.unfinished}}
+{{/if}}
+
+{{*
+{{if $module.config.tva == null}}
+	{{:assign var="module.config.tva" value=$config_defaut.tva}}
+{{/if}}
+*}}

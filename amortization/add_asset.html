@@ -1,0 +1,243 @@
+{{* -*- brindille -*- *}}
+
+{{:admin_header title="Ajout immobilisation" current="module_amortization"}}
+{{:include file="_get_config.html" keep="module.config"}}
+
+{{#years closed=false order="start_date" assign=years.}}
+	{{:assign ts_debut=$start_date|strtotime}}
+	{{:assign ts_fin=$end_date|strtotime}}
+	{{:assign debut=$start_date|date_short}}
+	{{:assign fin=$end_date|date_short}}
+	{{:assign var="years_data.%d"|args:$id value=$ts_debut|cat:" "|cat:$ts_fin}}
+	{{:assign var="open_years.%d"|args:$id value=$label|cat:" ("|cat:$debut|cat:" - "|cat:$fin|cat:")"}}
+	{{if $ts_debut <= $now && $now <= $ts_fin}}
+		{{:assign selected_year=$id}}
+	{{/if}}
+{{else}}
+	{{:error message="Aucun exercice ouvert"}}
+{{/years}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="add"}}
+	{{* vérifier que la date d'achat est située dans un l'exercice sélectionné *}}
+	{{:assign ts_date = $_POST.date_achat|parse_date|strtotime}}
+	{{:assign ok=false}}
+	{{#foreach from=$years}}
+		{{if $id == $_POST.id_year}}
+			{{:assign selected_chart=$id_chart}}
+			{{if $start_date|strtotime <= $ts_date && $ts_date <= $end_date|strtotime}}
+				{{:assign ok=true}}
+				{{:break}}
+			{{/if}}
+		{{/if}}
+	{{/foreach}}
+	{{if ! $ok}}
+		{{:error message="La date saisie n'est pas dans l'exercice choisi !"}}
+	{{/if}}
+
+	{{* déterminer le numéro des comptes au cas où la clé serait un identifiant *}}
+	{{:include
+		file="_get_codes.html"
+		account=$_POST.debit_account
+		keep="account_code"
+	}}
+	{{:assign debit_account=$account_code}}
+	{{:include
+		file="_get_codes.html"
+		account=$_POST.credit_account
+		keep="account_code"
+	}}
+	{{:assign credit_account=$account_code}}
+	{{:assign debit_account_code=$debit_account|keys|value:0}}
+	{{:assign credit_account_code=$credit_account|keys|value:0}}
+
+	{{* vérifier :
+		- que le compte d'immo débute par un préfixe correct (20, 21, ...)
+		- est présent dans le PC de l'exercice correspondant à la date
+	*}}
+
+	{{#foreach from=$module.config.prefixes item="code"}}
+		{{:assign var="prefix_array." value=$code}}
+	{{/foreach}}
+	{{#foreach from=$module.config.unfinished item="elem"}}
+		{{if $elem.code != null}}
+			{{:assign code=$elem.code}}
+		{{else}}
+			{{:assign code=$elem}}
+		{{/if}}
+		{{:assign var="prefix_array." value=$code}}
+		{{* déterminer si le compte d'immo est un compte d'immo en cours *}}
+		{{if $debit_account_code|strpos:$code === 0}}
+			{{:assign status="unfinished"}}
+		{{/if}}
+	{{/foreach}}
+
+	{{:include
+		file="_check_account.html"
+		account=$debit_account
+		chart_id=$selected_chart
+		prefix_array=$prefix_array
+		keep="account_ok"
+	}}
+
+	{{if $account_ok == null}}
+		{{:assign compte=$debit_account|implode:""}}
+		{{:redirect url="add_account.html?account=%s&chart=%s"|args:$compte:$selected_chart}}
+	{{/if}}
+
+	{{if $status != "unfinished"}}
+		{{* vérifier que la date d'acquisition est antérieure à la date de mise en service *}}
+		{{:assign date_debut=$_POST.date_mes|or:$_POST.date_achat|parse_date}}
+		{{if $date_debut|strtotime < $_POST.date_achat|parse_date|strtotime}}
+			{{:assign dd=$date_debut|date_short}}
+			{{:assign da=$_POST.date_achat|date_short}}
+			{{:error message="Erreur : la date de mise en service (%s) ne peut être antérieure à la date d'acquisition (%s)"|args:$dd:$da}}
+		{{/if}}
+		{{:assign duration=$_POST.duree|intval}}
+		{{:assign status="managed"}}
+		{{if $_POST.date_mes == null ||  $_POST.date_mes == $_POST.date_achat}}
+			{{:assign date_mes=null}}
+		{{else}}
+			{{:assign date_mes=$_POST.date_mes|parse_date}}
+		{{/if}}
+	{{/if}}
+
+	{{* enregistrer l'écriture *}}
+	{{:api
+		method="POST"
+		path="accounting/transaction"
+		assign="result"
+		id_year=$_POST.id_year
+		type="revenue"
+		date=$_POST.date_achat
+		label=$_POST.designation
+		amount=$_POST.montant
+		debit=$debit_account_code
+		credit=$credit_account_code
+		id_project=$_POST.id_project
+	}}
+	{{if $status != "unfinished"}}
+		{{* vérifier s'il y a déjà un document avec le même numéro de ligne *}}
+		{{:assign var="immo_line_id" value=$result.lines.1.id}}
+		{{#load where="$$.line = :line_id" :line_id=$immo_line_id}}
+			{{:assign key=$key}}
+		{{else}}
+			{{:assign key=""|uuid}}
+		{{/load}}
+
+		{{* enregistrer les infos de l'immobilisation *}}
+		{{:save
+			key=$key
+			validate_schema="asset.schema.json"
+			type="immo"
+			line=$immo_line_id
+			duration=$duration
+			date_mes=$date_mes
+			status=$status
+			created=true
+		}}
+	{{/if}}
+
+	{{if $status == "unfinished"}}
+		{{:assign type_immo="unfinished"}}
+	{{elseif $status == "managed"}}
+		{{:assign type_immo="managed"}}
+	{{else}}
+		{{:assign type_immo="other"}}
+	{{/if}}
+	{{:redirect force="index.html?ok=1&msg=immobilisation&type_immo=%s"|args:$type_immo}}
+
+{{/form}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:linkbutton href="index.html" label="Retour" shape="left"}}
+{{/if}}
+
+{{:form_errors}}
+
+{{* formulaire d'ajout d'immobilisation *}}
+
+{{#select id,label FROM acc_projects WHERE archived = 0;}}
+	{{:assign var="projects.%d"|args:$id value=$label}}
+{{/select}}
+
+{{#foreach from=$module.config.prefixes item="code"}}
+	{{:assign var="pattern_array." value="%s*"|args:$code}}
+{{/foreach}}
+{{#foreach from=$module.config.unfinished item="elem"}}
+	{{if $elem.code != null}}
+		{{:assign code=$elem.code}}
+	{{else}}
+		{{:assign code=$elem}}
+	{{/if}}
+{{:assign var="pattern_array." value="%s*"|args:$code}}
+{{/foreach}}
+{{:assign var="patterns" value=$pattern_array|implode:"|"}}
+
+<div id="erreur" class="hidden">
+	<p class="block error">La date choisie n'est dans aucun exercice ouvert !</p>
+</div>
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Données de l'immobilisation</legend>
+		<dl>
+			{{:input type="select" name="id_year" label="Exercice" default=$selected_year required=true default_empty="— Faire un choix —" options=$open_years}}
+			{{:input type="date" name="date_achat" label="Date d'acquisition" required=true default=$now|date_short}}
+			{{:input type="text" name="designation" label="Libellé" required=true}}
+			{{:input type="money" name="montant" label="Montant" required=true}}
+			{{:input
+				type="list"
+				name="credit_account"
+				label="Compte de décaissement"
+				required=true
+				target="!acc/charts/accounts/selector.php?codes=%s&id_year=%d"|args:"512*|530*|404*":$selected_year
+			}}
+			{{:input
+				type="list"
+				name="debit_account"
+				label="Compte d'immobilisation"
+				required=true
+				target="!acc/charts/accounts/selector.php?codes=%s&id_year=%d"|args:$patterns:$selected_year
+			}}
+			{{if $projects != null}}
+				{{:input type="select" name="id_project" label="Projet (analytique)" options=$projects default_empty="— Aucun —"}}
+			{{/if}}
+			<div id="donnees" class="hidden">
+				{{:input type="select" name="years_data" options=$years_data}}
+			</div>
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>Amortissement</legend>
+		<span class="help">Informations non utilisées pour les immobilisations du compte 23 et ses sous-comptes</span>
+		<dl>
+			<div id="div_amort">
+				{{:input type="number" name="duree" label="Durée d'amortissement" required=true min=0 default=1 suffix="année(s)"}}
+				{{:input type="date" name="date_mes" label="Date de mise en service" default=$now|date_short help="C'est la date de première utilisation ; à modifier si différente de la date d'acquisition"}}
+			</div>
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="add" label="Ajouter" shape="right" class="main"}}
+	</p>
+
+</form>
+{{:admin_footer}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript">
+
+function changeYear(evt, f_accounts = ['credit_account', 'debit_account'], f_years_select = 'f_id_year') {
+	setSelectorYear(f_accounts, f_years_select);
+}
+
+(function () {
+	document.getElementById('f_id_year').onchange = changeYear;
+	document.getElementById('f_date_achat').addEventListener("change", (e) => {
+		document.getElementById('f_date_mes').value = document.getElementById('f_date_achat').value;
+	});
+})();
+</script>

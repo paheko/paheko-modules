@@ -1,0 +1,12 @@
+{{* -*- brindille -*- *}}
+{{*
+	Calcule le nombre de jours entre deux dates
+	paramètres :
+		- date_debut
+		- date_fin
+	résultat : nbjours
+*}}
+
+{{:assign ts_debut=$date_debut|strtotime}}
+{{:assign ts_fin=$date_fin|strtotime}}
+{{:assign nbjours="1+abs(%d-%d)/(60*60*24)"|math:$ts_fin:$ts_debut}}

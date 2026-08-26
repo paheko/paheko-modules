@@ -1,0 +1,47 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	lister les amortissement non rattachés à une immo
+	@param condition
+*}}
+{{#select
+	line.id as line_id,
+	line.id_transaction as trans_id,
+	line.credit as amount,
+	line.label as line_label,
+	trans.date as trans_date,
+	trans.label as trans_label,
+	trans.id_year as year,
+	account.id as account_id,
+	account.code as account_code,
+	account.label as account_label
+	FROM acc_transactions_lines AS line
+	INNER JOIN acc_accounts AS account ON account.id = line.id_account
+	INNER JOIN acc_transactions AS trans ON trans.id = line.id_transaction
+	WHERE credit > 0 AND (NOT trans.status & 16) AND !condition
+	ORDER BY trans.date, trans.label;
+	!condition=$condition
+	assign="amort_line"
+}}
+	{{* voir s'il existe des lignes d'immo liées à cette ligne d'amortissement *}}
+	{{:assign amort_amount=0}}
+	{{:assign keep_amort=true}}
+	{{#load type="amort_link"
+		where="$$.amort_line_id = :amort_line_id"
+		:amort_line_id=$amort_line.line_id|intval
+		assign="amort_link"
+	}}
+		{{if $amort_link.amount == null || $amort_link.amount == 0}}
+			{{:assign amort_amount=$amort_line.amount}}
+			{{:assign keep_amort=false}}
+		{{else}}
+			{{:assign amort_amount="%d+%d"|math:$amort_amount:$amort_link.amount}}
+		{{/if}}
+	{{else}}
+		{{* pas de ligne d'immo liée à cette ligne d'amort => garder cette ligne d'amortissement *}}
+	{{/load}}
+	{{if $keep_amort && $amort_amount < $amort_line.amount}}
+		{{:assign var="amort_line.amount" value="%d-%d"|math:$amort_line.amount:$amort_amount}}
+		{{:assign var="free_amort_lines." value=$amort_line}}
+	{{/if}}
+{{/select}}

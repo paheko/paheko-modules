@@ -1,0 +1,174 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer la liaison entre une ligne d'écriture d'amortissement
+	et une ligne d'écriture d'immobilisation
+	@param immo_doc_id   : numéro du doc d'immo
+	@param amort_line_id : numéro de ligne de l'écriture d'amortissement
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label === false}}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{:assign montant_immo=$info_immo.amount|or:$ligne_immo.amount}}
+
+{{* chercher l'écriture d'amortissement *}}
+{{#select
+	line.credit as amount,
+	line.label as line_label,
+	trans.date as amort_date,
+	trans.label as trans_label,
+	trans.id as trans_id,
+	acc.code as account_code,
+	acc.label as account_label
+	FROM acc_transactions_lines as line
+	INNER JOIN acc_transactions as trans on line.id_transaction = trans.id
+	INNER JOIN acc_accounts as acc on line.id_account = acc.id
+	WHERE line.id = :line_id;
+	:line_id = $_GET.amort_line_id|intval
+	assign="amort_line"
+}}
+{{else}}
+	{{:error message="Amortissement non trouvé"}}
+{{/select}}
+{{:assign amort_label=$amort_line.trans_label}}
+{{if $amort_line.line_label != null && $amort_line.line_label != $amort_label}}
+	{{:assign amort_label=$amort_label|cat:"— "|cat:$amort_line.line_label}}
+{{/if}}
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$amort_line.trans_id}}
+
+{{* montant de l'écriture d'amortissement déjà affecté *}}
+{{:assign montant_affecte=0}}
+{{#load type="amort_link"
+	where="$$.amort_line_id = :amort_line_id"
+	:amort_line_id = $_GET.amort_line_id|intval
+}}
+	{{:assign montant_affecte="%d+%d"|math:$montant_affecte:$amount}}
+{{/load}}
+{{:assign reste="%d-%d"|math:$amort_line.amount:$montant_affecte}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{* vérifier que le montant saisi est inférieur au reste *}}
+	{{if $_POST.montant == null || $_POST.montant == 0}}
+		{{:assign montant_amort=$reste}}
+		{{if $montant_affecte == 0}}
+			{{:assign saved_amount=null}}
+		{{else}}
+			{{:assign saved_amount=$reste}}
+		{{/if}}
+	{{else}}
+		{{:assign montant_amort=$_POST.montant|money_int}}
+		{{if $montant_amort > $reste}}
+			{{:assign reste_nb="%f"|math:$reste|money_currency:false}}
+			{{:error message="Le montant de l'amortissement ne peut être supérieur au reste (%s)"|args:$reste_nb}}
+		{{/if}}
+		{{if $montant_amort == $amort_line.amount}}
+			{{:assign saved_amount=null}}
+		{{else}}
+			{{:assign saved_amount=$montant_amort}}
+		{{/if}}
+	{{/if}}
+
+	{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+	{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_credits"}}
+	{{:assign montant_immo="%d-%d"|math:$montant_immo:$total_credits}}
+
+	{{* montant des amortissements *}}
+	{{:include file="./_get_amort_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_amort"}}
+
+	{{* vérifier que le montant total des amortissements ne dépasse pas la valeur de l'immo *}}
+	{{:assign vnc="%d-%d"|math:$montant_immo:$total_amort}}
+	{{:assign total_amort="%d+%d"|math:$total_amort:$montant_amort}}
+	{{if $total_amort > $montant_immo}}
+		{{:assign ma="%f"|math:$montant_amort|money_currency:false}}
+		{{:assign vnc="%f"|math:$vnc|money_currency:false}}
+		{{:error message="Le montant de l'amortissement (%s) dépasse la valeur résiduelle de l'immobilisation (%s)"|args:$ma:$vnc}}
+	{{/if}}
+
+	{{*
+		supprimer les documents qui pointent sur une ligne d'amortissement absente
+		cas de la suppression manuelle d'un amortissement
+	*}}
+	{{:include file="_remove_orphan_docs.tpl"}}
+
+	{{* Lier l'écriture d'amortissement à l'écriture d'immobilisation *}}
+	{{:include file="_common_attach.html" immo_doc_id=$_GET.immo_doc_id trans_id=$amort_line.trans_id}}
+
+	{{* vérifier si cette liaison est déjà présente dans les documents pour éviter les doublons *}}
+	{{* TODO voir si nécessaire ? *}}
+	{{#load type="amort_link"
+		where="$$.immo_doc_id = :immo_doc_id AND $$.amort_line_id = :amort_line_id"
+		:immo_doc_id=$_GET.immo_doc_id|intval
+		:amort_line_id = $_GET.amort_line_id|intval
+		limit=1
+		}}
+	{{else}}
+		{{:save
+			key=""|uuid
+			type="amort_link"
+			immo_doc_id=$_GET.immo_doc_id|intval
+			amort_line_id=$_GET.amort_line_id|intval
+			amount=$saved_amount
+		}}
+	{{/load}}
+
+	{{* immo soldée ? *}}
+	{{if $total_amort == $montant_immo && $_GET.from != "exit"}}
+		{{:assign status="amortized"}}
+		{{:save
+			key=$info_immo.key
+			status=$status
+		}}
+	{{/if}}
+
+{{if $_GET.from == "exit"}}
+	{{:redirect force="exit_step2.html?immo_doc_id=%s&from=exit&ok=1&msg=attach_amort"|args:$_GET.immo_doc_id}}
+{{else}}
+	{{:redirect force="amortization.html?immo_doc_id=%s&type_immo=%s&ok=1&msg=attach_amort"|args:$_GET.immo_doc_id:$status}}
+{{/if}}
+{{/form}}
+
+{{:admin_header title="Amortir l'immobilisation" custom_css="./style.css" current="module_amortization"}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="managed" subcurrent="attach_amort"}}
+{{/if}}
+{{:form_errors}}
+
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd>{{$label_immo}}</dd>
+		<dt>Amortissement</dt>
+		<dd><span class="num"><a href="{{$trans_url}}">#{{$amort_line.trans_id}}</a></span> {{$amort_label}}</dd>
+		<dt>Montant de l'écriture d'amortissement</dt>
+		<dd>{{$amort_line.amount|money_currency_html:false|raw}}</dd>
+		{{if $montant_affecte > 0}}
+			<dt>Montant déjà affecté</dt>
+			<dd class="money strong">{{"%f"|math:$montant_affecte|money_currency_html:false|raw}}</dd>
+			<dt>Montant restant à affecter</dt>
+			<dd class="money strong">{{"%f"|math:$reste|money_currency_html:false|raw}}</dd>
+		{{/if}}
+	</dl>
+</div>
+
+<form method="post" action="" data-focus="1">
+	<fieldset>
+		<dl>
+			{{:input type="money" name="montant" label="Montant" default=$reste required=true help="Montant de l'amortissement"}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+

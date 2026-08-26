@@ -1,0 +1,52 @@
+{{* -*- brindille -*- *}}
+
+{{* barre de navigation *}}
+{{if $_GET.type_immo == null}}
+	{{:assign type_immo="managed"}}
+{{else}}
+	{{:assign type_immo=$_GET.type_immo}}
+{{/if}}
+
+{{if $type_immo == "managed"}}
+	{{:admin_header title="Immobilisations en cours d'amortissement" custom_css="./style.css" current="module_amortization"}}
+{{elseif $type_immo == "amortized"}}
+	{{:admin_header title="Immobilisations amorties" custom_css="./style.css" current="module_amortization"}}
+{{elseif $type_immo == "archived"}}
+	{{:admin_header title="Immobilisations archivées" custom_css="./style.css" current="module_amortization"}}
+{{elseif $type_immo == "other"}}
+	{{:admin_header title="Immobilisations à classer" custom_css="./style.css" current="module_amortization"}}
+{{elseif $type_immo == "unfinished"}}
+	{{:admin_header title="Immobilisations en cours de constitution" custom_css="./style.css" current="module_amortization" subcurrent="unfinished"}}
+{{/if}}
+{{:include file="_nav.html" current=$type_immo}}
+
+{{* Mise à niveau *}}
+{{:assign module_version="0.40.0"}}
+{{:include file="upgrade.html" module_version=$module_version}}
+
+{{* supprimer les documents sans écriture associée *}}
+{{:include file="_remove_orphan_docs.tpl"}}
+
+{{if $_GET.ok}}
+	{{if $_GET.msg|match:"immobilisation"}}
+		{{:assign msg="Immobilisation enregistrée"}}
+	{{elseif $_GET.msg|match:"suppr_infos"}}
+		{{:assign msg="Paramètres supprimés"}}
+	{{elseif $_GET.msg|match:"infos"}}
+		{{:assign msg="Paramètres enregistrés"}}
+	{{/if}}
+	<p class="block confirm">{{$msg}}</p>
+{{elseif $_GET.err}}
+	<p class="block error">Échec enregistrement immobilisation</p>
+{{/if}}
+
+{{if $type_immo == "other"}}
+	{{:include file="_immobilisations_autres.html"}}
+{{elseif $type_immo == "archived"}}
+	{{:include file="_archives.html"}}
+{{elseif $type_immo == "unfinished"}}
+	{{:include file="_unfinished.html"}}
+{{elseif $type_immo == "managed" || $type_immo == "amortized"}}
+	{{:include file="_immobilisations.html"}}
+{{/if}}
+{{:admin_footer}}

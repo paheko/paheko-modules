@@ -1,0 +1,21 @@
+{{* -*- brindille -*- *}}
+{{:admin_header title="Ajout immobilisation" current="module_amortization"}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="index"}}
+{{/if}}
+
+<div class="block error">
+	Le compte « {{$_GET.account}} » n'est pas un compte
+	d'amortissement ou n'est pas dans le plan comptable de l'exercice
+	choisi
+</div>
+
+<div>
+	{{:linkbutton
+		label="Créer le compte"
+		shape="plus"
+		href="!acc/charts/accounts/new.php?id=%s"|args:$_GET.chart
+	}}
+</div>

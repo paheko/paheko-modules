@@ -1,0 +1,255 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Classer une immobilisation non prise en charge
+	@param immo_line_id
+*}}
+
+{{* données de l'immobilisation *}}
+{{:assign montant_affecte=0}}
+{{#load type="immo" where="$$.line = :line_id" :line_id=$_GET.immo_line_id|intval assign="info_immo"}}
+	{{:assign montant_affecte="%d+%d"|math:$montant_affecte:$amount}}
+	{{:assign choix_defaut=$info_immo.status}}
+{{/load}}
+
+{{#select
+	trans.id as immo_trans_id,
+	trans.label as trans_label,
+	trans.date as date_achat,
+	line.debit as montant,
+	line.label as line_label,
+	acc.code,
+	acc.label as account_label
+	FROM acc_transactions_lines AS line
+	INNER join acc_transactions AS trans ON line.id_transaction = trans.id
+	INNER JOIN acc_accounts AS acc ON line.id_account = acc.id
+	WHERE line.id = :line_id;
+	:line_id = $_GET.immo_line_id|intval
+	assign="ligne_immo"
+	}}
+{{else}}
+	{{:error message="Immobilisation non trouvée"}}
+{{/select}}
+{{:assign reste="%d-%d"|math:$ligne_immo.montant:$montant_affecte}}
+{{:assign date_achat_defaut=$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign date_mes_defaut=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign immo_label=$ligne_immo.trans_label}}
+{{if $ligne_immo.line_label != null && $ligne_immo.line_label != $ligne_immo.trans_label}}
+	{{:assign immo_label=$immo_label|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+
+{{#form on="save"}}
+	{{if $_POST.classify == null}}
+		{{:error message="Vous devez faire un choix de classement"}}
+	{{/if}}
+
+	{{if $_POST.classify == "ignored"}}
+		{{* ne pas amortir *}}
+		{{:assign duration=0}}
+		{{:assign libelle=null}}
+		{{:assign montant=null}}
+		{{:assign date_achat=null}}
+		{{:assign date_mes=null}}
+		{{:assign status="ignored"}}
+	{{elseif $_POST.classify == "archived"}}
+		{{* voir s'il y a déjà un doc associé à cette immo *}}
+		{{#load type="immo" where="$$.line = :immo_line_id" :immo_line_id=$_GET.immo_line_id|intval}}
+			{{:assign uuid=$key}}
+			{{:assign immo_doc_id=$id}}
+		{{else}}
+			{{:assign uuid=""|uuid}}
+		{{/load}}
+
+		{{* immobilisation sortie du bilan *}}
+		{{:save
+			key=$uuid
+			validate_schema="asset.schema.json"
+			type="immo"
+			line=$_GET.immo_line_id|intval
+			duration=0
+			status=null
+			assign_new_id="immo_doc_id"
+		}}
+		{{:redirect force="exit_step1.html?immo_doc_id=%s&from=exit"|args:$immo_doc_id}}
+	{{else}}
+		{{* immobilisation amortissable *}}
+		{{if $_POST.date_achat|parse_date > $ligne_immo.date_achat}}
+			{{:assign da=$ligne_immo.date_achat|date_short}}
+			{{:error message="Erreur : la date d'achat (%s) ne peut être postérieure à la date de l'écriture d'immobilisation (%s)"|args:$_POST.date_achat:$da}}
+		{{/if}}
+
+		{{* vérifier que la date de mise en service est postérieure à la date d'acquisition *}}
+		{{:assign d1=$_POST.date_achat|or:$ligne_immo.date_achat|parse_date}}
+		{{:assign d2=$_POST.date_mes|or:$d1|parse_date}}
+		{{if $d2 < $d1}}
+			{{:assign da=$d1|date_short}}
+			{{:error message="Erreur : la date de mise en service (%s) ne peut être antérieure à la date d'acquisition (%s)"|args:$_POST.date_mes:$da}}
+		{{/if}}
+
+		{{if $_POST.date_achat == null || $_POST.date_achat|parse_date == $ligne_immo.date_achat}}
+			{{:assign date_achat=null}}
+		{{else}}
+			{{:assign date_achat=$_POST.date_achat|parse_date}}
+		{{/if}}
+
+		{{if $_POST.date_mes == null || $_POST.date_mes == $_POST.date_achat}}
+			{{:assign date_mes=null}}
+		{{else}}
+			{{:assign date_mes=$_POST.date_mes|parse_date}}
+		{{/if}}
+
+		{{:assign duration=$_POST.duree|intval}}
+		{{if $duration <= 0}}
+			{{:error message="Erreur : la durée d'amortissement doit être strictement positive"}}
+		{{/if}}
+
+		{{if $_POST.libelle != $ligne_immo.line_label && $_POST.libelle != $ligne_immo.trans_label}}
+			{{:assign libelle=$_POST.libelle}}
+		{{/if}}
+
+		{{if $_POST.montant == null || $_POST.montant|money_int == 0 }}
+			{{if $montant_affecte > 0}}
+				{{:assign montant=$reste}}
+			{{else}}
+				{{:assign montant=null}}
+			{{/if}}
+		{{else}}
+			{{:assign montant=$_POST.montant|money_int}}
+			{{if $montant == $ligne_immo.montant}}
+				{{:assign montant=null}}
+			{{/if}}
+		{{/if}}
+		{{if $montant > $reste}}
+			{{:assign reste_nb="%f"|math:$reste|money_currency:false}}
+			{{:assign montant_nb="%f"|math:$montant|money_currency:false}}
+			{{:error message="Le montant (%s) ne peut être supérieur au reste (%s)"|args:$montant_nb:$reste_nb}}
+		{{/if}}
+
+		{{:assign status="managed"}}
+	{{/if}}
+
+	{{* enregistrer les infos de l'immobilisation *}}
+	{{if $info_immo == null || $montant_affecte > 0}}
+		{{:assign key=""|uuid}}
+	{{else}}
+		{{:assign key=$info_immo.key}}
+	{{/if}}
+	{{:save
+		key=$key
+		validate_schema="asset.schema.json"
+		type="immo"
+		line=$_GET.immo_line_id|intval
+		duration=$duration
+		label=$libelle
+		amount=$montant
+		date_achat=$date_achat
+		date_mes=$date_mes
+		status=$status
+	}}
+
+	{{if $_POST.classify == "managed"}}
+		{{:assign type_immo="managed"}}
+	{{else}}
+		{{:assign type_immo="other"}}
+	{{/if}}
+	{{:redirect force="index.html?ok=1&msg=infos&type_immo=%s"|args:$type_immo}}
+{{/form}}
+
+{{:admin_header title="Classer l'immobilisation" custom_css="./style.css" current="module_amortization"}}
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="other" subcurrent="parameter"}}
+{{/if}}
+{{:form_errors}}
+
+{{* date de début du 1er exercice dans paheko *}}
+{{#years order="start_date" limit=1}}
+	{{:assign first_date=$start_date}}
+{{/years}}
+
+{{*
+	- classer l'immobilisation
+	- renseigner ou modifier la date de mise en service, les écritures associées ou la durée d'amortissement
+*}}
+
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.immo_trans_id}}
+<h3 class="ruler">Paramètres de l'immobilisation</h3>
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd>
+			<span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.immo_trans_id}}</a> </span>{{$immo_label}}
+		</dd>
+		<dt>Montant</dt>
+		<dd class="money strong">{{"%f"|math:$ligne_immo.montant|money_currency_html:false|raw}}</dd>
+		{{if $montant_affecte > 0}}
+			<dt>Montant déjà affecté</dt>
+			<dd class="money strong">{{"%f"|math:$montant_affecte|money_currency_html:false|raw}}</dd>
+			<dt>Montant restant à affecter</dt>
+			<dd class="money strong">{{"%f"|math:$reste|money_currency_html:false|raw}}</dd>
+		{{/if}}
+		<dt>Date de l'écriture d'immobilisation</dt>
+		<dd>{{$ligne_immo.date_achat|date_short}}</dd>
+		<dt>Compte d'immobilisation</dt>
+		<dd>{{$ligne_immo.code}} — {{$ligne_immo.account_label}}
+	</dl>
+</div>
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Classement</legend>
+		<dl id="classement_immo">
+			<dt><label>Faites un choix</label> <b>(obligatoire)</b></dt>
+			{{:input type="radio-btn" name="classify" value="managed" label="Immobilisation à amortir" default=$choix_defaut}}
+			{{if $ligne_immo.date_achat > $first_date}}
+				{{:input type="radio-btn" name="classify" value="archived" label="Immobilisation sortie du bilan" default=$choix_defaut}}
+			{{/if}}
+			{{:input type="radio-btn" name="classify" value="ignored" label="Immobilisation à ignorer" help="L'écriture n'apparaitra plus dans la liste des immobilisations" default=$choix_defaut}}
+		</dl>
+	</fieldset>
+
+	<fieldset class="masquable">
+		<legend>Informations</legend>
+		<dl>
+			{{:input type="date" name="date_achat" label="Date d'acquisition" default=$date_achat_defaut help="à modifier si nécessaire"}}
+			{{:input type="text" name="libelle" label="Libellé" default=$immo_label help="à modifier si nécessaire"}}
+			{{:input type="money" name="montant" label="Montant de l'immobilisation" required=true default=$reste help="à modifier si différent du montant de l'écriture d'immobilisation"}}
+			{{:input type="number" name="duree" label="Durée d'amortissement" required=true min=1 suffix="année(s)"}}
+			{{:input type="date" name="date_mes" label="Date de mise en service" default=$date_mes_defaut help="à modifier si différente de la date d'acquisition"}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+
+</form>
+
+{{:admin_footer}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript">
+
+// afficher/masquer les champs de saisie
+function toggleInputs(event) {
+	const classement_immo = document.getElementById('classement_immo');
+	const managed = classement_immo.querySelector('input[type=radio][value=managed]');
+	if (managed.checked) {
+		g.toggle('.masquable', true);
+	} else {
+		g.toggle('.masquable', false);
+	}
+}
+toggleInputs();
+
+(function () {
+	const radios = document.querySelectorAll('input[name="classify"]');
+	radios.forEach(radio => {
+		radio.addEventListener("change", toggleInputs);
+	});
+	document.getElementById('f_date_achat').addEventListener("change", (e) => {
+		document.getElementById('f_date_mes').value = document.getElementById('f_date_achat').value;
+	});
+})();
+
+</script>

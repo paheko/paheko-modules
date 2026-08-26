@@ -1,0 +1,251 @@
+{{* -*- brindille -*- *}}
+
+{{* lecture config (défaut ou enregistrée) *}}
+{{:include file="./_get_config.html" keep="module.config, config_defaut"}}
+
+{{#form on="save"}}
+	{{:assign ok=0}}
+	{{#foreach from=$_POST.immo_accounts item="line"}}
+		{{:assign elem=$line|values}}
+		{{:assign elem=$elem.0}}
+		{{:assign var="fields" value=$elem|explode:" — "}}
+		{{if $fields.0|strpos:$config_defaut.unfinished.0.code === 0}}
+			{{:error message="Le compte « %s » n'est pas un compte d'immobilisation amortissable"|args:$fields.0}}
+		{{/if}}
+		{{:assign var="account_codes." value=$fields.0}}
+	{{/foreach}}
+
+	{{#foreach from=$_POST.unfinished_accounts item="line"}}
+		{{:assign elem=$line|values}}
+		{{:assign elem=$elem.0}}
+		{{:assign var="fields" value=$elem|explode:" — "}}
+		{{:assign var="unfinished_codes." value=$fields.0}}
+	{{/foreach}}
+
+	{{* vérifier qu'il n'y a pas d'intersection entre les deux listes de codes *}}
+	{{#foreach from=$account_codes item="i_code"}}
+		{{#foreach from=$unfinished_codes item="u_code"}}
+			{{if $i_code|strpos:$u_code === 0}}
+				{{:error message="Le compte d'immobilisation amortissable « %s » est incompatible avec le compte d'immobilisation en cours « %s »"|args:$i_code:$u_code}}
+			{{/if}}
+			{{if $u_code|strpos:$i_code === 0}}
+				{{:error message="Le compte d'immobilisation amortissable « %s » est incompatible avec le compte d'immobilisation en cours « %s »"|args:$i_code:$u_code}}
+			{{/if}}
+		{{/foreach}}
+	{{/foreach}}
+
+	{{:save
+		key="config"
+		prefixes=$account_codes|sort
+		unfinished=$unfinished_codes|sort
+	}}
+	{{:assign ok=1}}
+	{{:redirect to="./config.html?ok=%d"|args:$ok}}
+{{else}}
+	{{:form_errors}}
+{{/form}}
+
+{{:admin_header title="Configuration" custom_css="./style.css" current="module_amortization"}}
+
+{{:include file="_nav.html" current="config"}}
+{{if $_GET.ok == 1}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{* récupérer l'exercice courant ou sinon le plus récent *}}
+{{:assign var="selected_year" from="logged_user.preferences.accounting_year"}}
+{{if $selected_year == null}}
+	{{* sélectionner l'exercice le plus probable *}}
+	{{#years}}
+		{{if $start_date|strtotime <= $now && $end_date|strtotime >= $now}}
+			{{:assign selected_year=$id}}
+			{{:break}}
+		{{/if}}
+		{{:assign last_year=$id}}
+	{{/years}}
+{{/if}}
+
+{{if $selected_year == null}}
+	{{if $last_year == null}}
+		<p class="block alert">Aucun exercice</p>
+	{{else}}
+		{{:assign selected_year=$last_year}}
+	{{/if}}
+{{/if}}
+{{if $selected_year != null}}
+
+	{{* libellés des comptes d'immobilisation amortissables *}}
+	{{:assign condition="("}}
+	{{#foreach from=$module.config.prefixes item="code"}}
+		{{:assign code=$code|quote_sql}}
+		{{:assign condition=$condition|cat:" account.code = "|cat:$code|cat:" OR "}}
+	{{/foreach}}
+	{{:assign condition=$condition|cat:"0)"}}
+	{{:assign condition=$condition|cat:" AND year.id = %s"|args:$selected_year}}
+
+	{{#select
+		account.id as account_id,
+		account.code,
+		account.label
+		FROM acc_accounts AS account
+		INNER JOIN acc_charts AS chart ON chart.id = account.id_chart
+		INNER JOIN acc_years AS year ON year.id_chart = chart.id
+		WHERE !condition
+		;
+		!condition=$condition
+		}}
+		{{:assign var="immo_accounts.%s"|args:$code label=$label}}
+	{{/select}}
+
+	{{* libellés des comptes d'immobilisation en cours de constitution *}}
+	{{:assign condition="("}}
+	{{#foreach from=$module.config.unfinished item="elem"}}
+		{{if $elem.code != null}}
+			{{:assign code=$elem.code}}
+		{{else}}
+			{{:assign code=$elem}}
+		{{/if}}
+		{{:assign code=$code|quote_sql}}
+		{{:assign condition=$condition|cat:" account.code = "|cat:$code|cat:" OR "}}
+	{{/foreach}}
+	{{:assign condition=$condition|cat:"0)"}}
+	{{:assign condition=$condition|cat:" AND year.id = %s"|args:$selected_year}}
+
+	{{#select
+		account.id as account_id,
+		account.code,
+		account.label
+		FROM acc_accounts AS account
+		INNER JOIN acc_charts AS chart ON chart.id = account.id_chart
+		INNER JOIN acc_years AS year ON year.id_chart = chart.id
+		WHERE !condition
+		;
+		!condition=$condition
+		}}
+		{{:assign var="unfinished_accounts.%s"|args:$code label=$label}}
+	{{/select}}
+	{{if $unfinished_accounts|count == 0}}
+		{{:assign var="unfinished_accounts.%s"|args:$config_defaut.unfinished.0.code label=$config_defaut.unfinished.0.label}}
+	{{/if}}
+
+	<form method="post" action="">
+
+		<h3>Comptes d'immobilisation amortissables</h3>
+		<p class="help">
+			Les immobilisations amortissables sont cherchées dans les comptes sélectionnés et leurs sous-comptes.
+		</p>
+
+		<table class="list transaction-lines" id="asset_prefixes">
+			<thead>
+				<tr>
+					<th>Compte</th>
+					<th class="actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#foreach from=$immo_accounts key=code item=elem}}
+					<tr>
+						<td>
+							{{:assign var="immo_account.%s.%s"|args:$code:$code value="%s — "|args:$code|cat:$elem.label}}
+							{{:assign var="current_account" from="immo_account.%s"|args:$code}}
+							{{:input
+								type="list"
+								name="immo_accounts[]"
+								target="!acc/charts/accounts/selector.php?codes=%s*&id_year=%d"|args:$code:$selected_year
+								default=$current_account
+							}}
+						</td>
+						<td class="actions">
+							{{if ! $code|in:$config_defaut.prefixes}}
+								{{:button
+									label="Enlever"
+									shape="minus"
+									min="1"
+									name="remove_line"
+								}}
+							{{/if}}
+						</td>
+					</tr>
+				{{/foreach}}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td></td>
+					<td class="actions">{{:button shape="plus" label="Ajouter" title="Ajouter un compte"}}</td>
+				</tr>
+			</tfoot>
+		</table>
+
+		<h3>Comptes d'immobilisation en cours de constitution</h3>
+		<p class="help">
+			Ces immobilisations ne sont pas amortissables ; elles sont cherchées dans les comptes sélectionnés et leurs sous-comptes.
+		</p>
+
+		<table class="list transaction-lines" id="unfinished_accounts">
+			<thead>
+				<tr>
+					<th>Compte</th>
+					<th class="actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+
+				{{:assign unfinished_lines=$config_defaut.unfinished|map:implode:"-"|implode:","}}
+				{{#foreach from=$unfinished_accounts key=code item=elem}}
+					<tr>
+						<td>
+							{{:assign var="unfinished_account.%s.%s"|args:$code:$code value="%s — "|args:$code|cat:$elem.label}}
+							{{:assign var="current_account" from="unfinished_account.%s"|args:$code}}
+							{{:input
+								type="list"
+								name="unfinished_accounts[]"
+								target="!acc/charts/accounts/selector.php?codes=%s*&id_year=%d"|args:$code:$selected_year
+								default=$current_account
+							}}
+						</td>
+						<td class="actions">
+							{{if $unfinished_lines|strpos:$code === false}}
+								{{:button
+									label="Enlever"
+									title="Enlever une ligne"
+									shape="minus"
+									min="1"
+									name="remove_line"
+									}}
+							{{/if}}
+						</td>
+					</tr>
+				{{/foreach}}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td></td>
+					<td class="actions">{{:button shape="plus" label="Ajouter" title="Ajouter un compte"}}</td>
+				</tr>
+			</tfoot>
+		</table>
+
+		<p class="submit">
+			{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+		</p>
+	</form>
+{{/if}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript" async="async">
+
+	// bouton - : supprimer une ligne
+	let lines = $('.transaction-lines tbody tr');
+	lines.forEach(initLine);
+
+	// bouton + : dupliquer une ligne de la 1ère table
+	for (const b of $('#asset_prefixes tfoot button')) {
+		addLine(b, "2*");
+	}
+
+	// bouton + : dupliquer une ligne de la 2ème table
+	for (const b of  $('#unfinished_accounts tfoot button')) {
+		addLine(b, "23*");
+	}
+
+</script>

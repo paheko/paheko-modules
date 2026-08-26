@@ -1,0 +1,56 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"description": "Schéma des liens entre écritures",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["amort_link", "credit_link", "cession_link", "exit_link"]
+		},
+		"immo_doc_id" : {
+			"description": "identifiant du document d'immobilisation associé",
+			"type" : "integer",
+			"exclusiveMinimum": 0
+		},
+		"amort_line_id" : {
+			"description": "ligne d'amortissement associée à l'immobilisation",
+			"type": "integer",
+			"exclusiveMinimum": 0
+		},
+		"credit_line_id": {
+			"description": "ligne au crédit du compte de l'immobilisation",
+			"type": "integer",
+			"exclusiveMinimum": 0
+		},
+		"exit_line_id": {
+			"description": "ligne de sortie du bilan de l'immobilisation",
+			"type": "integer",
+			"exclusiveMinimum": 0
+		},
+		"cession_line_id": {
+			"description": "ligne de cession de l'immobilisation",
+			"type": "integer",
+			"exclusiveMinimum": 0
+		},
+		"amount": {
+			"description": "montant de la ligne d'amortissement ou de crédit",
+			"type": ["number", "null"]
+		},
+		"created" : {
+			"description" : "vrai si amortissement créé dans le module",
+			"type" : ["boolean", "null"]
+		}
+	},
+	"required": ["type", "immo_doc_id"],
+	"if": {"properties": {"type": {"const": "amort_link"}}, "required": ["type"]},
+	"then": {"required": ["amort_line_id"]},
+	"else":
+	"if": {"properties": {"type": {"const": "credit_link"}}, "required": ["type"]},
+	"then": {"required": ["credit_line_id"]},
+	"else":
+	"if": {"properties": {"type": {"const": "cession_link"}}, "required": ["type"]},
+	"then": {"required": ["cession_line_id"]},
+	"else":
+	"if": {"properties": {"type": {"const": "exit_link"}}, "required": ["type"]},
+	"then": {"required": ["exit_line_id"]},
+}

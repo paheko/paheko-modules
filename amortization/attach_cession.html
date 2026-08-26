@@ -1,0 +1,39 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer la liaison entre une écriture d'immobilisation et
+	une écriture de cession
+	@param immo_doc_id  : id du document associé à l'immobilisation
+	@param cession_line_id : ligne de l'écriture de cession
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{* chercher l'écriture de cession de l'immobilisation *}}
+{{#select
+	id_transaction
+	FROM acc_transactions_lines
+	WHERE id = :line_id;
+	:line_id = $_GET.cession_line_id|intval
+}}
+	{{:assign cession_id=$id_transaction}}
+{{else}}
+	{{:error message="Impossible de trouver l'écriture de cession de l'immobilisation"}}
+{{/select}}
+
+{{* Lier l'écriture de cession à l'écriture d'immobilisation *}}
+{{:include file="_common_attach.html" immo_doc_id=$_GET.immo_doc_id trans_id=$cession_id}}
+
+{{* enregistrer la liaison de l'écriture de cession *}}
+{{:save
+	key=""|uuid
+	type="cession_link"
+	immo_doc_id=$info_immo.id
+	cession_line_id=$_GET.cession_line_id|intval
+}}
+
+{{:redirect force="exit_step3.html?immo_doc_id=%s&from=exit&ok=1&msg=attach_cession"|args:$_GET.immo_doc_id}}

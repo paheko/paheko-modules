@@ -1,0 +1,148 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer la liaison entre une ligne d'immobilisation et
+	une ligne d'écriture au crédit du compte de l'immobilisation
+	@param immo_doc_id    : numéro du doc d'immo
+	@param credit_line_id : ligne d'écriture au crédit du compte de l'immobilisation
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label === false }}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_credits"}}
+{{:assign valeur_residuelle="%d-%d"|math:$ligne_immo.amount:$total_credits}}
+
+{{* lister les amortissements liés à l'immobilisation *}}
+{{:include file="./_get_amort_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_amort, total_amort, created_amort"}}
+{{:assign valeur_residuelle="%d-%d"|math:$valeur_residuelle:$total_amort}}
+
+
+{{* chercher l'écriture au crédit du compte d'immobilisation *}}
+{{#select
+	line.id_transaction as trans_id,
+	line.credit as amount,
+	trans.label as trans_label,
+	line.label as line_label
+	FROM acc_transactions_lines as line
+	INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+	WHERE line.id = :line_id;
+	:line_id = $_GET.credit_line_id|intval
+	assign="credit_line"
+}}
+{{else}}
+	{{:error message="Écriture au crédit non trouvée"}}
+{{/select}}
+{{:assign credit_trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$credit_line.trans_id}}
+
+{{* montant de l'écriture de crédit déjà affecté *}}
+{{:assign montant_affecte=0}}
+{{#load type="credit_link"
+	where="$$.credit_line_id = :credit_line_id"
+	:credit_line_id = $_GET.credit_line_id|intval
+}}
+	{{:assign montant_affecte="%d+%d"|math:$montant_affecte:$amount}}
+{{/load}}
+{{:assign reste="%d-%d"|math:$credit_line.amount:$montant_affecte}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+
+	{{if $_POST.montant == null}}
+		{{if $montant_affecte == 0}}
+			{{:assign saved_credit=null}}
+			{{:assign montant_credit=$credit_line.amount}}
+		{{else}}
+			{{:assign saved_credit=$reste}}
+			{{:assign montant_credit=$reste}}
+		{{/if}}
+	{{else}}
+		{{:assign montant_credit=$_POST.montant|money_int}}
+	{{/if}}
+
+	{{* vérifier que le montant saisi est inférieur à la valeur nette de l'écriture d'immobilisation *}}
+	{{if $montant_credit > $valeur_residuelle}}
+		{{:assign solde_nb="%f"|math:$valeur_residuelle|money_currency:false}}
+		{{:error message="Le montant de l'avoir ne peut être supérieur à la valeur nette de l'immobilisation (%s)"|args:$solde_nb}}
+	{{/if}}
+
+	{{* vérifier que le montant saisi est inférieur au reste de l'écriture de crédit *}}
+	{{if $montant_credit > $reste}}
+		{{:assign reste_nb="%f"|math:$reste|money_currency:false}}
+		{{:error message="Le montant de l'avoir ne peut être supérieur au reste (%s)"|args:$reste_nb}}
+	{{/if}}
+	{{if $montant_credit == $credit_line.amount}}
+		{{:assign saved_credit=null}}
+	{{else}}
+		{{:assign saved_credit=$montant_credit}}
+	{{/if}}
+
+	{{* Lier l'écriture de crédit à l'écriture d'immobilisation *}}
+	{{:include file="_common_attach.html" immo_doc_id=$_GET.immo_doc_id trans_id=$credit_line.trans_id}}
+
+	{{* enregistrer la liaison des lignes d'immo *}}
+	{{:save
+		key=""|uuid
+		type="credit_link"
+		immo_doc_id=$_GET.immo_doc_id|intval
+		credit_line_id=$_GET.credit_line_id|intval
+		amount=$saved_credit
+	}}
+
+	{{if $_GET.from == "exit"}}
+		{{:redirect force="exit_step1.html?immo_doc_id=%s&from=%s&ok=1&msg=attach_avoir"|args:$_GET.immo_doc_id:$_GET.from}}
+	{{else}}
+		{{:redirect force="amortization.html?immo_doc_id=%s&ok=1&msg=attach_avoir"|args:$_GET.immo_doc_id}}
+	{{/if}}
+{{/form}}
+
+{{:admin_header title="Écritures au crédit du compte d'immobilisation" custom_css="./style.css" current="module_amortization"}}
+{{if ! $dialog}}
+	{{:include
+		file="_nav.html"
+		current="managed"
+		subcurrent="attach_credit"
+		type_immo="other"
+}}
+{{/if}}
+{{:form_errors}}
+
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd>{{$label_immo}}</dd>
+		<dt>Écriture au crédit du compte d'immobilisation</dt>
+		<dd><span class="num"><a href="{{$credit_trans_url}}">#{{$credit_line.trans_id}}</a></span> {{$credit_line.trans_label}}{{if $credit_line.line_label != null && $credit_line.line_label != $credit_line.trans_label}} — {{$credit_line.line_label}}{{/if}}</dd>
+		<dt>Montant de l'écriture</dt>
+		<dd>{{$credit_line.amount|money_currency_html:false|raw}}</dd>
+		<dt>Montant déjà affecté</dt>
+		<dd class="money strong">{{"%f"|math:$montant_affecte|money_currency_html:false|raw}}</dd>
+		<dt>Montant restant à affecter</dt>
+		<dd class="money strong">{{"%f"|math:$reste|money_currency_html:false|raw}}</dd>
+	</dl>
+</div>
+
+<form method="post" action="" data-focus="1">
+	<fieldset>
+		<dl>
+			{{:input type="money" name="montant" label="Montant" default=$reste help="Montant de l'avoir"}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+

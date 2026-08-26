@@ -1,0 +1,169 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	@param immo_doc_id
+*}}
+
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign montant_immo=$info_immo.amount|or:$ligne_immo.amount}}
+{{:assign immo_label=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $ligne_immo.line_label != null && $ligne_immo.line_label != $immo_label}}
+	{{:assign immo_label=$immo_label|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{:assign date_achat_defaut=$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign date_mes_defaut=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_immos, total_credits"}}
+{{:assign solde="%d-%d"|math:$montant_immo:$total_credits}}
+
+{{:assign autres_amount=0}}
+{{#load
+	type="immo"
+	where="$$.line = :line_id AND id != :doc_id"
+	:line_id = $info_immo.line
+	:doc_id = $info_immo.id
+	}}
+	{{:assign autres_amount="%d+%d"|math:$autres_amount:$amount}}
+{{/load}}
+{{:assign max_disponible="%d-%d"|math:$ligne_immo.amount:$autres_amount}}
+
+{{* traiter la saisie *}}
+{{#form on="save"}}
+	{{if $_POST.date_achat|parse_date > $ligne_immo.date_achat}}
+		{{:assign da=$ligne_immo.date_achat|date_short}}
+		{{:error message="Erreur : la date d'achat (%s) ne peut être postérieure à la date de l'écriture d'immobilisation (%s)"|args:$_POST.date_achat:$da}}
+	{{/if}}
+
+	{{if $_POST.date_achat == null || $_POST.date_achat|parse_date == $info_immo.date_achat}}
+		{{:assign date_achat=$info_immo.date_achat}}
+	{{elseif $_POST.date_achat|parse_date == $ligne_immo.date_achat}}
+		{{:assign date_achat=null}}
+	{{else}}
+		{{:assign date_achat=$_POST.date_achat|parse_date}}
+	{{/if}}
+
+	{{* TODO : simplifier ? *}}
+	{{if $_POST.date_mes == null || $_POST.date_mes|parse_date == $info_immo.date_mes}}
+		{{:assign date_mes=$info_immo.date_mes}}
+	{{elseif $_POST.date_mes|parse_date == $info_immo.date_achat}}
+		{{:assign date_mes=null}}
+	{{elseif $_POST.date_mes|parse_date == $ligne_immo.date_achat}}
+		{{if $info_immo.date_achat == null}}
+			{{:assign date_mes=null}}
+		{{else}}
+			{{:assign date_mes=$ligne_immo.date_achat}}
+		{{/if}}
+	{{else}}
+		{{:assign date_mes=$_POST.date_mes|parse_date}}
+		{{:assign date_achat_comp=$ligne_immo.date_achat}}
+		{{if $date_achat != null}}
+			{{:assign date_achat_comp=$date_achat}}
+		{{/if}}
+		{{if $date_mes < $date_achat_comp}}
+			{{:assign da=$date_achat_comp|date_short}}
+			{{:error message="Erreur : la date de mise en service (%s) ne peut être antérieure à la date d'acquisition (%s)"|args:$_POST.date_mes:$da}}
+		{{/if}}
+	{{/if}}
+
+	{{:assign duration=$_POST.duree|intval}}
+	{{if $duration <= 0}}
+		{{:error message="Erreur : la durée d'amortissement doit être strictement positive"}}
+	{{/if}}
+
+	{{if $_POST.libelle != $ligne_immo.line_label && $_POST.libelle != $ligne_immo.trans_label}}
+		{{:assign libelle=$_POST.libelle}}
+	{{else}}
+		{{:assign libelle=null}}
+	{{/if}}
+
+	{{:assign montant=null}}
+	{{if $_POST.montant == null || $_POST.montant|money_int == 0 || $_POST.montant|money_int == $info_immo.amount}}
+		{{:assign montant=$info_immo.amount}}
+	{{else}}
+		{{:assign montant=$_POST.montant|money_int}}
+		{{if $montant < 0 || $montant > $max_disponible}}
+			{{:assign montant_aff="%f"|math:$montant|money_currency:false}}
+			{{:assign max_aff="%f"|math:$max_disponible|money_currency:false}}
+			{{:error message="Le montant (%s) doit être positif et ne peut être supérieur à %s"|args:$montant_aff:$max_aff}}
+		{{/if}}
+	{{/if}}
+
+	{{:assign status="managed"}}
+
+	{{* enregistrer les infos de l'immobilisation *}}
+	{{:save
+		key=$info_immo.key
+		validate_schema="asset.schema.json"
+		type="immo"
+		line=$info_immo.line
+		duration=$duration
+		label=$libelle
+		amount=$montant
+		date_achat=$date_achat
+		date_mes=$date_mes
+		status=$status
+		assign_new_id="new_id"
+	}}
+
+	{{:assign type_immo="managed"}}
+	{{:redirect force="amortization.html?immo_doc_id=%s&type_immo=%s&ok=1&msg=modif"|args:$_GET.immo_doc_id:$type_immo}}
+{{/form}}
+
+{{:admin_header title="Modifier l'immobilisation" custom_css="./style.css" current="module_amortization"}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="managed" subcurrent="modify_infos"}}
+{{/if}}
+{{:form_errors}}
+
+{{:assign choix_defaut=$_GET.type_immo}}
+
+{{*
+	modifier la date de mise en service, les écritures associées ou la durée d'amortissement
+*}}
+
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+<h3 class="ruler">Paramètres de l'immobilisation</h3>
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd><span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.trans_id}}</a></span> {{$immo_label}}</dd>
+		<dt>Compte d'immobilisation</dt>
+		<dd>{{$ligne_immo.account_code}} — {{$ligne_immo.account_label}}
+		<dt>Montant</dt>
+		<dd class="money strong">{{"%f"|math:$montant_immo|money_currency_html:false|raw}}</dd>
+		{{if $total_credits > 0}}
+			<dt>Montant des avoirs</dt>
+			<dd class="money">{{"%f"|math:$total_credits|money_currency_html:false|raw}}</dd>
+			<dt>Montant à amortir</dt>
+			<dd class="money strong">{{"%f"|math:$solde|money_currency_html:false|raw}}</dd>
+		{{/if}}
+		<dt>Date de l'écriture d'immobilisation</dt>
+		<dd>{{$ligne_immo.date_achat|date_short}}</dd>
+	</dl>
+</div>
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Informations</legend>
+		<dl>
+			{{:input type="number" name="duree" label="Durée d'amortissement" min=1 default=$info_immo.duration suffix="année(s)"}}
+			{{if $info_immo.amount != null}}
+				{{:assign max_aff="%f"|math:$max_disponible|money_currency:false}}
+				{{:input type="money" name="montant" label="Montant de l'immobilisation" default=$montant_immo help="Montant maximum : %s"|args:$max_aff}}
+			{{/if}}
+			{{:input type="date" name="date_achat" label="Date d'acquisition" default=$date_achat_defaut help="si différente de la date de l'écriture d'immobilisation"}}
+			{{:input type="date" name="date_mes" label="Date de mise en service" default=$date_mes_defaut help="si différente de la date d'acquisition"}}
+			{{:input type="text" name="libelle" label="Libellé" default=$immo_label help="si différent du libellé de l'écriture d'immobilisation"}}
+		</dl>
+	</fieldset>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

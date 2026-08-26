@@ -1,0 +1,14 @@
+{
+	"tva": false,
+	"prefixes": [
+		"20",
+		"21",
+		"27"
+    ],
+	"unfinished": [
+		{
+			"code" : "23",
+			"label" : "Immobilisations en cours"
+		}
+	]
+}

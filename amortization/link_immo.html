@@ -1,0 +1,153 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Lister les écritures au crédit du compte de l'immobilisation
+	paramètre et proposer de les attacher à l'immo paramètre
+	@param immo_doc_id : document associé à l'immo
+ *}}
+
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+{{:assign date_immo=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign montant_immo=$info_immo.amount|or:$ligne_immo.amount}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label ===false }}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_immos, total_credits"}}
+{{:assign solde="%d-%d"|math:$montant_immo:$total_credits}}
+
+{{*
+	lister les écritures au crédit du compte de l'immobilisation
+*}}
+{{if $_GET.filter}}
+	{{:assign account_code=$ligne_immo.account_code|cat:"%"}}
+{{else}}
+	{{:assign account_code=$ligne_immo.account_code|substr:0:2|cat:"%"}}
+{{/if}}
+{{:assign date_immo=$info_immo.date_achat|or:$ligne_immo.date_achat}}
+
+{{#select
+	line.id as credit_line_id,
+	line.id_transaction as credit_trans_id,
+	line.credit as credit_amount,
+	line.label as line_label,
+	trans.id as immo_trans_id,
+	trans.date as trans_date,
+	trans.label as trans_label,
+	trans.id_year as credit_year,
+	account.id as account_id,
+	account.code as account_code,
+	account.label as account_label
+	FROM acc_transactions_lines AS line
+	INNER JOIN acc_transactions AS trans ON trans.id = line.id_transaction
+	INNER JOIN acc_accounts AS account ON account.id = line.id_account
+	INNER JOIN acc_years AS y ON y.id = trans.id_year
+	WHERE account.code LIKE :account_code AND credit > 0
+	AND trans.date >= :date_immo
+	AND credit_line_id NOT IN (
+		SELECT json_extract(link.document, '$.credit_line_id') AS credit_line_id FROM !table as link
+		WHERE json_extract(link.document, '$.type') == "credit_link"
+		UNION
+		SELECT json_extract(exit_link.document, '$.exit_line_id') AS line_id FROM !table as exit_link
+		WHERE json_extract(exit_link.document, '$.type') == "exit_link")
+	ORDER BY trans.date, trans.label;
+	:account_code = $account_code
+	!table = $module.table
+	:date_immo = $date_immo
+	assign="credit_line"
+	}}
+	{{if $credit_line.credit_amount < $solde}}
+		{{:assign var="other_immos." value=$credit_line}}
+	{{/if}}
+{{/select}}
+
+{{:admin_header title="Écritures au crédit du compte d'immobilisation" custom_css="./style.css" current="module_amortization"}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include
+		file="_nav.html"
+		current="managed"
+		subcurrent="link_immo"
+		type_immo="other"
+}}
+{{/if}}
+
+<nav class="tabs">
+	<ul>
+		<li {{if $_GET.filter}}class="current"{{/if}}>
+			<a href="link_immo.html?immo_doc_id={{$_GET.immo_doc_id}}{{if $dialog}}&_dialog{{/if}}&filter=true&from={{$_GET.from}}">
+				Compte {{$ligne_immo.account_code}} et sous-comptes
+			</a>
+		</li>
+		<li {{if ! $_GET.filter}}class="current"{{/if}}>
+			<a href="link_immo.html?immo_doc_id={{$_GET.immo_doc_id}}{{if $dialog}}&_dialog{{/if}}&from={{$_GET.from}}">
+				Compte {{$ligne_immo.account_code|substr:0:2}} et sous-comptes
+			</a>
+		</li>
+	</ul>
+</nav>
+
+<section class="immobilisation">
+	<div class="informations">
+		<dl class="describe">
+			<dt>Immobilisation</dt>
+			<dd><span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.trans_id}}</a></span> {{$label_immo}}</dd>
+			<dt>Montant</dt>
+			<dd class="money strong">{{"%f"|math:$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+			<dt>Date de l'immobilisation</dt>
+			<dd>{{$date_immo|date_short}}</dd>
+		</dl>
+	</div>
+
+	{{if $other_immos != null}}
+		<table class="list">
+			<thead>
+				<tr>
+					<th>N°</th>
+					<th>Date</th>
+					<th class="nombre">Montant</th>
+					<th>Libellé</th>
+					<th>N° compte</th>
+					<th>Compte</th>
+					<th class="actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#foreach from=$other_immos item="line"}}
+					{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.credit_trans_id}}
+					{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.credit_year}}
+					<tr>
+						<td class="num"><a href="{{$trans_url}}">#{{$line.credit_trans_id}}</a></td>
+						<td>{{$line.trans_date|date_short}}</td>
+						<td class="money">{{"%f"|math:$line.credit_amount|money_html:false|raw}}</td>
+						<td>{{$line.trans_label}}
+							{{if $line.line_label != null && $line.line_label != $line.trans_label}} - {{$line.line_label}}{{/if}}
+						</td>
+						<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
+						<td>{{$line.account_label}}</td>
+						<td class="actions">
+							{{:linkbutton label="Attacher" href="attach_credit.html?credit_line_id=%d&immo_doc_id=%s&from=%s"|args:$line.credit_line_id:$_GET.immo_doc_id:$_GET.from shape="plus"}}
+						</td>
+					</tr>
+				{{/foreach}}
+			</tbody>
+			<p class="help">Sélectionner une écriture d'avoir ou autre réduction du montant de l'acquisition pour l'associer à l'immobilisation</p>
+		</table>
+	{{else}}
+		<p class="block alert">Aucune écriture au crédit du compte « {{$ligne_immo.account_code}} »</p>
+	{{/if}}
+</section>
+{{:form_errors}}
+{{:admin_footer}}

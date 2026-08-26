@@ -1,0 +1,46 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"description": "Donnée d'une immobilisation",
+	"type": "object",
+	"properties": {
+		"type": {
+			"type": "string",
+			"enum": ["immo"]
+		},
+		"line" : {
+			"description": "id ligne écriture de l'immobilisation",
+			"type": "integer"
+		},
+		"duration" : {
+			"description": "durée de l'amortissement en années",
+			"type": "integer"
+		},
+		"label" : {
+			"description" : "libellé de l'immobilisation si besoin",
+			"type" : ["string", "null"]
+		},
+		"amount" : {
+			"description": "montant de l'immobilisation si besoin",
+			"type": ["integer", "null"]
+		},
+		"date_achat" : {
+			"description" : "date d'achat de l'immobilisation si besoin",
+			"type" : ["string", "null"],
+			"format" : "date"
+		},
+		"date_mes" : {
+			"description" : "date de mise en service de l'immobilisation",
+			"type" : ["string", "null"],
+			"format" : "date"
+		},
+		"status" : {
+			"type" : ["string", "null"],
+			"enum" : ["managed", "amortized", "archived", "ignored"]
+		},
+		"created" : {
+			"description" : "vrai si immobilisation créée dans le module",
+			"type" : ["boolean", "null"]
+		}
+	},
+	"required": ["type", "line", "duration", "status"]
+}

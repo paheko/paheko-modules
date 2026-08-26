@@ -1,0 +1,39 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer la liaison entre une écriture d'immobilisation et
+	une écriture de sortie d'immobilisation
+	@param immo_doc_id  : id du document associé à l'immobilisation
+	@param exit_line_id : ligne de l'écriture de sortie d'immobilisation
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{* chercher l'écriture de sortie d'immobilisation *}}
+{{#select
+	id_transaction
+	FROM acc_transactions_lines
+	WHERE id = :line_id;
+	:line_id = $_GET.exit_line_id|intval
+}}
+	{{:assign rebut_id=$id_transaction}}
+{{else}}
+	{{:error message="Impossible de trouver l'écriture de sortie d'immobilisation"}}
+{{/select}}
+
+{{* Lier l'écriture de sortie à l'écriture d'immobilisation *}}
+{{:include file="_common_attach.html" immo_doc_id=$_GET.immo_doc_id trans_id=$rebut_id}}
+
+{{* enregistrer la liaison de l'écriture de sortie *}}
+{{:save
+	key=""|uuid
+	type="exit_link"
+	immo_doc_id=$info_immo.id
+	exit_line_id=$_GET.exit_line_id|intval
+}}
+
+{{:redirect to="exit_step4.html?immo_doc_id=%s&from=exit&ok=1&msg=attach_exit"|args:$_GET.immo_doc_id}}

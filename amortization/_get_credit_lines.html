@@ -1,0 +1,36 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	chercher des écritures liées à l'immo paramètre au crédit du même compte
+	@param immo_doc_id   : id du doc associé à l'immobilisation
+	@result linked_immos  : liste des écritures liées
+	@result total_credits : montant total des écritures
+*}}
+{{:assign linked_immos=null}}
+{{:assign total_credits=0}}
+{{#load type="credit_link" where="$$.immo_doc_id=:immo_doc_id" :immo_doc_id=$immo_doc_id|intval}}
+	{{#select
+		line.credit,
+		line.id as line_id,
+		trans.id as trans_id,
+		trans.label,
+		trans.date,
+		trans.id_year as year,
+		account.id as account_id,
+		account.code as account_code,
+		account.label as account_label
+		FROM acc_transactions_lines AS line
+		INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+		INNER join acc_accounts AS account on line.id_account = account.id
+		WHERE line.id = :credit_line_id;
+		:credit_line_id=$credit_line_id
+		}}
+		{{:assign credit=$credit}}
+		{{:assign var="linked_immos." doc=$id trans_id=$trans_id credit_line_id=$line_id label=$label amount=$credit date=$date account_id=$account_id account_code=$account_code account_label=$account_label year=$year}}
+	{{/select}}
+	{{if $amount == null}}
+		{{:assign total_credits="%d+%d"|math:$total_credits:$credit}}
+	{{else}}
+		{{:assign total_credits="%d+%d"|math:$total_credits:$amount}}
+	{{/if}}
+{{/load}}

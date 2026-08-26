@@ -1,0 +1,32 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Supprimer l'association entre une écriture d'amortissement et
+	une écriture d'immobilisation
+	@param immo_doc_id : id du doc associé à l'immo
+	@param amort_line_id : id de la ligne d'amortissement
+*}}
+
+{{:include file="_common_detach.html" immo_doc_id=$_GET.immo_doc_id line_id=$_GET.amort_line_id keep="info_immo"}}
+{{* supprimer le doc de liaison entre les lignes *}}
+{{#load type="amort_link"
+	where="$$.immo_doc_id = :immo_doc_id AND $$.amort_line_id = :amort_line_id"
+	:immo_doc_id=$_GET.immo_doc_id|intval
+	:amort_line_id = $_GET.amort_line_id|intval
+}}
+	{{:delete id=$id}}
+{{/load}}
+
+{{* marquer immo non soldée *}}
+{{if $info_immo.status == "amortized"}}
+	{{:save
+		key=$info_immo.key
+		status="managed"
+	}}
+{{/if}}
+
+{{if $_GET.from == "exit"}}
+	{{:redirect force="exit_step2.html?immo_doc_id=%s&from=exit&ok=1&msg=detach_amort"|args:$_GET.immo_doc_id}}
+{{else}}
+	{{:redirect force="amortization.html?immo_doc_id=%s&ok=1&msg=detach_amort"|args:$_GET.immo_doc_id:}}
+{{/if}}

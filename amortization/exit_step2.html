@@ -1,0 +1,197 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Associer des écritures d'amortissement à une immo créée et sortie du
+	bilan avant la mise en service du module
+	@param immo_doc_id : id du doc associé à l'immobilisation
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{#form on="backward"}}
+	{{:redirect to="exit_step1.html?immo_doc_id=%s&from=%s"|args:$_GET.immo_doc_id:$_GET.from}}
+{{/form}}
+
+{{#form on="forward"}}
+	{{:redirect to="exit_step3.html?immo_doc_id=%s&from=%s"|args:$_GET.immo_doc_id:$_GET.from}}
+{{/form}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label === false}}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+{{:assign date_immo=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign montant_immo=$info_immo.amount|or:$ligne_immo.amount}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_immos, total_credits"}}
+{{:assign solde="%d-%d"|math:$montant_immo:$total_credits}}
+
+{{* lister les amortissements liés à l'immobilisation *}}
+{{:include file="./_get_amort_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_amort, total_amort"}}
+
+{{*	déterminer le compte d'amortissement en fonction du compte d'immobilisation *}}
+{{:include
+	file="./_get_amort_code.html"
+	code_immo=$ligne_immo.account_code
+	keep="code_amort"
+}}
+
+{{* chercher des écritures d'amortissement correspondant au compte d'une immo sans doc associé *}}
+{{#select
+	line.id as amort_line_id,
+	line.credit as amort_amount,
+	line.label as line_label,
+	trans.id as amort_trans_id,
+	trans.date as date,
+	trans.label as trans_label,
+	trans.id_year as year,
+	account.id as account_id,
+	account.code as account_code,
+	account.label as account_label
+	FROM acc_transactions_lines AS line
+	INNER JOIN acc_accounts AS account ON line.id_account = account.id
+	INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+	WHERE
+	account.code = :code_amort
+	AND line.credit > 0
+	AND (NOT trans.status & 16)
+	AND trans.date >= :immo_date
+	;
+	:code_amort = $code_amort
+	:immo_date=$date_immo
+	assign="amort_line"
+}}
+	{{* voir s'il existe des lignes d'immo liées à cette ligne d'amortissement *}}
+	{{:assign amort_amount=0}}
+	{{:assign keep_amort=true}}
+	{{#load type="amort_link"
+		where="$$.amort_line_id = :amort_line_id"
+		:amort_line_id=$amort_line.amort_line_id|intval
+		assign="amort_link"
+	}}
+		{{if $amort_link.amount == null || $amort_link.amount == 0}}
+			{{:assign amort_amount=$amort_line.amort_amount}}
+			{{:assign keep_amort=false}}
+		{{else}}
+			{{:assign amort_amount="%d+%d"|math:$amort_amount:$amort_link.amount}}
+		{{/if}}
+	{{else}}
+		{{* pas de ligne d'immo liée à cette ligne d'amort => garder cette ligne d'amortissement *}}
+	{{/load}}
+	{{if $keep_amort && $amort_amount < $amort_line.amort_amount}}
+		{{:assign var="free_amort_lines." value=$amort_line}}
+	{{/if}}
+{{/select}}
+
+{{:admin_header title="Immobilisation sortie du bilan" custom_css="./style.css" current="module_amortization"}}
+{{if $_GET.from == "exit"}}
+	{{:assign current="other"}}
+{{else}}
+	{{:assign current="archived"}}
+{{/if}}
+
+{{if $_GET.ok}}
+	{{if $_GET.msg|match:"attach_amort"}}
+		{{:assign msg="Écriture d'amortissement attachée"}}
+	{{elseif $_GET.msg|match:"detach_amort"}}
+		{{:assign msg="Écriture d'amortissement détachée"}}
+	{{/if}}
+	<p class="block confirm">{{$msg}}</p>
+{{/if}}
+
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd><span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.trans_id}}</a></span> {{$label_immo}}</dd>
+		<dt>Compte d'immobilisation</dt>
+		<dd>{{$ligne_immo.account_code}} — {{$ligne_immo.account_label}}</dd>
+		<dt>Montant de l'immobilisation</dt>
+		<dd><span class="money">{{$montant_immo|money_currency_html:false|raw}}</dd>
+		{{if $total_credits > 0}}
+			<dt>Montant des avoirs</dt>
+			<dd class="money">{{"%f"|math:$total_credits|money_currency_html:false|raw}}</dd>
+			<dt>Montant à amortir</dt>
+			<dd class="money">{{"%f"|math:$solde|money_currency_html:false|raw}}</dd>
+		{{/if}}
+		{{if $total_amort > 0}}
+			<dt>Montant des amortissements</dt>
+			<dd>{{$total_amort|money_currency_html:false|raw}}</dd>
+			<dt>Valeur nette résiduelle</dt>
+			<dd>{{"%d-%d"|math:$solde:$total_amort|money_currency_html:false|raw}}</dd>
+		{{/if}}
+	</dl>
+</div>
+
+{{if $free_amort_lines}}
+	<nav class="actions">
+		{{:linkbutton
+		label="Attacher une écriture d'amortissement"
+		href="other_amortizations.html?immo_doc_id=%s&filter=true&from=%s"|args:$_GET.immo_doc_id:$_GET.from shape="link"
+		target="_dialog"}}
+		</nav>
+{{/if}}
+
+<h3 class="ruler">Écritures d'amortissement attachées à l'immobilisation</h3>
+{{if $linked_amort != null}}
+	<table class="list">
+		<thead>
+			<tr>
+				<td class="num">N°</td>
+				<td>Date</td>
+				<td>Libellé</td>
+				<td class="nombre">Montant</td>
+				<td>N° compte</td>
+				<td>Compte</td>
+				<td class="actions"></td>
+			</tr>
+		</thead>
+		<tbody>
+			{{#foreach from=$linked_amort|ksort item="line"}}
+				{{* données de l'écriture *}}
+				{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.trans_id}}
+				{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.year}}
+				<tr>
+					<td class="num"><a href="{{$trans_url}}">#{{$line.trans_id}}</a></td>
+					<td>{{$line.date|date_short}}</td>
+					<td>
+						{{if $line.line_label != null}}
+							{{$line.line_label}}
+							{{if $line.trans_label != $line.line_label}}
+								— {{$line.trans_label}}
+							{{/if}}
+						{{else}}
+							{{$line.trans_label}}
+						{{/if}}
+					</td>
+					<td class="money">{{"%f"|math:$line.amount|money_html:false|raw}}</td>
+					<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
+					<td>{{$line.account_label}}</td>
+					<td class="actions">
+						{{:linkbutton label="Détacher" href="detach_amort.html?immo_doc_id=%s&amort_line_id=%s&from=exit"|args:$_GET.immo_doc_id:$line.line_id shape="minus"}}
+					</td>
+				</tr>
+			{{/foreach}}
+		</tbody>
+	</table>
+{{elseif $free_amort_lines}}
+	<p class="block alert">
+		Vous pouvez attacher une ou plusieurs écritures d'amortissement à l'immobilisation
+	</p>
+{{else}}
+	<p class="block alert">
+		Aucune écriture d'amortissement à rattacher ; vous pouvez passer à la suite
+	</p>
+{{/if}}
+
+<form method="post" action="">
+	<p class="submit">
+		{{:button type="submit" name="backward" label="Revenir à l'étape précédente" shape="left" class="main"}}
+		{{:button type="submit" name="forward" label="Poursuivre" shape="right" class="main"}}
+	</p>
+</form>

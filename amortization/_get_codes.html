@@ -1,0 +1,14 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	déterminer le numéro du compte passé en paramètre dans un tableau
+	la clé est parfois l'identifiant du compte, parfois son code...
+	d'où l'obligation d'extraire le code de la valeur qui a toujours
+	la forme : code — libellé
+*}}
+
+{{:assign values=$account|values}}
+{{:assign label=$values.0}}
+{{:assign pos=$label|strpos:" "}}
+{{:assign account_code=$label|substr:0:$pos}}
+{{:assign var="account_code.%s"|args:$account_code value=$label}}

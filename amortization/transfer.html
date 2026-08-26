@@ -1,0 +1,339 @@
+{{* -*- brindille -*- *}}
+
+{{:include file="_get_config.html" keep="module.config.prefixes"}}
+
+{{#years closed=false order="start_date" assign=years.}}
+	{{:assign ts_debut=$start_date|strtotime}}
+	{{:assign ts_fin=$end_date|strtotime}}
+	{{:assign debut=$start_date|date_short}}
+	{{:assign fin=$end_date|date_short}}
+	{{:assign var="years_data.%d"|args:$id value=$ts_debut|cat:" "|cat:$ts_fin}}
+	{{:assign var="open_years.%d"|args:$id value=$label|cat:" ("|cat:$debut|cat:" - "|cat:$fin|cat:")"}}
+	{{if $ts_debut <= $now && $now <= $ts_fin}}
+		{{:assign selected_year=$id}}
+	{{/if}}
+{{else}}
+	{{:error message="Aucun exercice ouvert"}}
+{{/years}}
+
+{{* déterminer les comptes d'immo en cours *}}
+{{:include file="_get_config.html" keep="module.config.unfinished"}}
+{{:assign condition="("}}
+{{#foreach from=$module.config.unfinished item="elem"}}
+	{{if $elem.code != null}}
+		{{:assign code=$elem.code}}
+	{{else}}
+		{{:assign code=$elem}}
+	{{/if}}
+	{{:assign code=$code|cat:"%"|quote_sql}}
+	{{:assign condition=$condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
+{{/foreach}}
+{{:assign condition=$condition|cat:"0)"}}
+
+{{* détails des écritures paramètres *}}
+{{:assign trans=$_GET.trans|explode:","}}
+{{:assign var="trans_list" value=$trans|map:quote_sql}}
+{{:assign trans_list=$trans_list|implode:","}}
+{{:assign trans_list="("|cat:$trans_list|cat:")"}}
+{{:assign condition=$condition|cat:" AND trans.id IN "|cat:$trans_list}}
+
+{{#select
+	trans.id as trans_id,
+	trans.label AS trans_label,
+	trans.date AS trans_date,
+	SUM(line.debit) AS line_debit,
+	account.code AS account_code,
+	account.label AS account_label,
+	line.id_project as project_id
+	FROM acc_transactions AS trans
+	INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+	INNER JOIN acc_accounts AS account ON line.id_account = account.id
+	WHERE !condition
+	GROUP BY trans.id
+	;
+	!condition=$condition
+}}
+	{{:assign var="transactions.%s"|args:$trans_id
+		amount=$line_debit
+		line_label=$trans_label
+		date=$trans_date
+		code=$account_code
+		label=$account_label
+		project=$project_id
+	}}
+	{{if $max_date == null || $trans_date > $max_date}}
+		{{:assign max_date=$trans_date}}
+	{{/if}}
+{{/select}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="transfer"}}
+	{{* vérifier que la date de mise en service est postérieure aux dates d'acquisition *}}
+	{{if $_POST.date_mes|parse_date < $max_date}}
+		{{:assign dacq=$max_date|date_short}}
+		{{:error message="La date de mise en service (%s) doit être postérieure à la date d'acquisition d'immobilisation la plus récente (%s) !"|args:$_POST.date_mes:$dacq}}
+	{{/if}}
+
+	{{* vérifier que la date de mise en service est située dans l'exercice sélectionné *}}
+	{{:assign ts_date = $_POST.date_mes|parse_date}}
+	{{:assign ok=false}}
+	{{#foreach from=$years}}
+		{{if $id == $_POST.id_year}}
+			{{:assign selected_chart=$id_chart}}
+			{{if $start_date <= $ts_date && $ts_date <= $end_date}}
+				{{:assign ok=true}}
+				{{:break}}
+			{{/if}}
+		{{/if}}
+	{{/foreach}}
+	{{if ! $ok}}
+		{{:error message="La date saisie n'est pas dans l'exercice choisi !"}}
+	{{/if}}
+
+	{{if ! $_POST.amortir}}
+		{{* ne pas amortir *}}
+		{{:assign duration=0}}
+		{{:assign status="ignored"}}
+	{{else}}
+		{{:assign duration=$_POST.duree|intval}}
+		{{:assign status="managed"}}
+	{{/if}}
+
+	{{* comptes de débit *}}
+	{{#foreach from=$_POST.credit_accounts key="rang" item="elem"}}
+		{{:include
+			file="_get_codes.html"
+			account=$elem
+			keep="account_code"
+		}}
+		{{:assign debit_account=$account_code|keys|value:0}}
+		{{:assign var="amount" from="_POST.credit_lines.%s"|args:$rang}}
+		{{:assign var="label"  from="_POST.line_labels.%s"|args:$rang}}
+		{{:assign
+			var="lines."
+			account=$debit_account
+			credit=$amount
+			label=$label
+		}}
+	{{/foreach}}
+
+	{{* compte de crédit *}}
+	{{:include
+		file="_get_codes.html"
+		account=$_POST.debit_account
+		keep="account_code"
+	}}
+	{{:assign credit_account=$account_code|keys|value:0}}
+	{{:assign var="amount" from="_POST.debit_lines.%s"|args:0}}
+	{{:assign count=$_POST.line_labels|count}}
+	{{:assign count="%d-1"|math:$count}}
+	{{:assign var="label" from="_POST.line_labels.%s"|args:$count}}
+	{{:assign
+			var="lines."
+			account=$credit_account
+			debit=$amount
+			label=$label
+	}}
+
+	{{* vérifier :
+		- que le compte d'immo débute par un préfixe correct (20, 21, ...)
+		- est présent dans le PC de l'exercice correspondant à la date
+	*}}
+
+	{{:include
+		file="_check_account.html"
+		account=$account_code
+		chart_id=$selected_chart
+		prefix_array=$module.config.prefixes
+		keep="account_ok"
+	}}
+
+	{{if $account_ok == null}}
+		{{:assign compte=$credit_account|implode:""}}
+		{{:error message="Le compte « %s » n'est pas un compte d'immobilisation ou n'est pas dans le plan comptable de l'exercice choisi"|args:$compte}}
+	{{/if}}
+
+	{{* écritures liées *}}
+	{{:assign var="linked_transactions" value=$transactions|keys}}
+
+	{{* enregistrer l'écriture *}}
+	{{:api
+		method="POST"
+		path="accounting/transaction"
+		assign="result"
+		id_year=$_POST.id_year
+		type="advanced"
+		date=$_POST.date_mes
+		label=$_POST.designation|trim
+		lines=$lines
+		linked_transactions=$linked_transactions
+	}}
+
+	{{:assign lines_count=$lines|count}}
+	{{:assign lines_count="%d-1"|math:$lines_count}}
+	{{:assign var="immo_line_id" from="result.lines.%s.id"|args:$lines_count}}
+	{{* enregistrer les infos de l'immobilisation *}}
+	{{:save
+		key=""|uuid
+		validate_schema="asset.schema.json"
+		type="immo"
+		line=$immo_line_id
+		duration=$duration
+		date_mes=null
+		status=$status
+		created=true
+	}}
+	{{if $_POST.amortir}}
+		{{:assign type_immo="managed"}}
+	{{else}}
+		{{:assign type_immo="other"}}
+	{{/if}}
+	{{:redirect force="index.html?ok=1&msg=immobilisation&type_immo=%s"|args:$type_immo}}
+{{/form}}
+
+{{:admin_header title="Transfert d'immobilisation en cours" custom_css="./style.css" current="module_amortization"}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="unfinished" subcurrent="transfer"}}
+{{/if}}
+
+{{:form_errors}}
+
+{{* formulaire d'ajout d'immobilisation *}}
+{{if $_GET.trans == null}}
+	{{:error message="Vous n'avez sélectionné aucune écriture !"}}
+{{/if}}
+
+{{if $max_date|strtotime > $now}}
+	{{:assign default_date=$max_date}}
+{{else}}
+	{{:assign default_date=$now|date_short}}
+{{/if}}
+
+{{#select id,label FROM acc_projects WHERE archived = 0;}}
+	{{:assign var="projects.%d"|args:$id value=$label}}
+{{/select}}
+
+{{#foreach from=$module.config.prefixes item="code"}}
+	{{:assign var="pattern_array." value="%s*"|args:$code}}
+{{/foreach}}
+{{:assign var="patterns" value=$pattern_array|implode:"|"}}
+
+<div id="erreur" class="hidden">
+	<p class="block error">La date choisie n'est dans aucun exercice ouvert !</p>
+</div>
+
+<form method="post" action="">
+	<fieldset>
+		<legend>Données de l'immobilisation</legend>
+		<dl>
+			{{:input type="select" name="id_year" label="Exercice" default=$selected_year required=true
+			default_empty="— Faire un choix —" options=$open_years}}
+			{{:input type="date" name="date_mes" label="Date de mise en service" required=true default=$default_date}}
+			{{:input type="text" name="designation" label="Libellé" required=true}}
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Comptes</legend>
+		<dl>
+		<table class="list transaction-lines">
+			<thead>
+				<tr>
+					<th>Compte</th>
+					<th>Débit</th>
+					<th>Crédit</th>
+					<th>Libellé ligne</th>
+					<th>Projet</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{:assign total=0}}
+				{{#foreach from=$transactions key="id"}}
+					{{:assign total="%f+%f"|math:$total:$amount}}
+					{{:assign current_account=null}}
+					{{:assign var="current_account.%s"|args:$code value="%s — %s"|args:$code:$label}}
+					<tr>
+						<td>
+							{{:input
+								type="list"
+								name="credit_accounts[]"
+								required=true
+								readonly=true
+								target="!acc/charts/accounts/selector.php?codes=%s&id_year=%d"|args:$code:$selected_year
+								default=$current_account
+							}}
+						</td>
+						<td>{{:input name="credit_lines[]" type="text" class="money" size="8" default=$amount|money}}</td>
+						<td>{{:input name="debit_lines[]"  type="text" class="money" size="8" disabled=true}}</td>
+						<td>{{:input type="text" name="line_labels[]" size="40" default=$line_label}}</td>
+						<td>
+							{{if $projects != null}}
+								{{:input type="select" name="id_project" options=$projects default_empty="— Aucun —"}}
+							{{/if}}
+						</td>
+					</tr>
+				{{/foreach}}
+				<tr><td colspan="5"></td></tr>
+			</tbody>
+			<tfoot>
+				<tr>
+					<td>
+						{{:input
+						type="list"
+						name="debit_account"
+						label="Compte d'immobilisation amortissable"
+						required=true
+						target="!acc/charts/accounts/selector.php?codes=%s&id_year=%d"|args:$patterns:$selected_year
+						}}
+					</td>
+					<td>{{:input name="credit_lines[]" type="text" class="money" size="8" disabled=true}}</td>
+					<td>{{:input name="debit_lines[]"  type="text" class="money" size="8" default=$total|money}}</td>
+					<td>{{:input type="text" name="line_labels[]" size="40"}}</td>
+					<td>
+						{{if $projects != null}}
+							{{:input type="select" name="id_project" options=$projects default_empty="— Aucun —"}}
+						{{/if}}
+					</td>
+				</tr>
+			</tfoot>
+		</table>
+
+		<div id="donnees" class="hidden">
+			{{:input type="select" name="years_data" options=$years_data}}
+		</div>
+		</dl>
+	</fieldset>
+
+	<fieldset>
+		<legend>Amortissement</legend>
+		<dl>
+			{{:input id="amortir" type="checkbox" value=1 name="amortir" label="Amortir cette immobilisation sur une ou plusieurs années" checked="checked" help="Dé-cocher pour ne pas amortir"}}
+			<div id="div_amort">
+				{{:input type="number" name="duree" label="Durée d'amortissement" required=true min=0 default=1 suffix="année(s)"}}
+			</div>
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="transfer" label="Transférer" shape="right" class="main"}}
+	</p>
+
+</form>
+{{:admin_footer}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript">
+
+function changeYear(evt, f_accounts = ['credit_accounts', 'debit_account'], f_years_select = 'f_id_year') {
+	setSelectorYear(f_accounts, f_years_select);
+}
+
+function changeVisibility(evt, idcheck = 'f_amortir_1', fields = ['div_amort']) {
+	toggleVisibility(idcheck, fields);
+}
+
+(function () {
+	document.getElementById('f_id_year').onchange = changeYear;
+	document.getElementById('f_amortir_1').onclick = changeVisibility;
+})();
+</script>

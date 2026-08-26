@@ -1,0 +1,39 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Récupérer les infos d'une immobilisation
+	@param immo_doc_id : id du document associé à l'immobilisation
+	@result info_immo  : infos du document associé
+	@result ligne_immo : données de la base
+	@result message non null si une erreur s'est produite
+*}}
+
+{{#load id=$immo_doc_id|intval assign="info_immo"}}
+{{else}}
+	{{:assign error=true}}
+	{{:assign message="Immobilisation non trouvée"}}
+{{/load}}
+
+{{if ! $error}}
+	{{#select
+		line.id as line_id,
+		line.debit as amount,
+		line.label as line_label,
+		line.id_project as id_project,
+		trans.id as trans_id,
+		trans.label as trans_label,
+		trans.date as date_achat,
+		account.id as account_id,
+		account.code as account_code,
+		account.label as account_label
+		FROM acc_transactions_lines AS line
+		INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+		INNER JOIN acc_accounts AS account ON line.id_account = account.id
+		WHERE line.id = :line_id;
+		:line_id = $info_immo.line
+		assign="ligne_immo"
+		}}
+	{{else}}
+		{{:assign message="Immobilisation non trouvée"}}
+	{{/select}}
+{{/if}}

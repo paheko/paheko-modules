@@ -1,0 +1,52 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Supprimer l'association entre une ligne d'immo et une autre ligne (amort, credit, cession, sortie)
+	@param immo_doc_id : id du doc associé à la ligne d'immobilisation
+	@param line_id     : id de la ligne à détacher
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{* chercher la deuxième écriture *}}
+{{#select
+	id_transaction
+	FROM acc_transactions_lines
+	WHERE id = :line_id;
+	:line_id = $line_id|intval
+}}
+	{{:assign trans_id=$id_transaction}}
+{{else}}
+	{{:error message="Écriture non trouvée"}}
+{{/select}}
+
+{{*
+	chercher les liaisons de l'écriture d'immobilisation
+	et supprimer la liaison avec la deuxième écriture
+*}}
+{{#select
+	CASE links.id_related = :immo_trans_id
+		WHEN true THEN links.id_transaction
+		WHEN false THEN links.id_related
+	END as linked_id
+	FROM acc_transactions_links as links
+	WHERE id_transaction = :immo_trans_id or id_related = :immo_trans_id;
+	:immo_trans_id = $ligne_immo.trans_id
+	}}
+	{{if $linked_id != $trans_id}}
+		{{:assign var="linked_transactions." value=$linked_id}}
+	{{/if}}
+{{/select}}
+
+{{* Enregistrer les liaisons *}}
+{{:api
+	method="POST"
+	path="accounting/transaction/%s/transactions"|args:$ligne_immo.trans_id
+	assign="result"
+	assign_code="result_code"
+	transactions=$linked_transactions
+}}

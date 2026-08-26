@@ -1,0 +1,92 @@
+.disabled {
+	pointer-events: none;
+	font-style : oblique;
+}
+
+.nombre {
+	text-align: right !important;
+}
+
+.aide {
+	list-style: revert;
+	padding: revert;
+	line-height : 1.5em;
+}
+
+h2[class="aide"], h3[class="aide"] {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.informations {
+	margin-top : 0.5em;
+	margin-bottom : 0.5em;
+	padding : 0.5em;
+}
+
+.informations legend {
+	font-weight: bold;
+	border-bottom : solid 1px var(--gLightBorderColor);
+	margin-bottom : 0.5em;
+}
+
+.informations dt::after {
+	content: ' : ';
+}
+
+.informations dl.describe {
+	grid-template-columns : 25rem 1fr;
+}
+
+.informations dl.describe > dt {
+	margin-right: 0;
+	white-space: nowrap;
+}
+
+.informations dl.describe > dd {
+	margin-right: 0;
+}
+
+nav.amort aside {
+	margin-top : 0;
+}
+
+fieldset.shortFormLeft div.informations {
+	border: 1px solid var(--gLightBorderColor);
+	background: rgba(var(--gSecondColor), 0.2);
+	border-radius: .5em;
+}
+
+.strong {
+	font-weight: bold;
+}
+
+table.montant td.label {
+	text-align : right;
+	padding-right : 1em;
+}
+
+table.list tbody tr.ignored:nth-child(odd) {
+	font-style: italic;
+    background: rgba(255, 255, 200, 0.2);
+}
+table.list tbody tr.ignored:nth-child(even) {
+	font-style: italic;
+    background: rgba(255, 255, 200, 0.5);
+}
+
+table.error {
+    background-color: #fcc;
+}
+table.error tr, table.error td, table.error thead td {
+	background-image : none;
+    background-color: #fcc;
+}
+
+span.input-list.avoirs label {
+	padding : 0.4rem 0.6rem;
+}
+
+aside.right {
+	float: right;
+}

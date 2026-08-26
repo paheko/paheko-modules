@@ -1,0 +1,14 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	déterminer le numéro du compte d'amortissement associé à un compte d'immobilisation
+	- param :
+	  - code_immo : numéro du compte d'immobilisation
+	- résultat :
+	  - code_amort : numéro du compte d'amortissement
+*}}
+
+{{:assign code_s=$code_immo|strval}}
+{{:assign ch1=$code_s|substr:0:1}}
+{{:assign reste=$code_s|substr:1}}
+{{:assign code_amort=$ch1|cat:"8"|cat:$reste}}

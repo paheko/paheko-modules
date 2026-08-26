@@ -1,0 +1,44 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	lister les lignes d'amortissement liées à la ligne d'immobilisation
+	@param immo_doc_id   : id du doc associé à l'immobilisation
+	@result linked_amort : lignes d'amortissement liées à la ligne d'immobilisation
+	@result total_amort  : montant total des amortissements de l'immobilisation
+	@result created_amort : vrai s'il y a au moins un amortissement créé par le module dans la liste
+*}}
+
+{{:assign total_amort=0}}
+{{#load type="amort_link"
+	where="$$.immo_doc_id = :immo_doc_id"
+	:immo_doc_id = $immo_doc_id|intval
+	assign="amort_info"
+}}
+	{{#select
+		line.id as line_id,
+		line.credit as amount,
+		line.label as line_label,
+		trans.id as trans_id,
+		trans.label as trans_label,
+		trans.date as date,
+		trans.id_year as year,
+		account.id as account_id,
+		account.code as account_code,
+		account.label as account_label
+		FROM acc_transactions_lines AS line
+		INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+		INNER join acc_accounts AS account on line.id_account = account.id
+		WHERE line.id = :amort_line_id
+		;
+		:amort_line_id = $amort_line_id
+		assign="amort_line"
+	}}
+		{{:assign var="amort_line.amount" value=$amort_info.amount|or:$amort_line.amount}}
+		{{if $amort_info.created}}
+			{{:assign var="amort_line.created" value=true}}
+			{{:assign var="created_amort" value=true}}
+		{{/if}}
+		{{:assign var="linked_amort.%s_%d"|args:$amort_line.date:$amort_info.id value=$amort_line}}
+		{{:assign total_amort="%d+%d"|math:$total_amort:$amort_line.amount}}
+	{{/select}}
+{{/load}}

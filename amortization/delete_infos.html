@@ -1,0 +1,79 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Supprimer les infos d'une immo et les liaisons d'immo associées
+	@param immo_doc_id
+*}}
+
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+{{:assign immo_label=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $ligne_immo.line_label != null && $ligne_immo.line_label != $immo_label}}
+	{{:assign immo_label=$immo_label|cat::" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+
+{{#form on="delete"}}
+	{{#select
+		trans.id
+		FROM acc_transactions_lines AS line
+		INNER JOIN !table AS credit_link ON $$.credit_line_id = line.id
+		INNER JOIN	acc_transactions AS trans ON line.id_transaction = trans.id
+		WHERE $$.type = "credit_link" AND $$.immo_doc_id = :immo_doc_id
+		;
+		!table = $module.table
+		:immo_doc_id = $_GET.immo_doc_id|intval
+		}}
+		{{:assign var="linked_trans." value=$id}}
+	{{/select}}
+
+	{{if $linked_trans != null}}
+		{{* chercher et supprimer les écritures liées *}}
+		{{#select
+			CASE links.id_related = trans.id
+				WHEN true THEN links.id_transaction
+				WHEN false THEN links.id_related
+			END as linked_id
+			FROM acc_transactions AS trans
+			INNER JOIN acc_transactions_links as links
+				ON (links.id_transaction = trans.id OR links.id_related = trans.id)
+			WHERE trans.id = :immo_trans_id
+			;
+			:immo_trans_id=$ligne_immo.trans_id
+		}}
+			{{if ! $linked_trans|has:$linked_id}}
+				{{:assign var="linked_transactions." value=$linked_id}}
+			{{/if}}
+		{{/select}}
+
+		{{* enregistrer les liaisons restantes *}}
+		{{:api
+			method="POST"
+			path="accounting/transaction/%s/transactions"|args:$ligne_immo.trans_id
+			assign="result"
+			assign_code="result_code"
+			transactions=$linked_transactions
+		}}
+
+		{{* supprimer les docs de liaison *}}
+		{{:delete type="credit_link" where="$$.immo_doc_id = :immo_doc_id" :immo_doc_id = $_GET.immo_doc_id|intval}}
+	{{/if}}
+
+	{{* supprimer les infos de l'immobilisation *}}
+	{{:delete id=$_GET.immo_doc_id|intval}}
+	{{:redirect force="index.html?ok=1&msg=suppr_infos&type_immo=other"}}
+{{/form}}
+
+
+{{:admin_header title="Supprimer" current="module_amortization"}}
+{{:form_errors}}
+{{:delete_form
+	legend="Immobilisation « #%s %s »"|args:$ligne_immo.trans_id:$immo_label
+	warning="Supprimer les paramètres de l'immobilisation « #%s %s » ?"|args:$ligne_immo.trans_id:$immo_label
+	info="L'écriture d'immobilisation ne sera pas supprimée ; les nouveaux paramètres pourront être saisis depuis l'onglet « À classer »"
+}}
+
+{{:admin_footer}}

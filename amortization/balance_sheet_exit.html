@@ -1,0 +1,185 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Sortir une immobilisation du bilan
+	@param immo_doc_id  : id du doc associé à l'immo
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label === false}}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+
+{{:assign date_achat=$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{if $info_immo.date_mes != null && $info_immo.date_mes != $date_achat}}
+	{{:assign date_mes=$info_immo.date_mes}}
+{{/if}}
+{{:assign date_debut=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_credits"}}
+{{:assign var="ligne_immo.amount" value="%d-%d"|math:$ligne_immo.amount:$total_credits}}
+
+{{* lister les amortissements liés à l'immobilisation *}}
+{{:include file="./_get_amort_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_amort, total_amort"}}
+{{:assign amort_number=$linked_amort|count}}
+
+{{#foreach from=$linked_amort|ksort item="line"}}
+	{{if $first_amort_date == null}}
+		{{:assign first_amort_date=$line.date}}
+	{{/if}}
+	{{if $last_amort_date == null}}
+		{{:assign last_amort_date=$line.date}}
+	{{elseif $line.date > $last_amort_date}}
+		{{:assign last_amort_date=$line.date}}
+	{{/if}}
+{{/foreach}}
+
+{{if $total_amort == 0}}
+	{{if $info_immo.status == "amortized"}}
+		{{:assign total_amort=$ligne_immo.amount}}
+	{{/if}}
+{{else}}
+	{{:assign date_debut=$last_amort_date}}
+{{/if}}
+{{:assign ts_debut=$date_debut|strtotime}}
+{{:assign ts_debut="%d+(60*60*24)"|math:$ts_debut}}
+{{:assign date_debut=$ts_debut|date:"Y-m-d"}}
+{{:assign valeur_nette="%f-%f"|math:$ligne_immo.amount:$total_amort}}
+
+{{*
+	lister les exercices ouverts dont la date de fin est postérieure à la date du dernier amortissment
+*}}
+{{:assign default_exit_date=""}}
+{{#years closed=false order="start_date" where=":debut <= end_date"	:debut=$date_debut}}
+	{{if $start_date|strtotime <= $now && $now <= $end_date|strtotime}}
+		{{:assign default_exit_date=$now|date_short}}
+	{{/if}}
+	{{:assign var="years." id=$id label=$label start_date=$start_date end_date=$end_date}}
+	{{:assign debut=$start_date|date_short}}
+	{{:assign fin=$end_date|date_short}}
+	{{:assign var="open_years.%d"|args:$id value=$label|cat:" (du "|cat:$debut|cat:" au "|cat:$fin|cat:")"}}
+{{else}}
+	{{:assign debut=$date_debut|date_short}}
+	{{:error message="Aucun exercice ouvert pour enregistrer la sortie de bilan à partir du %s"|args:$debut}}
+{{/years}}
+{{if $years|count == 1}}
+	{{:assign default_year=$years.0.id}}
+{{else}}
+	{{:assign default_year=""}}
+{{/if}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="proceed"}}
+
+	{{if $_POST.date_sortie == null}}
+		{{:error message="Vous devez renseigner la date de sortie"}}
+	{{/if}}
+
+	{{* vérifier la validité de la date de sortie *}}
+	{{if $info_immo.date_mes != null}}
+		{{if $_POST.date_sortie|parse_date < $info_immo.date_mes}}
+			{{:assign immo_date=$info_immo.date_mes|date_short}}
+			{{:error message="La date de sortie doit être postérieure à la date de mise en service de l'immobilisation (%s)"|args:$immo_date}}
+		{{/if}}
+	{{elseif $_POST.date_sortie|parse_date < $ligne_immo.date_achat}}
+		{{:assign immo_date=$ligne_immo.date_achat|date_short}}
+		{{:error message="La date de sortie doit être postérieure à la date d'acquisition de l'immobilisation (%s)"|args:$immo_date}}
+	{{/if}}
+	{{if $amort_number != 0 && $_POST.date_sortie|parse_date <= $last_amort_date}}
+		{{:assign last_amort_date=$last_amort_date|date_short}}
+		{{:error message="La date de sortie doit être postérieure à la date du dernier amortissement (%s)"|args:$last_amort_date}}
+	{{/if}}
+
+	{{:assign ts_exit = $_POST.date_sortie|parse_date|strtotime}}
+	{{:assign exercice_ok=false}}
+	{{* vérifier que la date de sortie est dans l'exercice choisi *}}
+	{{#foreach from=$years item="current_year"}}
+		{{if $current_year.id == $_POST.id_year}}
+			{{:assign selected_year=$current_year.id}}
+			{{if $start_date|strtotime <= $ts_exit && $ts_exit <= $end_date|strtotime}}
+				{{:assign current_year=$current_year}}
+				{{:assign exercice_ok=true}}
+				{{:break}}
+			{{/if}}
+		{{/if}}
+	{{/foreach}}
+	{{if ! $exercice_ok}}
+		{{:error message="La date choisie n'est pas dans l'exercice sélectionné !"}}
+	{{/if}}
+
+	{{* voir si des amortissements ont été oubliés *}}
+	{{if $valeur_nette > 0 && $info_immo.status != "amortized"}}
+		{{if $current_year.start_date <= $date_debut && $date_debut <= $current_year.end_date}}
+			{{:assign amort_ok=true}}
+		{{else}}
+			{{:assign amort_ok=false}}
+		{{/if}}
+		{{if ! $amort_ok}}
+			{{:error message="Vous devez d'abord enregistrer les amortissements des exercices précédents"}}
+		{{/if}}
+	{{/if}}
+
+	{{:redirect to="compute_exit_data.html?immo_doc_id=%s&amort_amount=%s&year=%s&date_debut=%s&exit_date=%s"|args:$_GET.immo_doc_id:$total_amort:$selected_year:$ts_debut:$ts_exit}}
+{{/form}}
+
+{{:admin_header title="Sortie de bilan" custom_css="./style.css" current="module_amortization"}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="%s"|args:$_GET.type_immo subcurrent="balance_exit"}}
+{{/if}}
+{{:form_errors}}
+
+{{* formulaire de sortie du bilan *}}
+<h3>Sortir l'immobilisation « {{$label_immo}} » du bilan</h3>
+<form method="post" action="">
+
+	<div class="informations">
+		<legend>Données de l'imobilisation</legend>
+		<dl class="describe">
+			<dt>Montant</dt>
+			<dd id="montant_immo" class="money">{{$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+			<dt>Date d'acquisition</dt>
+			<dd>{{$date_achat|date_short}}
+			{{if $date_mes != null}}
+				<dt>Date de mise en service</dt>
+				<dd>{{$date_mes|date_short}}</dd>
+			{{/if}}
+			{{if $info_immo.duration != null}}
+				<dt>Durée de l'amortissement</dt>
+				<dd id="duree_amort" class="num">{{$info_immo.duration}} ans</dd>
+			{{/if}}
+			<dt>Montant des amortissements</dt>
+			<dd id="montant_amort" class="money">{{$total_amort|money_currency_html:false|raw}} <span class="help">(à la date de début de l'exercice)</span></dd>
+			<dt>Valeur nette résiduelle</dt>
+			<dd class="money">{{$valeur_nette|money_currency_html:false|raw}} <span class="help">(à la date de début de l'exercice)</span></dd>
+			{{if $last_amort_date != null}}
+				<dt>Date du dernier amortissement</dt>
+				<dd>{{$last_amort_date|date_short}}</dd>
+			{{/if}}
+		</dl>
+	</div>
+
+	<fieldset>
+		<legend>Informations de sortie</legend>
+		<dl>
+			{{:input type="select" default=$default_year name="id_year" label="Exercice" required=true default_empty="— Faire un choix —" options=$open_years}}
+			{{:input type="date" name="date_sortie" label="Date de sortie du bilan" required=true default=$default_exit_date}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="proceed" label="Poursuivre" shape="right" class="main"}}
+	</p>
+</form>
+
+{{:admin_footer}}

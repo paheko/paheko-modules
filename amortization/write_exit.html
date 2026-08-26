@@ -1,0 +1,582 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Enregistrer les écritures de sortie du bilan
+	paramètres :
+	- immo_doc_id	: id du doc associé à l'immobilisation
+	- amort_amount	: montant des amortissements
+	- year			: exercice de la date de sortie de l'immobilisation
+	- date_debut	: date de début de la période d'amortissement complémentaire
+	- exit_date		: date de sortie de l'immobilisation
+	- cession		: montant de la cession (optionnel)
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label === false}}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+
+{{:assign date_achat=$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{if $info_immo.date_mes != null && $info_immo.date_mes != $date_achat}}
+	{{:assign date_mes=$info_immo.date_mes}}
+{{/if}}
+
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_credits"}}
+{{:assign var="ligne_immo.amount" value="%d-%d"|math:$ligne_immo.amount:$total_credits}}
+{{:assign valeur_nette="%f-%f"|math:$ligne_immo.amount:$_GET.amort_amount}}
+
+{{:assign amort_comp=0}}		{{* amortissement complémentaire jqà date sortie *}}
+{{:assign amort_except=0}}		{{* amortissement exceptionnel jqà date fin amortissement *}}
+{{if $valeur_nette > 0}}
+	{{:assign nbjours="1+(%d-%d)/(60*60*24)"|math:$_GET.exit_date:$_GET.date_debut}}
+	{{:assign annuite="%f/%f"|math:$ligne_immo.amount:$info_immo.duration}}
+	{{:assign amort_comp="round(%f/365*%f, 0)"|math:$annuite:$nbjours}}
+	{{:assign amort_comp="min(%f, %f)"|math:$valeur_nette:$amort_comp}}
+
+	{{if $_GET.cession == null}}
+		{{:assign amort_except="%f-%f-%f"|math:$ligne_immo.amount:$_GET.amort_amount:$amort_comp}}
+	{{/if}}
+{{/if}}
+
+{{if $_GET.cession == null}}
+	{{:assign montant_cession=0}}
+{{else}}
+	{{:assign montant_cession="%f*100"|math:$_GET.cession}}
+{{/if}}
+
+{{*	numéros de comptes ; voir info.org *}}
+{{:assign vnc_code="652"}}
+{{:assign cession_code="757"}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{:assign account=$_POST.amort_sortie_account}}
+
+	{{:include
+		file="_get_codes.html"
+		account=$account
+		keep="account_code"
+	}}
+	{{:assign amort_account_code=$account_code|keys|value:0}}
+
+	{{if $valeur_nette > 0}}
+		{{* immo non totalement amortie *}}
+
+		{{* lignes d'écriture de l'amortissement complémentaire *}}
+		{{:include
+			file="_get_codes.html"
+			account=$_POST.comp_account
+			keep="account_code"
+		}}
+		{{:assign comp_account_code=$account_code|keys|value:0}}
+
+		{{:assign libelle="Amortissement complémentaire "|cat:$label_immo}}
+		{{:assign
+			var="lines."
+			debit="%f/100"|math:$amort_comp
+			account=$comp_account_code
+			id_project=$ligne_immo.id_project
+			label=$libelle
+		}}
+		{{:assign
+			var="lines."
+			credit="%f/100"|math:$amort_comp
+			account=$amort_account_code
+			id_project=$ligne_immo.id_project
+			label=$libelle
+		}}
+		{{:assign valeur_nette="%f-%f"|math:$valeur_nette:$amort_comp}}
+
+		{{if $_GET.cession == null && $amort_except > 0}}
+			{{* lignes d'écriture de l'amortissement exceptionnel *}}
+			{{:include
+				file="_get_codes.html"
+				account=$_POST.except_account
+				keep="account_code"
+			}}
+			{{:assign except_account_code=$account_code|keys|value:0}}
+			{{:assign libelle="Amortissement exceptionnel "|cat:$label_immo}}
+			{{:assign
+				var="lines."
+				debit="%f/100"|math:$amort_except
+				account=$except_account_code
+				id_project=$ligne_immo.id_project
+				label=$libelle
+			}}
+			{{:assign
+				var="lines."
+				credit="%f/100"|math:$amort_except
+				account=$amort_account_code
+				id_project=$ligne_immo.id_project
+				label=$libelle
+				}}
+			{{:assign valeur_nette="%f-%f"|math:$valeur_nette:$amort_except}}
+		{{/if}}
+
+		{{:api
+			method="POST"
+			path="accounting/transaction"
+			assign="result"
+			assign_code="result_code"
+			id_year=$_GET.year
+			type="advanced"
+			date=$_GET.exit_date
+			label="Amortissement final "|cat:$label_immo
+			lines=$lines
+			linked_transactions=$ligne_immo.trans_id
+		}}
+
+		{{* liaisons lignes d'amortissement *}}
+		{{#foreach from=$result.lines item="line"}}
+			{{if $line.account_code == $amort_account_code}}
+				{{:save
+					key=""|uuid
+					type="amort_link"
+					immo_doc_id=$info_immo.id
+					amort_line_id=$line.id
+					created=true
+				}}
+			{{/if}}
+		{{/foreach}}
+	{{/if}}
+
+	{{* écriture de sortie du bilan *}}
+	{{:assign lines=null}}
+	{{:include
+			file="_get_codes.html"
+			account=$_POST.immo_account
+			keep="account_code"
+	}}
+	{{:assign immo_account_code=$account_code|keys|value:0}}
+	{{:assign libelle="Sortie du bilan de "|cat:$label_immo}}
+	{{:assign
+		var="lines."
+		account=$immo_account_code
+		credit="%f/100"|math:$ligne_immo.amount
+		id_project=$ligne_immo.id_project
+		label=$libelle
+	}}
+	{{:assign
+		var="lines."
+		account=$amort_account_code
+		debit="(%f-%f)/100"|math:$ligne_immo.amount:$valeur_nette
+		id_project=$ligne_immo.id_project
+		label=$libelle
+	}}
+	{{if $valeur_nette > 0}}
+		{{:include
+			file="_get_codes.html"
+			account=$_POST.vnc_account
+			keep="account_code"
+		}}
+		{{:assign vnc_account_code=$account_code|keys|value:0}}
+		{{:assign
+			var="lines."
+			account=$vnc_account_code
+			debit="%f/100"|math:$valeur_nette
+			id_project=$ligne_immo.id_project
+			label=$libelle
+		}}
+	{{/if}}
+
+	{{:api
+		method="POST"
+		path="accounting/transaction"
+		assign="result"
+		assign_code="result_code"
+		id_year=$_GET.year
+		type="advanced"
+		date=$_GET.exit_date
+		label=$libelle
+		lines=$lines
+		linked_transactions=$ligne_immo.trans_id
+	}}
+
+	{{* liaison écriture de sortie *}}
+	{{#foreach from=$result.lines item="line"}}
+		{{if $line.account_code == $immo_account_code}}
+			{{:save
+				key=""|uuid
+				type="exit_link"
+				immo_doc_id=$info_immo.id
+				exit_line_id=$line.id
+				created=true
+			}}
+			{{:break}}
+		{{/if}}
+	{{/foreach}}
+
+	{{if $montant_cession > 0}}
+		{{* Cession de l'immobilisation *}}
+		{{:assign libelle="Cession "|cat:$label_immo}}
+		{{:include
+			file="_get_codes.html"
+			account=$_POST.creance_account
+			keep="account_code"
+		}}
+		{{:assign creance_account=$account_code|keys|value:0}}
+		{{:include
+			file="_get_codes.html"
+			account=$_POST.cession_account
+			keep="account_code"
+		}}
+		{{:assign cession_account=$account_code|keys|value:0}}
+		{{:api
+			method="POST"
+			path="accounting/transaction"
+			assign="result"
+			assign_code="result_code"
+			id_year=$_GET.year
+			type="credit"
+			date=$_GET.exit_date
+			label=$libelle
+			amount="%f/100"|math:$montant_cession
+			debit=$creance_account
+			credit=$cession_account
+			id_project=$ligne_immo.id_project
+			linked_transactions=$ligne_immo.trans_id
+		}}
+	{{/if}}
+
+	{{* liaison écriture de cession *}}
+	{{#foreach from=$result.lines item="line"}}
+		{{if $line.account_code == $cession_code}}
+			{{:save
+				key=""|uuid
+				type="cession_link"
+				immo_doc_id=$info_immo.id
+				cession_line_id=$line.id
+				created=true
+			}}
+			{{:break}}
+		{{/if}}
+	{{/foreach}}
+
+	{{* mettre à jour l'état de l'immobilisation *}}
+	{{:save
+		key=$info_immo.key
+		status="archived"
+	}}
+	{{:redirect to="index.html?type_immo=archived"}}
+{{/form}}
+
+{{:admin_header title="Sortie du bilan" custom_css="./style.css" current="module_amortization"}}
+{{if ! $dialog}}
+	{{if $valeur_nette > 0}}
+		{{:assign type_immo="managed"}}
+	{{else}}
+		{{:assign type_immo="amortized"}}
+	{{/if}}
+	{{:include file="_nav.html" current="%s"|args:$type_immo subcurrent="balance_exit"}}
+{{/if}}
+
+{{*
+	Préparer les infos pour le formulaire
+	déterminer les comptes pour les différentes écritures
+*}}
+
+{{:include
+	file="./_get_amort_code.html"
+	code_immo=$ligne_immo.account_code
+	keep="code_amort"
+}}
+
+{{:assign var="liste_codes.6811" name="comp_account"}}
+{{:assign var="liste_codes.687" name="except_account"}}
+{{:assign var="liste_codes.462" name="creance_account"}}
+{{:assign var="liste_codes.%s"|args:$code_amort name="amort_account"}}
+{{:assign var="liste_codes.%s"|args:$ligne_immo.account_code name="immo_account"}}
+{{:assign var="liste_codes.%s"|args:$vnc_code name="vnc_account"}}
+{{:assign var="liste_codes.%s"|args:$cession_code name="cession_account"}}
+{{:assign condition=$liste_codes|keys|implode:","}}
+{{:assign condition="acc.code IN ("|cat:$condition|cat:")"}}
+
+{{#select
+	chart.id
+	FROM acc_charts AS chart
+	INNER JOIN acc_years AS year ON chart.id = year.id_chart
+	WHERE year.id = :year_id;
+	:year_id = $_GET.year
+	}}
+	{{:assign chart_id=$id}}
+{{/select}}
+
+{{#select
+	acc.id,
+	acc.code as acc_code,
+	acc.label as acc_label
+	FROM acc_accounts as acc
+	INNER JOIN acc_charts as chart ON chart.id = acc.id_chart
+	WHERE chart.id = :chart_id AND !condition;
+	:chart_id = $chart_id
+	!condition=$condition
+}}
+	{{:assign var="liste_codes.%s.id"|args:$acc_code value=$id}}
+	{{:assign var="liste_codes.%s.acc_label"|args:$acc_code value=$acc_label}}
+{{/select}}
+
+{{#foreach from=$liste_codes key=code}}
+	{{:assign var="%s.%s"|args:$name:$code value="%s — %s"|args:$code:$acc_label}}
+{{/foreach}}
+
+{{:include file="_get_config.html" keep="module.config.prefixes"}}
+{{#foreach from=$module.config.prefixes item="code"}}
+	{{:assign var="pattern_array." value="%s*"|args:$code}}
+{{/foreach}}
+{{:assign patterns=$pattern_array|implode:"|"}}
+
+<h3>Sortir l'immobilisation « {{$label_immo}} » du bilan</h3>
+<form method="post" action="">
+
+	<div class="informations">
+		<legend>Données de l'imobilisation</legend>
+		<dl class="describe">
+			<dt>Montant</dt>
+			<dd class="money">{{$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+			<dt>Date d'acquisition</dt>
+			<dd >{{$date_achat|date_short}}</dd>
+			{{if $date_mes != null}}
+				<dt>Date de mise en service</dt>
+				<dd>{{$date_mes|date_short}}</dd>
+			{{/if}}
+			<dt>Durée de l'amortissement</dt>
+			<dd class="num">{{$info_immo.duration}} ans</dd>
+			<dt>Montant des amortissements</dt>
+			<dd class="money">{{$_GET.amort_amount|money_currency_html:false|raw}} <span class="help">(à la date de début de l'exercice)</span></dd>
+			<dt>Valeur nette résiduelle</dt>
+			<dd class="money">{{$valeur_nette|money_currency_html:false|raw}} <span class="help">(à la date de début de l'exercice)</span></dd>
+			<dt>Date de sortie</dt>
+			<dd>{{$_GET.exit_date|date:"d/m/Y"}}</dd>
+			{{if $amort_comp > 0}}
+				{{:assign valeur_nette="%f-%f"|math:$valeur_nette:$amort_comp}}
+				<dt>Amortissement complémentaire</dt>
+				<dd class="money">{{$amort_comp|money_currency_html:false|raw}} <span class="help">(jusqu'à la date de sortie)</span></dd>
+				<dt>Total des amortissements</dt>
+				<dd class="money">{{"%f+%f"|math:$_GET.amort_amount:$amort_comp|money_currency_html:false|raw}} <span class="help">(à la date de sortie)</span></dd>
+				<dt>Valeur nette résiduelle</dt>
+				<dd class="money">{{$valeur_nette|money_currency_html:false|raw}} <span class="help">(à la date de sortie)</span></dd>
+			{{/if}}
+			{{if $montant_cession == 0}}
+				{{if $amort_except > 0}}
+					<dt>Amortissement exceptionnel</dt>
+					<dd class="money">{{$amort_except|money_currency_html:false|raw}}</dd>
+				{{/if}}
+			{{else}}
+				<dt>Montant de la cession</dt>
+				<dd class="money">{{$montant_cession|money_currency_html:false|raw}}</dd>
+			{{/if}}
+		</dl>
+	</div>
+
+	<fieldset>
+		<legend>Écritures de sortie du bilan</legend>
+		{{* Amortissement complémentaire *}}
+		{{if $amort_comp > 0}}
+			<table class="list">
+				<thead>
+					<tr>
+						<td>Amortissement complémentaire</td>
+						<td>Débit</td>
+						<td>Crédit</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="3" class="help">
+							Entre la date de début de l'exercice et la date de sortie du bilan
+						</td>
+					</tr>
+					<tr>
+						<td>
+							{{:input
+							type="list"
+							name="comp_account"
+							target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:"68*":$chart_id
+							readonly=true
+							default=$comp_account
+							}}
+						</td>
+						<td>{{$amort_comp|money_currency_html:false|raw}}</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							{{:input
+							type="list"
+							name="amort_comp_account"
+							target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:"28*":$chart_id
+							readonly=true
+							default=$amort_account
+							}}
+						</td>
+						<td></td>
+						<td>{{$amort_comp|money_currency_html:false|raw}}</td>
+					</tr>
+				</tbody>
+			</table>
+		{{/if}}
+
+		{{* Amortissement exceptionnel *}}
+		{{if $montant_cession == 0 && $amort_except > 0}}
+			<table class="list">
+				<thead>
+					<tr>
+						<td>Amortissement exceptionnel</td>
+						<td>Débit</td>
+						<td>Crédit</td>
+					</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<td colspan="3" class="help">
+						Montant de l'immobilisation non encore amortie (valeur nette résiduelle à la date de sortie)
+					</td>
+				</tr>
+					<tr>
+						<td>
+							{{:input
+							type="list"
+							name="except_account"
+							target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:"687*":$chart_id
+							readonly=true
+							default=$except_account
+							}}
+						</td>
+						<td>{{$amort_except|money_currency_html:false|raw}}</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							{{:input
+							type="list"
+							name="amort_except_account"
+							target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:"28*":$chart_id
+							readonly=true
+							default=$amort_account
+							}}
+						</td>
+						<td></td>
+						<td>{{$amort_except|money_currency_html:false|raw}}</td>
+					</tr>
+				</tbody>
+			</table>
+		{{/if}}
+
+		{{* Sortie du bilan *}}
+		<table class="list">
+			<thead>
+				<tr>
+					<td>Sortie du bilan</td>
+					<td>Débit</td>
+					<td>Crédit</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						{{:input
+						type="list"
+						name="amort_sortie_account"
+						target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:"28*":$chart_id
+						readonly=true
+						default=$amort_account
+						}}
+					</td>
+					{{if $montant_cession == 0}}
+						{{:assign montant=$ligne_immo.amount}}
+					{{else}}
+						{{:assign montant="%f+%f"|math:$_GET.amort_amount:$amort_comp}}
+					{{/if}}
+					<td>{{$montant|money_currency_html:false|raw}}</td>
+					<td></td>
+				</tr>
+				{{if $montant_cession > 0 && $valeur_nette > 0}}
+					<tr>
+						<td>
+							{{:input
+							type="list"
+							name="vnc_account"
+							target="!acc/charts/accounts/selector.php?codes=%s*&id_chart=%s"|args:$vnc_code:$chart_id
+							readonly=true
+							default=$vnc_account
+							}}
+						</td>
+						<td>{{$valeur_nette|money_currency_html:false|raw}}</td>
+						<td></td>
+					</tr>
+				{{/if}}
+				<tr>
+					<td>
+						{{:input
+						type="list"
+						name="immo_account"
+						target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:$patterns:$chart_id
+						readonly=true
+						default=$immo_account
+						}}
+					</td>
+					<td></td>
+					<td>{{$ligne_immo.amount|money_currency_html:false|raw}}</td>
+				</tr>
+			</tbody>
+		</table>
+
+		{{* comptabilisation du produit de la cession *}}
+		{{if $montant_cession > 0}}
+			<table class="list">
+				<thead>
+					<tr>
+						<td>Comptabilisation de la cession</td>
+						<td>Débit</td>
+						<td>Crédit</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							{{:input
+								type="list"
+								name="creance_account"
+								target="!acc/charts/accounts/selector.php?codes=%s&id_chart=%s"|args:"462*":$chart_id
+								readonly=true
+								default=$creance_account
+							}}
+						</td>
+						<td>{{$montant_cession|money_currency_html:false|raw}}</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							{{:input
+								type="list"
+								name="cession_account"
+								target="!acc/charts/accounts/selector.php?codes=%s*&id_chart=%s"|args:$cession_code:$chart_id
+								readonly=true
+								default=$cession_account
+							}}
+						</td>
+						<td></td>
+						<td>{{$montant_cession|money_currency_html:false|raw}}</td>
+					</tr>
+				</tbody>
+			</table>
+		{{/if}}
+</fieldset>
+
+<p class="submit">
+	{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+</p>
+</form>
+{{:form_errors}}
+{{:admin_footer}}

@@ -1,0 +1,33 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	vérifier :
+		- que le compte débute par le préfixe correct
+		- est présent dans le PC indiqué
+	paramètres :
+	- account : tableau avec un identifiant de compte
+	- chart_id : identifiant de plan comptable
+	- prefix_array : tableau des préfixes
+	résultat :
+	- account_ok
+*}}
+
+{{:assign condition=" AND ("}}
+{{#foreach from=$prefix_array item="code"}}
+	{{:assign code=$code|cat:"%"|quote_sql}}
+	{{:assign condition=$condition|cat:" code LIKE "|cat:$code|cat:" OR "}}
+{{/foreach}}
+{{:assign condition=$condition|cat:"0)"}}
+
+{{:assign account_code=$account|keys|value:0}}
+{{#sql
+	select="code"
+	tables="acc_accounts"
+	where="id_chart = :id_chart %s"|args:$condition
+	:id_chart = $chart_id|intval
+}}
+	{{if $account_code == $code}}
+		{{:assign account_ok=1}}
+		{{:break}}
+	{{/if}}
+{{/sql}}

@@ -1,0 +1,40 @@
+{{* -*- brindille -*- *}}
+
+<nav class="tabs">
+	{{if $subcurrent == null}}
+		{{if $current == "managed" || $current == "amortized" || $current == "archived"}}
+			<aside>
+				{{:linkbutton label="Ajouter une immobilisation" shape="plus" href="add_asset.html"}}
+			</aside>
+		{{/if}}
+	{{/if}}
+
+	<ul>
+		<li {{if $current == "managed"}}class="current"{{/if}}><a href="index.html?type_immo=managed">Amortissables</a></li>
+		<li {{if $current == "amortized"}}class="current"{{/if}}><a href="index.html?type_immo=amortized">Amorties</a></li>
+		<li {{if $current == "archived"}}class="current"{{/if}}><a href="index.html?type_immo=archived">Sorties du bilan</a></li>
+		<li {{if $current == "unfinished"}}class="current"{{/if}}><a href="index.html?type_immo=unfinished">En cours</a></li>
+		<li {{if $current == "other"}}class="current"{{/if}}><a href="index.html?type_immo=other">À classer</a></li>
+		<li {{if $current == "config"}} class="current"{{/if}}><a href="config.html">Configuration</a></li>
+		<li {{if $current == "aide"}} class="current"{{/if}}><a href="aide.html">Aide</a></li>
+	</ul>
+
+	{{if $subcurrent != null}}
+		<ul class="sub">
+			{{if $subcurrent == "transfer"}}
+				<li class="title strong">Transfert d'immobilisations</li>
+			{{elseif $subcurrent == "balance_exit"}}
+				<li class="title strong">Sortie de bilan</li>
+			{{elseif $subcurrent == "details"}}
+				<li class="title strong">Détails</li>
+			{{/if}}
+		</ul>
+	{{/if}}
+
+	{{if $current == "config"}}
+		<ul class="sub">
+			<li {{if $subcurrent == null}} class="current"{{/if}}><a href="config.html">Comptes d'immobilisation</a></li>
+			<li {{if $subcurrent == "filters"}} class="current"{{/if}}><a href="filters.html">Filtres de libellés</a></li>
+		</ul>
+	{{/if}}
+</nav>

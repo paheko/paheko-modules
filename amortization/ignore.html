@@ -1,0 +1,86 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Marquer la ligne d'écriture « à ignorer »
+	@param immo_line_id : numéro de ligne
+*}}
+
+{{#select
+	trans.id AS trans_id,
+	trans.date AS date,
+	trans.label AS label,
+	line.debit AS amount
+	FROM acc_transactions_lines AS line
+	INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+	WHERE line.id = :line_id
+	;
+	:line_id = $_GET.immo_line_id
+	assign=ligne_immo
+}}
+{{else}}
+	{{:error message="Il n'y a aucune écriture avec le numéro de ligne %s !"|args:$_GET.immo_line_id}}
+{{/select}}
+{{#load type="immo" assign="info_immo" where="$$.line = :line_id" :line_id=$_GET.immo_line_id|intval}}{{/load}}
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="proceed"}}
+	{{if $_POST.ignore != null && $info_immo == null}}
+		{{* ignorer l'écriture *}}
+		{{:assign duration=0}}
+		{{:assign status="ignored"}}
+		{{:save
+			key=""|uuid
+			validate_schema="asset.schema.json"
+			type="immo"
+			line=$_GET.immo_line_id|intval
+			duration=$duration
+			date=$ligne_immo.date
+			status=$status
+		}}
+		{{:redirect force="index.html?ok=1&msg=infos&type_immo=unfinished"}}
+	{{elseif $_POST.ignore == null && $info_immo != null}}
+		{{* dés-ignorer l'écriture *}}
+		{{:delete id=$info_immo.id}}
+		{{:redirect force="index.html?ok=1&msg=infos&type_immo=unfinished"}}
+	{{else}}
+		{{:redirect force="index.html?type_immo=unfinished"}}
+	{{/if}}
+{{else}}
+	{{:form_errors}}
+{{/form}}
+
+{{:admin_header title="Ignorer l'écriture" custom_css="./style.css" current="module_amortization"}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="index"}}
+{{/if}}
+
+<form method="post" action="">
+	<fieldset id="classement_immo">
+		<legend>Ignorer</legend>
+		<div class="informations">
+			<dl class="describe">
+				<dt>Écriture</dt>
+				<dd><span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.trans_id}}</a></span> {{$ligne_immo.label}}</dd>
+				<dt>Montant</dt>
+				<dd class="money strong">{{"%f"|math:$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+			</dl>
+		</div>
+		<dl>
+			{{if $info_immo != null && $info_immo.status == "ignored"}}
+				{{:input type="checkbox" name="ignore" checked="checked" value="1" label="Ignoré" help="Décocher pour ne plus ignorer l'écriture"}}
+			{{else}}
+				{{:input type="checkbox" name="ignore" value="1" label="Ignoré" help="Cocher pour ignorer l'écriture ; elle n'apparaitra plus dans la liste des immobilisations"}}
+		{{/if}}
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="proceed" label="Confirmer" shape="right" class="main"}}
+	</p>
+
+</form>
+
+{{:admin_footer}}

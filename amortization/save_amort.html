@@ -1,0 +1,322 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Créer une écriture d'amortissement
+	@param immo_doc_id : id du doc associé à l'immo
+*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+{{:assign date_debut=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign amort_label=$info_immo.label|or:$ligne_immo.trans_label}}
+
+{{if $ligne_immo.line_label != null && $ligne_immo.line_label != $amort_label}}
+	{{:assign amort_label=$amort_label|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{:assign var="amort_label" value="Amortissement %s"|args:$amort_label}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_credits"}}
+{{:assign var="ligne_immo.amount" value="%d-%d"|math:$ligne_immo.amount:$total_credits}}
+
+{{* lister les amortissements liés à l'immobilisation *}}
+{{:include file="./_get_amort_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_amort, total_amort"}}
+
+{{:assign valeur_residuelle="%d-%d"|math:$ligne_immo.amount:$total_amort}}
+{{if $valeur_residuelle == 0}}
+	{{:error message="Cette immobilisation est complètement amortie ; il est impossible d'ajouter une écriture d'amortissement"}}
+{{/if}}
+
+{{#foreach from=$linked_amort|ksort item="line"}}
+	{{:assign date_debut=$line.date}}
+	{{:assign code_amort=$line.account_code}}
+	{{:assign amort_account_label=$line.account_label}}
+	{{:assign amort_label=$line_label|or:$trans_label}}
+{{/foreach}}
+
+{{if $total_amort == 0}}
+	{{* 1er amortissement *}}
+	{{*	déterminer le compte d'amortissement en fonction du compte d'immobilisation *}}
+	{{#select code, label from acc_accounts where id = :id; :id=$ligne_immo.account_id assign=amort_account}}
+	{{/select}}
+	{{:include
+		file="./_get_amort_code.html"
+		code_immo=$amort_account.code
+		keep="code_amort"
+	}}
+	{{:assign var="amort_account_label" value="Amortissement %s"|args:$amort_account.label}}
+	{{:assign var=libelle value="Amortissement %s"|args:$ligne_immo.trans_label}}
+{{else}}
+	{{* amortissements suivants *}}
+	{{:assign date_debut=$date_debut|strtotime}}
+	{{:assign date_debut="%d+(60*60*24)"|math:$date_debut|date:"Y-m-d"}}
+{{/if}}
+
+{{*
+	lister les exercices qui englobent la date de mise en service de l'immo
+	ou la date du dernier amortissement
+*}}
+{{:assign msg_years=""}}
+{{#years closed=false order="start_date" where="start_date <= :debut AND :debut <= end_date"
+	:debut=$date_debut assign="years."}}
+	{{if $total_amort == 0}}
+		{{:assign ts_debut=$date_debut|strtotime}}
+	{{else}}
+		{{:assign ts_debut=$start_date|strtotime}}
+	{{/if}}
+	{{:assign ts_fin=$end_date|strtotime}}
+	{{:assign debut=$start_date|date_short}}
+	{{:assign fin=$end_date|date_short}}
+	{{:assign var="open_years.%d"|args:$id value=$label|cat:" (du "|cat:$debut|cat:" au "|cat:$fin|cat:")"}}
+	{{:assign var="years_data.%d"|args:$id value=$ts_debut|cat:" "|cat:$ts_fin}}
+	{{:assign msg_years=$msg_years|cat:"\n"|cat:" - "|cat:$label|cat:" : "|cat:$debut|cat:" à "|cat:$fin}}
+{{else}}
+	{{:assign date_debut=$date_debut|date_short}}
+	{{:assign msg="Pas d'exercice ouvert pour enregistrer un amortissement à partir du %s"|args:$date_debut}}
+	{{:error message=$msg}}
+{{/years}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="save"}}
+	{{* vérifier que la date est située dans un exercice compatible *}}
+	{{:assign ts_date = $_POST.date_amort|parse_date|strtotime}}
+	{{:assign ok=false}}
+	{{#foreach from=$years}}
+		{{if $id == $_POST.id_year}}
+			{{:assign selected_chart=$id_chart}}
+			{{if $start_date|strtotime <= $ts_date && $ts_date <= $end_date|strtotime}}
+				{{:assign ok=true}}
+				{{:break}}
+			{{/if}}
+		{{/if}}
+	{{/foreach}}
+	{{if ! $ok}}
+		{{:error message="La date choisie n'est dans aucun exercice compatible !\nExercices compatibles : %s"|args:$msg_years}}
+	{{/if}}
+	{{* déterminer le numéro des comptes au cas où la clé serait un identifiant *}}
+	{{:include
+		file="_get_codes.html"
+		account=$_POST.debit_account
+		keep="account_code"
+	}}
+	{{:assign debit_account=$account_code}}
+	{{:include
+		file="_get_codes.html"
+		account=$_POST.credit_account
+		keep="account_code"
+	}}
+	{{:assign credit_account=$account_code}}
+	{{* vérifier :
+		- que le compte d'amortissement débute par un préfixe correct (280, 281, ...)
+		- est présent dans le PC de l'exercice correspondant à la date
+	*}}
+	{{:include file="_get_config.html" keep="module.config.prefixes"}}
+	{{#foreach from=$module.config.prefixes item="code"}}
+		{{* déterminer le numéro du compte d'amortissement associé au compte d'immobilisation *}}
+		{{:include
+			file="./_get_amort_code.html"
+			code_immo=$code
+			keep="code_amort"
+		}}
+		{{:assign var="amort_array." value=$code_amort|intval}}
+	{{/foreach}}
+
+	{{:include
+		file="_check_account.html"
+		account=$credit_account
+		chart_id=$selected_chart
+		prefix_array=$amort_array
+		keep="account_ok"
+	}}
+	{{if $account_ok == null}}
+		{{:assign compte=$credit_account|implode:""}}
+		{{:redirect url="add_account.html?account=%s&chart=%s"|args:$compte:$selected_chart}}
+	{{/if}}
+
+	{{* vérifier que le montant ne dépasse pas le solde restant *}}
+	{{:assign solde="%d-%d"|math:$ligne_immo.amount:$total_amort}}
+	{{if $_POST.montant|trim|money_int > $solde|intval}}
+		{{:assign montant=$_POST.montant|trim|money_int|money_raw}}
+		{{:assign solde=$solde|money_raw}}
+		{{:error message="Le montant indiqué « %s » dépasse le solde à amortir « %s »"|args:$montant:$solde}}
+	{{/if}}
+
+	{{*
+		supprimer les documents qui pointent sur une ligne d'amortissement absente
+		cas de la suppression manuelle d'un amortissement
+	*}}
+	{{:include file="_remove_orphan_docs.tpl"}}
+
+	{{* enregistrer l'écriture *}}
+	{{:assign
+		var="lines."
+		debit=$_POST.montant
+		account=$debit_account|keys|value:0
+		id_project=$ligne_immo.id_project
+	}}
+	{{:assign
+		var="lines."
+		credit=$_POST.montant
+		account=$credit_account|keys|value:0
+		id_project=$ligne_immo.id_project
+	}}
+	{{:api
+		method="POST"
+		path="accounting/transaction"
+		assign="result"
+		assign_code="result_code"
+		id_year=$_POST.id_year
+		type="advanced"
+		date=$_POST.date_amort
+		label=$_POST.designation
+		lines=$lines
+		linked_transactions=$ligne_immo.trans_id|intval
+	}}
+
+	{{* enregistrer la liaison des lignes *}}
+	{{#foreach from=$result.lines item="line"}}
+		{{if $line.account_code == $credit_account|keys|value:0}}
+			{{:save
+				key=""|uuid
+				type="amort_link"
+				immo_doc_id=$_GET.immo_doc_id|intval
+				amort_line_id=$line.id
+				created=true
+			}}
+			{{:break}}
+		{{/if}}
+	{{/foreach}}
+
+	{{* immo soldée ? *}}
+	{{if $_POST.montant|trim|money_int == $solde}}
+		{{:assign status="amortized"}}
+		{{:save
+			key=$info_immo.key
+			status=$status
+		}}
+	{{/if}}
+
+	{{:redirect force="amortization.html?immo_doc_id=%s&type_immo=%s&ok=1&msg=amortissement"|args:$_GET.immo_doc_id:$status}}
+{{/form}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+
+{{:admin_header title="Amortissement pour « %s »"|args:$label_immo custom_css="./style.css" current="module_amortization"}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{:include file="_nav.html" current="managed" subcurrent="amortization"}}
+{{/if}}
+
+{{:form_errors}}
+
+{{if $years|count == 1}}
+	{{:assign var=selected_year value=$years.0.id}}
+{{/if}}
+{{:assign var=date_amort value=$years.0.end_date}}
+{{:include file="_calcul_dates.html" date_debut=$date_debut date_fin=$date_amort keep="nbjours"}}
+
+{{* montant de l'amortissement *}}
+{{:assign montant_amort="%f/%f/365*%d"|math:$ligne_immo.amount:$info_immo.duration:$nbjours|intval}}
+{{:assign montant_amort="min(%f, %d-%d)"|math:$montant_amort:$ligne_immo.amount:$total_amort}}
+{{:assign var="debit_account.6811" value="6811 — Dot. aux amortissements des immobilisations"}}
+{{:assign var="credit_account.%s"|args:$code_amort value="%s — "|args:$code_amort|cat:$amort_account_label}}
+
+{{* -------------------------------------------------------------------------------- *}}
+
+<div id="f_erreur" class="hidden">
+	<p class="block error">La date saisie n'est pas dans l'exercice choisi !</p>
+</div>
+
+<form method="post" action="">
+	<fieldset class="ajout_amort">
+		<legend>Ajouter une écriture d'amortissement</legend>
+		<dl>
+			{{:input type="select" default=$selected_year name="id_year" label="Exercice" required=true default_empty="— Faire un choix —" options=$open_years}}
+			{{:input type="date" name="date_amort" label="Date" required=true default=$date_amort|date_short}}
+			{{:input type="text" name="designation" label="Libellé" required=true default=$amort_label size="50"}}
+			{{:input type="money" name="montant" label="Montant" required=true default=$montant_amort}}
+			{{:input
+				type="list"
+				name="debit_account"
+				label="Compte de débit"
+				required=true
+				readonly=true
+				target="!acc/charts/accounts/selector.php?codes=%s&id_year=%d"|args:"68*":$selected_year
+				default=$debit_account
+			}}
+			{{:input
+				type="list"
+				name="credit_account"
+				label="Compte d'amortissement (28xx)"
+				required=true
+				readonly=true
+				target="!acc/charts/accounts/selector.php?codes=%s&id_year=%d"|args:"28*":$selected_year
+				default=$credit_account
+			}}
+			<div id="donnees" class="hidden">
+				{{:input type="text" name="montant_immo" default=$ligne_immo.amount}}
+				{{:input type="text" name="duree_amort" default=$info_immo.duration}}
+				{{:input type="text" name="somme_amort" default=$total_amort}}
+				{{:input type="select" name="years_data" options=$years_data}}
+			</div>
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+{{:admin_footer}}
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript">
+
+/*
+	afficher la date de fin de l'exercice choisi
+	mettre à jour le numéro d'exercice dans les sélecteur de comptes
+	recalculer le montant de l'amortissement
+*/
+function redisplayData(evt,
+					f_immo         = 'f_montant_immo',
+					f_duree        = 'f_duree_amort',
+					f_amort        = 'f_somme_amort',
+					f_years_data   = 'f_years_data',
+					f_years_select = 'f_id_year',
+					f_date         = 'f_date_amort',
+					f_montant      = 'f_montant',
+					f_erreur	   = 'f_erreur'
+)
+{
+	setDateEnd(f_years_select, f_date, f_years_data);
+	displayAmort(f_immo, f_duree, f_amort, f_years_data, f_years_select, f_montant, f_erreur);
+	setSelectorYear(['credit_account', 'debit_account'], f_years_select);
+}
+
+function redisplayAmort(evt,
+					f_immo         = 'f_montant_immo',
+					f_duree        = 'f_duree_amort',
+					f_amort        = 'f_somme_amort',
+					f_years_data   = 'f_years_data',
+					f_years_select = 'f_id_year',
+					f_date         = 'f_date_amort',
+					f_montant      = 'f_montant',
+					f_erreur	   = 'f_erreur'
+)
+{
+	displayAmort(f_immo, f_duree, f_amort, f_years_data, f_years_select, f_montant, f_erreur, f_date);
+}
+
+(function () {
+	setDateEnd('f_id_year', 'f_date_amort', 'f_years_data');
+	document.getElementById('f_id_year').onchange = redisplayData;
+	document.getElementById('f_date_amort').onchange = redisplayAmort;
+	})();
+</script>

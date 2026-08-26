@@ -1,0 +1,197 @@
+{{* -*- brindille -*- *}}
+
+{{* Liste des immobilisations non gérées ou non entièrement affectées *}}
+
+{{:include file="_get_config.html" keep="module.config"}}
+<p class="help">
+	Cette page liste les immobilisations pas encore prises en charge
+	par le module ou les écritures de la balance d'ouverture initiale
+	dont le montant n'est pas encore totalement affecté
+</p>
+
+{{:assign saved_hides=$module.config.hides}}
+{{:assign var="user_hides" from="saved_hides.%s"|args:$logged_user.id}}
+
+{{if $_POST|count == 0}}
+	{{:assign unhide=$user_hides.unhide_other}}
+{{else}}
+	{{if $_POST.unhide == null}}
+		{{:assign unhide=0}}
+	{{else}}
+		{{:assign unhide=1}}
+	{{/if}}
+	{{:assign var="user_hides.unhide_other" value=$unhide"}}
+	{{:assign var="saved_hides.%s"|args:$logged_user.id value=$user_hides}}
+	{{:save key="config" hides=$saved_hides}}
+{{/if}}
+{{if $unhide}}
+	{{:assign checked="checked"}}
+{{/if}}
+
+{{* vérifier l'existence de la table du module *}}
+{{if $module.table != null}}
+	{{:assign columns="$$.status as status, SUM($$.amount) as amount,"}}
+	{{:assign table_join="LEFT JOIN !table AS info ON $$.line = line.id"}}
+	{{:assign doc_condition="($$.status IS NULL OR $$.status == 'managed' OR $$.status == 'ignored')"}}
+{{else}}
+	{{:assign columns=""}}
+	{{:assign table_join=""}}
+	{{:assign doc_condition="1"}}
+{{/if}}
+
+{{*
+	lister les immobilisations non prises en charge par le module
+	ou dont le montant n'a pas été totalement affecté
+*}}
+{{:assign account_condition="("}}
+{{#foreach from=$module.config.prefixes item="code"}}
+	{{:assign code=$code|cat:"%"|quote_sql}}
+	{{:assign account_condition=$account_condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
+{{/foreach}}
+{{:assign account_condition=$account_condition|cat:"0)"}}
+
+{{if $unhide ==  null}}
+	{{:assign filter_condition="NOT ("}}
+	{{#foreach from=$module.config.filters item="filter"}}
+		{{:assign filter="%"|cat:$filter|cat:"%"|quote_sql}}
+		{{:assign filter_condition=$filter_condition|cat:" trans_label LIKE "|cat:$filter|cat:" OR "}}
+	{{/foreach}}
+	{{:assign filter_condition=$filter_condition|cat:"0)"}}
+{{else}}
+	{{:assign filter_condition="1"}}
+{{/if}}
+
+{{:assign condition=$account_condition|cat:" AND debit > 0 AND NOT (trans.status & 16) AND "|cat:$filter_condition|cat:" AND "|cat:$doc_condition}}
+
+{{:assign nb_managed=0}}
+{{:assign nb_ignored=0}}
+{{:assign nb_null=0}}
+{{:assign nb_other=0}}
+{{#select
+	trans.id as immo_trans_id,
+	trans.label as trans_label,
+	trans.date as trans_date,
+	line.id as immo_line_id,
+	line.debit AS debit,
+	line.label AS line_label,
+	account.id as account_id,
+	account.code as account_code,
+	account.label as account_label,
+	!columns
+	trans.id_year as trans_id_year
+	FROM acc_transactions AS trans
+	INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+	INNER JOIN acc_accounts AS account ON line.id_account = account.id
+	INNER JOIN acc_years AS years ON trans.id_year = years.id
+	!table_join
+	WHERE !condition
+	GROUP BY immo_line_id
+	ORDER BY trans.date;
+	!columns=$columns
+	!table_join=$table_join
+	!table=$module.table
+	!condition=$condition
+	assign="immo_line"
+	}}
+	{{*
+		parmi les immos gérées, ne conserver que celles dont le montant dans le doc est non nul
+		et inférieur au montant de l'écriture d'immo
+	*}}
+	{{if $immo_line.status == 'managed'}}
+		{{if $immo_line.amount == null || $immo_line.amount == 0 || $immo_line.amount == $immo_line.debit}}
+			{{:continue}}
+		{{/if}}
+	{{/if}}
+	{{if $status == null}}
+		{{:assign nb_null="%d+1"|math:$nb_null}}
+	{{elseif $status == 'managed'}}
+		{{:assign nb_managed="%d+1"|math:$nb_managed}}
+	{{elseif $status == 'ignored'}}
+		{{:assign nb_ignored="%d+1"|math:$nb_ignored}}
+	{{else}}
+		{{:assign nb_other="%d+1"|math:$nb_other}}
+	{{/if}}
+
+	{{:assign var="immo_lines." value=$immo_line}}
+{{/select}}
+
+<form method="post" action="">
+	<fieldset>
+		{{:input type="checkbox" value=1 name="unhide" checked="%s"|args:$checked label="Afficher les écritures ignorées" }}
+	</fieldset>
+</form>
+
+{{if $immo_lines|count > 0}}
+<table class="list">
+	<thead>
+		<tr>
+			<th class="num">N°</th>
+			<th class="nombre">Ligne</th>
+			<th>Date</th>
+			<th>Libellé</th>
+			<th class="nombre">Montant</th>
+			<th class="nombre">Affecté</th>
+			<th class="nombre">Reste</th>
+			<th>N° compte</th>
+			<th>Compte</th>
+			<th class="actions"></th>
+		</tr>
+	</thead>
+	<tbody>
+		{{#foreach from=$immo_lines item="line"}}
+
+		{{if $unhide == null}}
+			{{if $status == "ignored"}}
+				{{:continue}}
+			{{/if}}
+		{{else}}
+			{{* vérifier si le libellé aurait pu être filtré *}}
+			{{#foreach from=$module.config.filters item="filter"}}
+				{{if $trans_label|strpos:$filter !== false}}
+					{{:assign status="ignored"}}
+				{{else}}
+					{{:assign status=""}}
+				{{/if}}
+			{{/foreach}}
+		{{/if}}
+
+		{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.immo_trans_id}}
+		{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.trans_id_year}}
+		{{:assign reste="%d-%d"|math:$line.debit:$line.amount}}
+		<tr {{if $status == "ignored"}}class="ignored"{{/if}}>
+			<td class="num"><a href="{{$trans_url}}">#{{$line.immo_trans_id}}</a></td>
+			<td class="nombre">{{$line.immo_line_id}}</td>
+			<td>{{$trans_date|date_short}}</td>
+			<td>{{$line.trans_label}}{{if $line.line_label != null && $line.line_label != $line.trans_label}} — {{$line.line_label}}{{/if}}</td>
+			<td class="money">{{"%f"|math:$line.debit|money_html:false|raw}}</td>
+			<td class="money">{{"%f"|math:$line.amount|money_html:false|raw}}</td>
+			<td class="money">{{"%f"|math:$reste|money_html:false|raw}}</td>
+			<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
+			<td>{{$line.account_label}}</td>
+			<td class="actions">
+				{{:linkbutton
+					label="Paramètres"
+					href="add_infos.html?immo_line_id=%s"|args:$immo_line_id
+					shape="settings"
+					target="_dialog"
+				}}
+			</td>
+		</tr>
+	{{/foreach}}
+	</tbody>
+</table>
+{{else}}
+	<p class="block alert">Aucune immobilisation</p>
+{{/if}}
+
+<script type="text/javascript">
+function changeVisibility(evt, idcheck = 'f_unhide_1') {
+	this.form.dispatchEvent(new Event('submit'));
+	this.form.submit();
+}
+
+(function () {
+	document.getElementById('f_unhide_1').onclick = changeVisibility;
+})();
+
+</script>

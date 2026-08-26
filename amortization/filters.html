@@ -1,0 +1,94 @@
+{{* -*- brindille -*- *}}
+
+{{:admin_header title="Configuration" custom_css="./style.css" current="module_amortization"}}
+{{:include file="_nav.html" current="config" subcurrent="filters"}}
+
+{{if $_GET.ok == 1}}
+	<p class="block confirm">Configuration enregistrée.</p>
+{{/if}}
+
+{{* lecture config *}}
+{{:include file="./_get_config.html" keep="module.config"}}
+
+{{#form on="save"}}
+	{{* enregistrer les filtres dans la config *}}
+	{{#foreach from=$_POST.filters item="filter"}}
+		{{if $filter != ""}}
+			{{:assign var="filters." value=$filter}}
+		{{/if}}
+	{{/foreach}}
+	{{:save key="config" filters=$filters}}
+	{{:redirect to="./filters.html"}}
+{{/form}}
+
+<form method="post" action="">
+	<h3>Liste de libellés à ignorer</h3>
+	<p class="help">
+		Les écritures dont le libellé contient un des textes ci-dessous seront ignorées
+	</p>
+
+	<table class="list" id="filter_list">
+		<thead>
+			<tr>
+				<th>Libellé</th>
+				<th class="actions"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{{if $module.config.filters == null}}
+				<tr>
+					<td>
+						{{:input type="text" name="filters[]" required=false}}
+					</td>
+					<td class="actions">
+						{{:button
+						label="Enlever"
+						title="Enlever une ligne"
+						shape="minus"
+						name="remove_line"
+						}}
+					</td>
+				</tr>
+			{{else}}
+				{{#foreach from=$module.config.filters item="filter"}}
+					<tr>
+						<td>
+							{{:input type="text" name="filters[]" default=$filter required=false}}
+						</td>
+						<td class="actions">
+							{{:button
+							label="Enlever"
+							title="Enlever une ligne"
+							shape="minus"
+							name="remove_line"
+							}}
+						</td>
+					</tr>
+				{{/foreach}}
+			{{/if}}
+		</tbody>
+		<tfoot>
+			<tr>
+				<td></td>
+				<td class="actions">{{:button shape="plus" label="Ajouter" title="Ajouter un libellé"}}</td>
+			</tr>
+		</tfoot>
+	</table>
+	<p class="submit">
+		{{:button type="submit" name="save" label="Enregistrer" shape="right" class="main"}}
+	</p>
+</form>
+
+<script type="text/javascript" src="scripts.js"></script>
+<script type="text/javascript" async="async">
+
+	// bouton - : supprimer une ligne
+	let lines = $('#filter_list tbody tr');
+	lines.forEach(initLine);
+
+	// bouton + : dupliquer une ligne de la 1ère table
+	for (const b of $('#filter_list tfoot button')) {
+		copyLine(b);
+	}
+
+</script>

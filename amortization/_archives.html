@@ -1,0 +1,221 @@
+{{* -*- brindille -*- *}}
+
+{{* Liste des immobilisations sorties du bilan *}}
+<p class="help">
+	Cette page liste les immobilisations sorties du bilan
+</p>
+
+{{:include file="_get_config.html" keep="module.config"}}
+
+{{* lister les immobilisations *}}
+{{:assign account_condition="("}}
+{{#foreach from=$module.config.prefixes item="code"}}
+	{{:assign code=$code|cat:"%"|quote_sql}}
+	{{:assign account_condition=$account_condition|cat:"account.code LIKE "|cat:$code|cat:" OR "}}
+{{/foreach}}
+{{:assign account_condition=$account_condition|cat:"0)"}}
+
+{{:assign filter_condition=" AND NOT ("}}
+{{#foreach from=$module.config.filters item="filter"}}
+	{{:assign filter="%"|cat:$filter|cat:"%"|quote_sql}}
+	{{:assign filter_condition=$filter_condition|cat:" trans_label LIKE "|cat:$filter|cat:" OR "}}
+{{/foreach}}
+{{:assign filter_condition=$filter_condition|cat:"0)"}}
+{{:assign condition=$account_condition|cat:" AND debit > 0 AND NOT (trans.status & 16)"|cat:$filter_condition}}
+
+<section class="immobilisation">
+	<table class="list">
+		<thead>
+			<tr>
+				<th>N°</th>
+				<th>Mise en service</th>
+				<th>Date sortie</th>
+				<th>Libellé</th>
+				<th class="nombre">Montant</th>
+				<th>N° compte</th>
+				<th>Compte</th>
+				<th class="actions"></th>
+			</tr>
+		</thead>
+		<tbody>
+
+		{{:assign nb_immo=0}}
+		{{:assign total_immo = 0}}
+		{{:assign total_cessions = 0}}
+
+		{{#select
+			trans.id as trans_id,
+			trans.label as trans_label,
+			trans.date as trans_date,
+			trans.id_year as trans_id_year,
+			line.id as immo_line_id,
+			line.label as line_label,
+			line.debit AS debit,
+			account.id as account_id,
+			account.code as account_code,
+			account.label as account_label
+			FROM acc_transactions AS trans
+			INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+			INNER JOIN acc_accounts AS account ON line.id_account = account.id
+			INNER JOIN acc_years AS years ON trans.id_year = years.id
+			WHERE !condition
+			ORDER BY trans.date DESC;
+			!condition=$condition
+		}}
+
+			{{* voir si l'immo est prise en charge *}}
+			{{#load type="immo" where="$$.line = :line_id" :line_id=$immo_line_id assign="info_immo"}}
+				{{:assign status=$status}}
+			{{else}}
+				{{:assign status=null}}
+			{{/load}}
+			{{if $status != "archived"}}
+				{{:continue}}
+			{{/if}}
+			{{:assign date_mes=$info_immo.date_mes|or:$trans_date}}
+			{{:assign montant_immo=$debit}}
+
+			{{* chercher le doc de sortie du bilan *}}
+			{{:assign exit_date=null}}
+			{{#load type="exit_link" where="$$.immo_doc_id = :immo_doc_id" :immo_doc_id=$info_immo.id}}
+				{{:assign exit_line_id=$exit_line_id}}
+				{{#select
+					trans.date
+					FROM acc_transactions_lines AS line
+					INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+					WHERE line.id = :exit_line_id;
+					:exit_line_id=$exit_line_id
+				}}
+					{{:assign exit_date=$date}}
+				{{/select}}
+			{{/load}}
+
+			{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+			{{:assign credit_immo=null}}
+			{{:assign total_credits=0}}
+			{{#load
+				type="credit_link"
+				where="$$.immo_doc_id = :immo_doc_id" :immo_doc_id = $info_immo.id
+			}}
+				{{if $amount == null}}
+					{{#select credit FROM acc_transactions_lines WHERE id = :credit_line_id;
+						:credit_line_id=$credit_line_id
+					}}
+						{{:assign total_credits="%d+%d"|math:$total_credits:$credit}}
+					{{/select}}
+				{{else}}
+					{{:assign total_credits="%d+%d"|math:$total_credits:$amount}}
+				{{/if}}
+			{{/load}}
+			{{:assign solde_immo="%d-%d"|math:$montant_immo:$total_credits}}
+
+			{{if $solde_immo == 0}}
+				{{:assign status="archived"}}
+			{{/if}}
+
+			{{if $status != "archived"}}
+				{{:continue}}
+			{{/if}}
+
+			{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$trans_id}}
+			{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$account_id:$trans_id_year}}
+			{{:assign nb_immo="%d+1"|math:$nb_immo}}
+			{{:assign total_immo="%d+%d"|math:$total_immo:$montant_immo}}
+			{{:assign var="montant" from="sommes_immo.%s"|args:$account_code}}
+			{{:assign var="sommes_immo.%s"|args:$account_code value="%d+%d"|math:$montant:$montant_immo}}
+
+			{{* voir s'il y a une écriture de cession associée à cette immo *}}
+			{{#select
+				trans.id,
+				line.debit
+				FROM acc_transactions_links AS link
+				INNER JOIN acc_transactions AS trans ON (CASE
+					WHEN link.id_transaction = :trans_id THEN link.id_related
+					WHEN link.id_related = :trans_id THEN link.id_transaction
+				END) = trans.id
+				INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+				INNER JOIN acc_accounts AS acc ON line.id_account = acc.id
+				WHERE (link.id_transaction = :trans_id OR link.id_related = :trans_id) AND acc.code = 462
+				;
+				:trans_id = $trans_id
+			}}
+				{{:assign var="montant" from="montant_cessions.%d"|args:$account_code}}
+				{{:assign var="montant_cessions.%d"|args:$account_code value="%d+%d"|math:$montant:$debit}}
+				{{:assign total_cessions="%d+%d"|math:$total_cessions:$debit}}
+			{{/select}}
+
+			<tr>
+				<td class="num"><a href="{{$trans_url}}">#{{$trans_id}}</a></td>
+				<td>{{$date_mes|date_short}}</td>
+				<td>{{$exit_date|date_short}}</td>
+				<td>{{$trans_label}}{{if $line_label != null && $line_label != $trans_label}} — {{$line_label}}{{/if}}</td>
+				<td class="money">{{"%f"|math:$montant_immo|money_html:false|raw}}</td>
+				<td><a href="{{$compte_url}}">{{$account_code}}</a></td>
+				<td>{{$account_label}}</td>
+				<td class="actions">
+					{{:linkbutton label="Modifier" href="exit_step1.html?immo_doc_id=%s&from=exit"|args:$info_immo.id shape="edit"}}
+				</td>
+			</tr>
+		{{/select}}
+		</tbody>
+		<tfoot>
+			{{if $total_immo != 0}}
+				<tr>
+					<td colspan="9">
+				</tr>
+				{{#foreach from=$sommes_immo|ksort key="code" item="value"}}
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>Total du compte {{$code}}</td>
+						<td class="money">{{$value|money_html:false|raw}}</td>
+						<td></td>
+						<td></td>
+						<td class="actions"></td>
+					</tr>
+				{{/foreach}}
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td class="strong">Total des immobilisations</td>
+					<td class="money strong">{{$total_immo|money_html:false|raw}}</td>
+					<td></td>
+					<td></td>
+					<td class="actions"></td>
+				</tr>
+			{{/if}}
+			{{if $total_cessions != 0}}
+				<tr>
+					<td colspan="9">
+				</tr>
+				{{#foreach from=$montant_cessions|ksort key="code" item="value"}}
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>Cessions du compte {{$code}}</td>
+						<td class="money">{{$value|money_html:false|raw}}</td>
+						<td></td>
+						<td></td>
+						<td class="actions"></td>
+					</tr>
+				{{/foreach}}
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td class="strong">Total des cessions</td>
+					<td class="money strong">{{$total_cessions|money_html:false|raw}}</td>
+					<td></td>
+					<td></td>
+					<td class="actions"></td>
+				</tr>
+			{{/if}}
+		</tfoot>
+	</table>
+	{{if $nb_immo == 0}}
+		<p class="block alert">Aucune immobilisation</p>
+	{{/if}}
+</section>

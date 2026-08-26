@@ -1,0 +1,145 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Calculer les valeurs de la sortie et saisir le montant de la cession (optionnel)
+	paramètres :
+	@param immo_doc_id  : id du doc associé à l'immo
+	@param amort_amount	: montant des amortissements
+	@param year			: exercice de la date de sortie de l'immobilisation
+	@param date_debut	: date de début de la période d'amortissement complémentaire
+ 	@param exit_date	: date de sortie de l'immobilisation
+*}}
+
+{{* TODO boutons de navigation avant-arrière*}}
+
+{{* données de l'immobilisation *}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label === false}}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+
+{{:assign date_achat=$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{if $info_immo.date_mes != null && $info_immo.date_mes != $date_achat}}
+	{{:assign date_mes=$info_immo.date_mes}}
+{{/if}}
+
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="total_credits"}}
+{{:assign var="ligne_immo.amount" value="%d-%d"|math:$ligne_immo.amount:$total_credits}}
+{{:assign valeur_nette="%f-%f"|math:$ligne_immo.amount:$_GET.amort_amount}}
+
+{{:assign amort_comp=0}}		{{* amortissement complémentaire jqà date sortie *}}
+{{if $valeur_nette > 0}}
+	{{:assign nbjours="1+(%d-%d)/(60*60*24)"|math:$_GET.exit_date:$_GET.date_debut}}
+	{{:assign annuite="%f/%f"|math:$ligne_immo.amount:$info_immo.duration}}
+	{{:assign amort_comp="round(%f/365*%f, 0)"|math:$annuite:$nbjours}}
+	{{:assign amort_comp="min(%f, %f)"|math:$valeur_nette:$amort_comp}}
+{{/if}}
+
+{{* Traiter l'envoi du formulaire *}}
+{{#form on="proceed"}}
+	{{if $_POST.cession != null}}
+		{{if $_POST.montant_cession == null}}
+			{{:error message="Vous devez saisir le montant de la cession"}}
+		{{/if}}
+	{{/if}}
+
+	{{:redirect to="write_exit.html?immo_doc_id=%s&amort_amount=%s&year=%s&date_debut=%s&exit_date=%s&cession=%s"|args:$_GET.immo_doc_id:$_GET.amort_amount:$_GET.year:$_GET.date_debut:$_GET.exit_date:$_POST.montant_cession}}
+
+{{/form}}
+{{:admin_header title="Sortie du bilan" custom_css="./style.css" current="module_amortization"}}
+
+{{* barre de navigation *}}
+{{if ! $dialog}}
+	{{if $valeur_nette > 0}}
+		{{:assign type_immo="managed"}}
+	{{else}}
+		{{:assign type_immo="amortized"}}
+	{{/if}}
+	{{:include file="_nav.html" current="%s"|args:$type_immo subcurrent="balance_exit"}}
+{{/if}}
+
+{{:form_errors}}
+
+<h3>Sortir l'immobilisation « {{$label_immo}} » du bilan</h3>
+<form method="post" action="">
+
+	<div class="informations">
+		<legend>Données de l'imobilisation</legend>
+		<dl class="describe">
+			<dt>Montant</dt>
+			<dd id="montant_immo" class="money">{{$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+			<dt>Date d'acquisition</dt>
+			<dd >{{$date_achat|date_short}}</dd>
+			{{if $date_mes != null}}
+				<dt>Date de mise en service</dt>
+				<dd>{{$date_mes|date_short}}</dd>
+			{{/if}}
+			<dt>Durée de l'amortissement</dt>
+			<dd id="duree_amort" class="num">{{$info_immo.duration}} ans</dd>
+			<dt>Montant des amortissements</dt>
+			<dd id="montant_amort" class="money">{{$_GET.amort_amount|money_currency_html:false|raw}} <span class="help">(à la date de début de l'exercice)</span></dd>
+			<dt>Valeur nette résiduelle</dt>
+			<dd class="money">{{$valeur_nette|money_currency_html:false|raw}} <span class="help">(à la date de début de l'exercice)</span></dd>
+			<dt>Date de sortie</dt>
+			<dd>{{$_GET.exit_date|date:"d/m/Y"}}</dd>
+			{{if $amort_comp > 0}}
+				<dt>Amortissement complémentaire</dt>
+				<dd class="money">{{$amort_comp|money_currency_html:false|raw}} <span class="help">(jusqu'à la date de sortie)</span></dd>
+				<dt>Total des amortissements</dt>
+				<dd class="money">{{"%f+%f"|math:$_GET.amort_amount:$amort_comp|money_currency_html:false|raw}} <span class="help">(à la date de sortie)</span></dd>
+				<dt>Valeur nette résiduelle</dt>
+				<dd class="money">{{"%f-%f"|math:$valeur_nette:$amort_comp|money_currency_html:false|raw}} <span class="help">(à la date de sortie)</span></dd>
+			{{/if}}
+		</dl>
+	</div>
+	<fieldset>
+		<legend>Informations de sortie</legend>
+		<dl>
+			{{:input type="checkbox" value=1 name="cession" label="Cession" help="Cocher si la sortie est due à une cession" onclick="toggleHiddenAndFocus('f_cession_1', ['infos_cession'], 'f_montant_cession')"}}
+			<div id="infos_cession" class="hidden">
+				{{:input type="money" name="montant_cession" label="Montant de la cession" required=true}}
+			</div>
+		</dl>
+	</fieldset>
+
+	<p class="submit">
+		{{:button type="submit" name="proceed" label="Poursuivre" shape="right" class="main"}}
+	</p>
+
+</form>
+
+<script type="text/javascript">
+/*
+	- activer/désactiver les champs passés en paramètres
+	- donner le focus au champ de saisie du montant
+*/
+function toggleHiddenAndFocus(idcb, idfields, idinput) {
+	const cession = document.getElementById(idcb);
+	for (let id of idfields) {
+		const field = document.getElementById(id);
+		if (cession.checked) {
+			field.setAttribute("class", "");
+			document.getElementById(idinput).focus();
+		 }
+		 else {
+			 field.setAttribute("class","hidden")
+		 }
+	 }
+}
+
+(function () {
+	toggleHiddenAndFocus('f_cession_1', ['infos_cession'], 'f_montant_cession');
+})();
+</script>
+
+{{:admin_footer}}

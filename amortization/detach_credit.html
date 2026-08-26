@@ -1,0 +1,25 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Supprimer l'association entre une écriture d'immobilisation et
+	une écriture au crédit du compte d'immobilisation
+	@param immo_doc_id : id du doc associé à l'immo
+	@param credit_line_id : id de la ligne de crédit
+*}}
+
+{{:include file="_common_detach.html" immo_doc_id=$_GET.immo_doc_id line_id=$_GET.credit_line_id}}
+
+{{* supprimer le doc de liaison entre les lignes *}}
+{{#load type="credit_link"
+	where="$$.immo_doc_id = :immo_doc_id AND $$.credit_line_id = :credit_line_id"
+	:immo_doc_id=$_GET.immo_doc_id|intval
+	:credit_line_id = $_GET.credit_line_id|intval
+}}
+	{{:delete id=$id}}
+{{/load}}
+
+{{if $_GET.from == "exit"}}
+	{{:redirect force="exit_step1.html?immo_doc_id=%s&from=%s&ok=1&msg=detach_avoir"|args:$_GET.immo_doc_id:$_GET.from}}
+{{else}}
+	{{:redirect force="amortization.html?immo_doc_id=%s&ok=1&msg=detach_avoir"|args:$_GET.immo_doc_id}}
+{{/if}}
