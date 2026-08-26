@@ -1,0 +1,472 @@
+<header>
+<h1 id="module-immobilisations-et-amortissements-pour-paheko">Module
+immobilisations et amortissements pour Paheko</h1>
+</header>
+<h2 id="préambule">Préambule</h2>
+<p>Ce module permet de :</p>
+<ul>
+<li><a href="#créer-nouvelle_immobilisation">créer des
+immobilisations</a></li>
+<li><a href="#enregistrer-nouvel-amortissement">enregistrer</a> les
+écritures d’amortissement en fin d’exercice, calculés selon la méthode
+linéaire.</li>
+<li><a href="#sortir-immobilisation-bilan">sortir les immobilisations du
+bilan</a> à la fin de leur période d’utilisation.</li>
+</ul>
+<p>Il permet aussi de <a
+href="#transformer-immobilisations-en-cours">transformer des
+immobilisations</a> en cours de constitution en immobilisations
+amortissables.</p>
+<p>Les <a href="#immo-créées-hors-module">immobilisations créées avant
+la mise en service du module</a> sont détectées par le module mais il
+faut renseigner leurs paramètres (au minimum, la durée d’amortissement)
+pour que le module puisse les gérer.</p>
+<p>Les amortissements créés avant la mise en service du module sont
+détectées par le module mais il faut les <a
+href="#attacher-amortissement">attacher manuellement</a> aux
+immobilisations correspondantes.</p>
+<h2 id="créer-nouvelle_immobilisation">Créer une nouvelle
+immobilisation</h2>
+<p>Cliquer le bouton <em>Ajouter une immobilisation</em> qui est présent
+sur plusieurs onglets ; dans la fenêtre de saisie qui s’affiche il
+suffit de saisir les données de l’immobilisation puis de cliquer
+<em>Ajouter</em> :</p>
+<ul>
+<li>Exercice : sélectionner l’exercice dans lequel enregistrer
+l’écriture</li>
+<li>Date d’acquisition : doit être située dans l’exercice
+sélectionné</li>
+<li>Libellé</li>
+<li>Montant</li>
+<li>Compte de décaissement : compte bancaire, de caisse ou fournisseurs
+d’immobilisations (404) dans le cas où l’immobilisation est réglée
+ultérieurement</li>
+<li>Compte d’immobilisation</li>
+<li>Projet</li>
+<li>Durée d’amortissement en années</li>
+<li><em>Date de mise en service</em> : c’est cette date qui est prise en
+compte dans le calcul des amortissements. Il s’agit de la date à partir
+de laquelle l’immobilisation peut commencer à être utilisée ; à modifier
+uniquement si différente de la date d’acquisition.</li>
+</ul>
+<p>Après création, l’immobilisation est classée dans l’onglet
+<em>Amortissables</em>.</p>
+<h3 id="ristourne-avoir">Ristourne sur immobilisation</h3>
+<p>Lorsqu’on acquiert une immobilisation, il se peut que par la suite on
+obtienne une ristourne sous forme d’avoir ; cet avoir est enregistré
+dans Paheko par une écriture dont le montant est au crédit du compte
+d’immobilisation ; il est important d’attacher cette écriture d’avoir à
+l’écriture d’immobilisation. En effet, le montant amortissable est égal
+au montant d’acquisition de l’immobilisation moins la somme des
+avoirs.</p>
+<p>Tant qu’on n’a pas créé d’amortissement pour une immobilisation, il
+est possible d’attacher une écriture d’avoir à l’écriture
+d’immobilisation.</p>
+<p>Pour cela, cliquer le bouton <em>Détails</em> en face de
+l’immobilisation concernée puis <em>Attacher une écriture d’avoir</em> ;
+s’il existe des écritures au crédit du compte de l’immobilisation, on
+pourra en sélectionner une pour l’associer à l’écriture
+d’immobilisation ; son montant sera ensuite déduit du montant de
+l’immobilisaiton pour calculer le montant des amortissements.</p>
+<p>Si l’avoir a été reçu après la création du premier amortissement, il
+suffit de supprimer l’écriture d’amortissement et de procéder comme
+ci-dessus pour attacher l’avoir ; il faudra ensuite recréer
+l’amortissement.</p>
+<h2 id="enregistrer-nouvel-amortissement">Enregistrer un nouvel
+amortissement</h2>
+<p>Une écriture d’amortissement se fait à la date de clôture de
+l’exercice. Les amortissements sont calculés selon la méthode linéaire :
+montant à amortir divisé par durée d’amortissement en années.</p>
+<p>À partir de l’onglet <em>Amortissables</em>, cliquer le bouton
+<em>Détails</em> en face de l’immobilisation choisie.<br />
+Avant d’enregistrer un nouvel amortissement, il peut être utile de
+vérifier avec le bouton <em>Attacher un amortissement</em> s’il existe
+des écritures d’amortissement qui n’ont pas encore été attachées à
+l’immobilisation (cas des immobilisations et amortissements créés en
+dehors du module) ; voir ci-dessous la rubrique <a
+href="#attacher-amortissement">Attacher un amortissement à une
+immobilisation</a>.</p>
+<p>Cliquer le bouton <em>Enregistrer un amortissement</em> ; dans la
+fenêtre de saisie, les informations sont calculées et pré-remplies par
+le modules ; en général, il n’est pas nécessaire de les modifier :</p>
+<ul>
+<li>Exercice : c’est l’exercice dans lequel enregistrer l’écriture</li>
+<li>Date de l’écriture : doit être située dans l’exercice
+sélectionné</li>
+<li>Libellé</li>
+<li>Montant : calculé par le module ; il peut être modifié si
+nécessaire, par exemple pour l’arrondir</li>
+<li>Compte de débit : par défaut c’est le compte <em>6811 : Dotation aux
+amortissements des immobilisations</em></li>
+<li>Compte d’amortissement : par défaut c’est le compte qui correspond
+au compte de l’immobilisation, obtenu en intercalant le chiffre 8 après
+le premier chiffre du compte d’immobilisation.</li>
+</ul>
+<p>Après enregistrement, le nouvel amortissement apparaît dans la liste
+des amortissements de l’immobilisation.</p>
+<p>Lorsqu’une immobilisation est totalement amortie, elle est classée
+dans l’onglet <em>Amorties</em>.</p>
+<h2 id="immo-créées-hors-module">Incorporer une écriture
+d’immobilisation créée hors du module</h2>
+<p>Les immobilisations créées <em>avant</em> la mise en service du
+module sont regroupées dans l’onglet <em>À classer</em>. On distingue
+deux cas :</p>
+<ul>
+<li>immobilisation créée <a href="#immo-créée-dans-paheko">dans
+Paheko</a></li>
+<li>immobilisation créée dans une <a
+href="#immo-créée-hors-paheko">comptabilité antérieure à Paheko</a></li>
+</ul>
+<h3 id="immo-créée-dans-paheko">Immobilisations créées dans Paheko</h3>
+<p>Cliquer le bouton <em>Paramètres</em> en face de l’immobilisation à
+prendre en charge et choisir comment sera considérée
+l’immobilisation :</p>
+<ul>
+<li><a href="#immo-à-amortir">Immobilisation à amortir</a></li>
+<li><a href="#immo-sortie-bilan">Immobilisation sortie du bilan</a></li>
+<li>Immobilisation à ignorer</li>
+</ul>
+<h4 id="immo-à-amortir">Immobilisation à amortir</h4>
+<p>Le seul paramètre obligatoire est la durée d’amortissement en
+années ; les autres paramètres sont pré-remplis à partir de l’écriture
+d’immobilisation ; dans la majorité des cas, il n’est pas nécessaire de
+les modifier.</p>
+<ul>
+<li>Date d’acquisition : (facultatif) à renseigner uniquement si elle
+diffère de la date de l’écriture d’immobilisation</li>
+<li>Libellé : (facultatif) à renseigner uniquement s’il diffère du
+libellé de l’écriture d’immobilisation</li>
+<li>Montant de l’immobilisation : (obligatoire) pré-rempli avec le
+montant de l’écriture d’immobilisation</li>
+<li>Durée d’amortissement : (obligatoire) durée en années</li>
+<li>Date de mise en service : (facultatif) voir <a
+href="#créer-nouvelle_immobilisation">Créer une nouvelle
+immobilisation</a>.</li>
+</ul>
+<p>Après enregistrement, l’immobilisation est classée dans l’onglet
+<em>Amortissables</em> ; on peut vérifier et éventuellement modifier ses
+paramètres grâce au bouton <em>Détails</em></p>
+<p>Si des amortissements ont été enregistrés pour cette immobilisation
+avant la mise en service du module, on pourra les attacher à
+l’immobilisation : voir ci-dessous la rubrique <a
+href="#attacher-amortissement">Attacher un amortissement à une
+immobilisation</a></p>
+<h4 id="immo-sortie-bilan">Immobilisation sortie du bilan</h4>
+<p>Pour une immobilisation créée et sortie du bilan avant la mise en
+service du module, un certain nombre d’écritures sont enregistrées dans
+Paheko :</p>
+<ul>
+<li>écritures d’avoir (éventuellement)</li>
+<li>écritures d’amortissement :
+<ul>
+<li>amortissement annuel : 0, 1 ou plusieurs</li>
+<li>amortissement complémentaire à la date de sortie du bilan</li>
+<li>amortissement exceptionnel ou écriture de cession, selon le cas</li>
+</ul></li>
+<li>écriture de sortie du bilan</li>
+</ul>
+<p>Le module donne la possibilité de les attacher à l’immobilisation en
+plusieurs étapes :</p>
+<ol type="1">
+<li>Attacher une ou plusieurs écritures d’avoir à l’immobilisation, le
+cas échéant</li>
+<li>Attacher une ou plusieurs écritures d’amortissement à
+l’immobilisation</li>
+<li>Attacher une écriture de cession à l’immobilisation, le cas
+échéant</li>
+<li>Attacher une écriture de sortie du bilan à l’immobilisation</li>
+</ol>
+<p>Une fois cette étape validée, l’immobilisation sera classée dans
+l’onglet <em>Sorties du bilan</em>.</p>
+<h3 id="immo-créée-hors-paheko">Immobilisations créées dans une
+comptabilité antérieure à Paheko</h3>
+<p>Les immobilisations et amortissements créés dans une comptabilité
+antérieure à Paheko peuvent aussi être pris en charge par le module ;
+ces immobilisations et amortissements figurent <em>dans le bilan du
+dernier exercice de l’ancienne comptabilité</em> et doivent
+<em>obligatoirement se retrouver dans la balance d’ouverture du premier
+exercice créé dans Paheko</em> ; cette balance comporte, pour chaque
+compte d’immobilisation, le <em>montant total</em> des immobilisations
+de ce compte. Il va donc être nécessaire de répartir le montant d’un
+compte entre les différentes immobilisations dont il est composé. Il en
+est de même pour les amortissements.</p>
+<p>Il faut donc obligatoirement disposer des informations ci-dessous
+pour chaque immobilisation à incorporer :</p>
+<ul>
+<li>montant amortissable de l’immobilisation, c’est-à-dire la différence
+entre le montant d’acquisition et le montant des éventuelles ristournes
+sous forme d’écritures d’avoir au crédit du compte d’immobilisation</li>
+<li>montant total des amortissements</li>
+<li>durée d’amortissement</li>
+<li>date d’acquisition de l’immobilisation<br />
+ou</li>
+<li>date de mise en service de l’immobilisation ; voir <a
+href="#créer-nouvelle_immobilisation">Créer une nouvelle
+immobilisation</a>.</li>
+</ul>
+<p><strong>Remarque :</strong> les immobilisations créées et <em>sorties
+du bilan</em> dans une comptabilité antérieure à Paheko ne figurent plus
+au bilan (!) et n’apparaissent donc pas dans la balance d’ouverture du
+premier exercice créé dans Paheko ; on n’a donc pas à s’en
+(pré)occuper.</p>
+<h4 id="exemple">Exemple</h4>
+<p>L’exemple ci-dessous montre un extrait de la balance d’ouverture du
+premier exercice créé dans Paheko et reprend une partie du bilan du
+dernier exercice d’une comptabilité antérieure à Paheko.</p>
+<figure>
+<img src="./doc/exemple_balance-initiale.png"
+title="Exemple de balance d&#39;ouverture"
+alt="Extrait de balance d’ouverture initiale dans Paheko" />
+<figcaption aria-hidden="true">Extrait de balance d’ouverture initiale
+dans Paheko</figcaption>
+</figure>
+<ul>
+<li>la ligne du compte <strong>2181</strong> correspond à deux
+immobilisations de valeurs respectives <strong>5 500€</strong> et
+<strong>13 590,33€</strong> pour un total de
+<strong>19 090,33€</strong></li>
+<li>la ligne du compte <strong>2185</strong> correspond à trois
+immobilisations de valeurs respectives <strong>16 500€</strong>,
+<strong>8 685€</strong> et <strong>3 500€</strong> pour un total de
+<strong>28 695€</strong></li>
+<li>la ligne du compte <strong>28181</strong> correspond à la somme des
+amortissements des deux immobilisations du compte
+<strong>2181</strong></li>
+<li>la ligne du compte <strong>28185</strong> correspond à la somme des
+amortissements des trois immobilisations du compte
+<strong>2185</strong></li>
+</ul>
+<p>Dans l’onglet <em>À classer</em> on trouve les immobilisations de la
+balance d’ouverture :</p>
+<figure>
+<img src="./doc/exemple_immobilisations_a_classer-1.png"
+title="Immobilisations de la balance initiale à incorporer dans Paheko"
+alt="Immobilisations de la balance initiale à incorporer dans Paheko" />
+<figcaption aria-hidden="true">Immobilisations de la balance initiale à
+incorporer dans Paheko</figcaption>
+</figure>
+<ul>
+<li>la colonne <em>Date</em> donne la date de la balance
+d’ouverture</li>
+<li>la colonne <em>Montant</em> donne le total des immobilisations de
+chaque compte</li>
+<li>la colonne <em>Affecté</em> indique quel montant a déjà été attribué
+à une ou plusieurs immobilisation(s)</li>
+<li>la colonne <em>Reste</em> indique quel montant n’a pas encore été
+attribué</li>
+</ul>
+<p>Pour saisir les paramètres de la première immobilisation du compte
+2181, cliquer le bouton <em>Paramètres</em>, puis cocher le choix
+« Immobilisation à amortir ».</p>
+<p>Les paramètres sont pré-remplis à partir des données de l’écriture de
+la balance d’ouverture et seront donc à modifier en fonction des données
+de l’immobilisation concernée.</p>
+<figure>
+<img src="./doc/exemple_parametres_immobilisation-1.png"
+title="Paramètres a renseigner" alt="Paramètres a renseigner" />
+<figcaption aria-hidden="true">Paramètres a renseigner</figcaption>
+</figure>
+<ul>
+<li>Date d’acquisition de l’immobilisation</li>
+<li>Libellé de l’immobilisation</li>
+<li>Montant de l’immobilisation : (obligatoire) <em>à modifier
+obligatoirement</em> en indiquant le <em>montant réel de
+l’immobilisation</em>.<br />
+Si une immobilisation a fait l’objet d’un avoir, il faut déduire ce
+montant de celui de l’immobilisation : le montant à indiquer est le
+<em>montant à amortir</em>.</li>
+<li>Durée d’amortissement : (obligatoire) durée en années</li>
+<li>Date de mise en service : (facultatif) ; voir <a
+href="#créer-nouvelle_immobilisation">Créer une nouvelle
+immobilisation</a>.</li>
+</ul>
+<p>Après validation, cette immobilisation se retrouve classée dans les
+immobilisations amortissables :</p>
+<figure>
+<img src="./doc/exemple_immobilisations_amortissables-1.png"
+title="Immobilisations amortissables]"
+alt="Immobilisations amortissables" />
+<figcaption aria-hidden="true">Immobilisations
+amortissables</figcaption>
+</figure>
+<p>et dans l’onglet <em>À classer</em> on trouve le montant affecté à la
+première immobilisation.</p>
+<figure>
+<img src="./doc/exemple_immobilisations_a_classer-2.png"
+title="Immobilisations à incorporer dans Paheko"
+alt="Immobilisations à incorporer dans Paheko" />
+<figcaption aria-hidden="true">Immobilisations à incorporer dans
+Paheko</figcaption>
+</figure>
+<p>On fait de même pour la deuxième immobilisation du compte 2181 puis
+pour les trois immobilisations du compte 2185 et on obtient :</p>
+<figure>
+<img src="./doc/exemple_immobilisations_amortissables-2.png"
+title="Immobilisations amortissables"
+alt="Immobilisations amortissables" />
+<figcaption aria-hidden="true">Immobilisations
+amortissables</figcaption>
+</figure>
+<p>et l’onglet <em>À classer</em> est vide.</p>
+<p>Si des amortissements ont été enregistrés pour une ou plusieurs
+immobilisations avant la mise en service du module, on pourra les
+attacher à leur immobilisation : voir ci-dessous la rubrique <a
+href="#attacher-amortissement">Attacher un amortissement à une
+immobilisation</a>.</p>
+<h2 id="attacher-amortissement">Attacher un amortissement à une
+immobilisation</h2>
+<p>Si des écritures d’amortissement ont été saisies avec Paheko
+<em>avant</em> la mise en service du module <em>Amortissements</em>, on
+peut les attacher à leur immobilisation :</p>
+<ul>
+<li>cliquer le bouton <em>Détails</em> en face de l’immobilisation
+concernée ; si la mention</li>
+</ul>
+<blockquote>
+<p>« Il y a des écritures d’amortissement qui ne sont pas attachées à
+une immobilisation ! Utilisez le bouton « Attacher un amortissement »
+pour les afficher ; vous pourrez choisir d’en attacher certaines à cette
+immobilisation. »</p>
+</blockquote>
+<p>est présente, c’est qu’il existe des écritures d’amortissement
+saisies avec Paheko <em>avant</em> la mise en service du module.</p>
+<h3 id="cas-des-amortissements-créés-avec-paheko">Cas des amortissements
+créés avec Paheko</h3>
+<ul>
+<li>cliquer le bouton <em>Attacher un amortissement</em> pour en
+afficher la liste</li>
+<li>le cas échéant, cliquer <em>Attacher</em> en face de l’écriture à
+attacher.</li>
+</ul>
+<p>Le montant affiché est celui de l’écriture d’amortissement ; il
+suffit de valider.</p>
+<h3 id="cas-des-amortissements-créés-hors-paheko">Cas des amortissements
+créés hors Paheko</h3>
+<p><em>Rappel</em> : ces amortissements sont présents dans la balance
+d’ouverture du premier exercice créé dans Paheko ; cette balance inclut,
+pour chaque compte d’amortissement, le <em>montant total des
+amortissements</em> de ce compte à la date de fin du dernier exercice de
+la comptabilité antérieure à Paheko ; ce montant devra donc <em>être
+réparti entre les différentes immobilisations concernées</em>.</p>
+<p><strong>Exemple :</strong> le montant qui figure dans la balance
+d’ouverture pour le compte 28185 est de 7058,06€ réparti ainsi :</p>
+<ul>
+<li>montant des amortissements du Saxophone : 1016,43€</li>
+<li>montant des amortissements du Piano numérique : 4102,39€</li>
+<li>montant des amortissements de la Batterie : 1939,24€</li>
+</ul>
+<p>Voici la page des détails du Saxophone avant l’attachement des
+amortissements de la balance d’ouverture :</p>
+<figure>
+<img src="./doc/exemple_amortissement-saxo.png"
+title="Page de détails du saxophone"
+alt="Page de détails du saxophone" />
+<figcaption aria-hidden="true">Page de détails du saxophone</figcaption>
+</figure>
+<p>Cliquer le bouton <em>Attacher un amortissement</em> ; la liste des
+amortissements du compte 28185 s’affiche :</p>
+<figure>
+<img src="./doc/exemple_amortissements_a_repartir.png"
+title="Amortissements du compte 28185"
+alt="Amortissements du compte 28185" />
+<figcaption aria-hidden="true">Amortissements du compte
+28185</figcaption>
+</figure>
+<p>Sur la page qui s’ouvre quand on clique <em>Attacher</em>, il faut
+modifier le montant affiché (7058,06) en indiquant le montant des
+amortissements de l’immobilisation (1016,43).</p>
+<figure>
+<img src="./doc/exemple_saisie-amortissement-saxo.png"
+title="Saisie du montant de l&#39;amortissement"
+alt="Saisie du montant de l’amortissement" />
+<figcaption aria-hidden="true">Saisie du montant de
+l’amortissement</figcaption>
+</figure>
+<p>De retour sur la page des amortissements, on constate la présence de
+l’écriture d’amortissement qu’on vient d’attacher ; on peut détacher une
+écriture si on s’est trompé.</p>
+<figure>
+<img src="./doc/exemple_amortissement-saxo-2.png"
+title="Page de détails du saxophone"
+alt="Page de détails du saxophone" />
+<figcaption aria-hidden="true">Page de détails du saxophone</figcaption>
+</figure>
+<p>On peut faire de même pour les amortissements des autres
+immobilisations du compte 2185 (Batterie et Piano) puis pour celles du
+compte 2181 et l’on obtient :</p>
+<figure>
+<img src="./doc/exemple_immobilisations_amortissables-3.png"
+title="Immobilisations et amortissements après incorporation"
+alt="Immobilisations et amortissements après incorporation" />
+<figcaption aria-hidden="true">Immobilisations et amortissements après
+incorporation</figcaption>
+</figure>
+<p>Les immobilisations et amortissements de la balance d’ouverture
+initiale ont été incorporés en totalité dans le module.</p>
+<p>Par la suite, pour créer de nouveaux amortissements, il suffit de
+procéder comme <a href="#enregistrer-nouvel-amortissement">pour une
+immobilisation standard</a>.</p>
+<h2 id="sortir-immobilisation-bilan">Sortir une immobilisation du
+bilan</h2>
+<p>Tant qu’une immobilisation est utilisée dans l’association, elle
+reste au bilan, même si elle est totalement amortie.</p>
+<p>On doit la sortir du bilan quand elle n’est plus utilisée (vétusté,
+hors service) ou quand elle est donnée ou vendue (dans ce cas, on parle
+de cession).</p>
+<p>Cliquer le bouton <em>Détails</em> en face de l’immobilisation à
+sortir du bilan, puis cliquer <em>Sortir du bilan</em>.</p>
+<ul>
+<li>dans la première étape, il faut indiquer l’exercice et la date de
+sortie du bilan</li>
+<li>dans la deuxième étape, il faut indiquer si la sortie de bilan
+s’accompagne d’une cession (vente) et dans ce cas, indiquer le montant
+de la cession</li>
+<li>la troisième étape indique l’ensemble des écritures avec :
+<ul>
+<li>un amortissement complémentaire pour l’exercice à la date de sortie
+si l’immobilisation n’est pas déjà totalement amortie</li>
+<li>un amortissement exceptionnel s’il n’y a pas de cession et si
+l’immobilisation n’est pas déjà totalement amortie</li>
+<li>une écriture de cession, le cas échéant ; cette écriture est une
+créance qu’il faudra solder lors de l’enregistrement du règlement de la
+cession</li>
+<li>l’écriture de sortie du bilan</li>
+</ul></li>
+</ul>
+<p>Après validation, l’immobilisation est classée dans l’onglet
+<em>Sorties du bilan</em>.<br />
+En cas de besoin, il est possible de parcourir les différentes étapes
+pour vérifier les attachements et éventuellement en modifier certains en
+cliquant le bouton <em>Modifier</em>.</p>
+<h2 id="transformer-immobilisations-en-cours">Transformer des
+« Immobilisations en cours » en « Immobilisation amortissable »</h2>
+<p>L’onglet <em>En cours</em> regroupe des immobilisations en cours de
+constitution (classe 23 et sous-comptes) ; ces immobilisations ne sont
+pas amortissables, mais sont destinées à être groupées pour former une
+nouvelle immobilisation qui pourra être amortie.</p>
+<p>Pour ce faire, cocher les lignes à grouper puis cliquer
+<em>Transférer</em>.</p>
+<figure>
+<img src="./doc/exemple_immobilisations_en-cours-1.png"
+title="Immobilisations en cours de constitutions"
+alt="Immobilisations en cours de constitutions" />
+<figcaption aria-hidden="true">Immobilisations en cours de
+constitutions</figcaption>
+</figure>
+<p>Sur la page qui s’ouvre, saisir les données de la nouvelle
+immobilisation :</p>
+<ul>
+<li>Exercice</li>
+<li>Date de mise en service ; voir <a
+href="#créer-nouvelle_immobilisation">Créer une nouvelle
+immobilisation</a>.</li>
+<li>Libellé</li>
+<li>Compte dans lequel enregistrer l’écriture d’immobilisation</li>
+<li>Durée d’amortissement</li>
+</ul>
+<p>Après validation, la nouvelle immobilisation sera classée dans
+l’onglet <em>Amortissables</em>.</p>
+<p>Si on dé-coche la case <em>Amortir…</em>, l’immobilisation ne sera
+pas amortie et sera marquée <em>ignorée</em>. On pourra la retrouver
+dans l’onglet <em>À classer</em> en cochant la case <em>Afficher les
+écritures ignorées</em>.</p>

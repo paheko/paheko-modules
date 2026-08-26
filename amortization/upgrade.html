@@ -1,0 +1,42 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	mise à niveau des documents selon version
+*}}
+
+{{* version 0.31 *}}
+{{:assign tag="0.31"}}
+
+{{:include file="_compare_version.tpl" nv1=$module_version nv2=$tag keep="comp"}}
+{{:assign module_comp=$comp}}
+{{:include file="_compare_version.tpl" nv1=$module.config.version nv2=$tag keep="comp"}}
+{{:assign config_comp=$comp}}
+
+{{if $module_comp >= 0 && $config_comp < 0}}
+{{* $module_version >= '0.31' && $module.config.version < '0.31' *}}
+
+	{{:include file="_upgrade_to031.tpl"}}
+	<p class="block info">Mise à jour vers version {{$tag}} terminée</p>
+{{/if}}
+
+{{* version 0.33 *}}
+{{:assign tag="0.33"}}
+
+{{:include file="_compare_version.tpl" nv1=$module_version nv2=$tag keep="comp"}}
+{{:assign module_comp=$comp}}
+{{:include file="_compare_version.tpl" nv1=$module.config.version nv2=$tag keep="comp"}}
+{{:assign config_comp=$comp}}
+
+{{if $module_comp >= 0 && $config_comp < 0}}
+{{* $module_version >= '0.33' && $module.config.version < '0.33' *}}
+
+	{{:include file="_upgrade_to033.tpl"}}
+	<p class="block info">Mise à jour vers version {{$tag}} terminée</p>
+{{/if}}
+
+{{* enregistrer le nouveau numéro de version dans la config du module *}}
+{{:include file="_compare_version.tpl" nv1=$module_version nv2=$module.config.version keep="comp"}}
+{{if $comp > 0}}
+	{{:save key="config" version=$module_version}}
+	<p class="block alert">Nouvelle version enregistrée : {{$module_version}}</p>
+{{/if}}

@@ -1,0 +1,118 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Lister les écritures de cession du compte de l'immobilisation
+	paramètre et proposer de les attacher à l'immo paramètre
+	@param immo_doc_id : document associé à l'immo
+*}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+{{:assign date_debut=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label ===false }}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{:assign total_cession=0}}
+{{#select
+	line.id as line_id,
+	line.credit as amount,
+	line.label as line_label,
+	trans.id as trans_id,
+	trans.date as date,
+	trans.label as trans_label,
+	trans.id_year as year,
+	account.id as account_id,
+	account.code as account_code,
+	account.label as account_label
+	FROM acc_transactions_lines AS line
+	INNER JOIN acc_accounts AS account ON line.id_account = account.id
+	INNER JOIN acc_transactions AS trans ON line.id_transaction = trans.id
+	WHERE account.code LIKE :code_cession_new OR account.code LIKE :code_cession_old
+	;
+	:code_cession_new = "757%"
+	:code_cession_old = "775%"
+	assign="line"
+}}
+	{{#select
+		CASE WHEN links.id_related = :trans_id
+			THEN links.id_transaction
+			ELSE links.id_related
+		END as linked_id
+		FROM acc_transactions_links as links
+		WHERE links.id_transaction = :trans_id OR links.id_related = :trans_id
+		;
+		:trans_id = $line.trans_id
+	}}
+		{{if $linked_id == $ligne_immo.trans_id}}
+			{{:assign total_cession="%d+%d"|math:$total_cession:$line.amount}}
+			{{:assign var="line.linked_id" value=$linked_id}}
+			{{:assign var="linked_cessions." value=$line}}
+		{{/if}}
+	{{else}}
+		{{:assign var="free_cessions." value=$line}}
+	{{/select}}
+{{/select}}
+
+{{:admin_header title="Écritures de cession du compte d'immobilisation" custom_css="./style.css" current="module_amortization"}}
+
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd><span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.trans_id}}</a></span> {{$label_immo}}</dd>
+		<dt>Montant</dt>
+		<dd class="money strong">{{"%f"|math:$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+		<dt>Date de l'immobilisation</dt>
+		<dd>{{$date_debut|date_short}}</dd>
+	</dl>
+</div>
+
+{{if $free_cessions}}
+	<table class="list">
+		<thead>
+			<tr>
+				<td class="num">N°</td>
+				<td>Date</td>
+				<td>Libellé</td>
+				<td class="nombre">Montant</td>
+				<td>N° compte</td>
+				<td>Compte</td>
+				<td class="actions"></td>
+			</tr>
+		</thead>
+		<tbody>
+
+			{{#foreach from=$free_cessions item="line"}}
+				{{:assign cession_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.trans_id}}
+				{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.year}}
+				<tr>
+					<td class="num"><a href="{{$cession_url}}">#{{$line.trans_id}}</a></td>
+					<td>{{$line.date|date_short}}</td>
+					<td>
+						{{if $line.line_label != null}}
+							{{$line.line_label}}
+							{{if $line.trans_label != $line.line_label}}
+								— {{$line.trans_label}}
+							{{/if}}
+						{{else}}
+							{{$line.trans_label}}
+						{{/if}}
+					</td>
+					<td class="money">{{"%f"|math:$line.amount|money_html:false|raw}}</td>
+					<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
+					<td>{{$line.account_label}}</td>
+					<td class="actions">
+						{{:linkbutton label="Attacher" href="attach_cession.html?immo_doc_id=%s&cession_line_id=%s&from=exit"|args:$_GET.immo_doc_id:$line.line_id shape="plus"}}
+					</td>
+				</tr>
+			{{/foreach}}
+		</tbody>
+			<p class="help">Sélectionner une écriture de cession pour l'associer à l'immobilisation</p>
+	</table>
+{{/if}}

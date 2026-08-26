@@ -1,0 +1,108 @@
+{{* -*- brindille -*- *}}
+
+{{*
+	Lister les écritures de sortie de bilan du compte de l'immobilisation
+	paramètre et proposer de les attacher à l'immo paramètre
+	@param immo_doc_id : document associé à l'immo
+*}}
+{{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
+{{if $message != null}}
+	{{:error message=$message}}
+{{/if}}
+{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$ligne_immo.trans_id}}
+{{:assign date_debut=$info_immo.date_mes|or:$info_immo.date_achat|or:$ligne_immo.date_achat}}
+{{:assign label_immo=$info_immo.label|or:$ligne_immo.trans_label}}
+{{if $label_immo|strpos:$ligne_immo.line_label ===false }}
+	{{:assign label_immo=$label_immo|cat:" — "|cat:$ligne_immo.line_label}}
+{{/if}}
+{{if $info_immo.amount != null}}
+	{{:assign var="ligne_immo.amount" value=$info_immo.amount}}
+{{/if}}
+
+{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+{{:include file="_get_credit_lines.html" immo_doc_id=$_GET.immo_doc_id keep="linked_immos, total_credits"}}
+{{:assign solde="%d-%d"|math:$ligne_immo.amount:$total_credits}}
+
+{{#select
+	trans.id as trans_id,
+	trans.label as trans_label,
+	trans.date as date,
+	trans.id_year as year,
+	line.id as credit_line_id,
+	line.label as line_label,
+	line.credit as amount,
+	acc.id as account_id,
+	acc.code as account_code,
+	acc.label as account_label
+	FROM acc_transactions AS trans
+	INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+	INNER JOIN acc_accounts AS acc ON line.id_account = acc.id
+	LEFT JOIN module_data_amortization AS mda ON json_extract(mda.document, '$.amort_line_id') = line.id
+	WHERE
+	acc.code = :acc_code
+	AND line.credit > 0
+	AND credit_line_id NOT IN (
+		SELECT json_extract(credit_link.document, '$.credit_line_id') AS line_id FROM !table as credit_link
+		WHERE json_extract(credit_link.document, '$.type') == "credit_link"
+		UNION
+		SELECT json_extract(exit_link.document, '$.exit_line_id') AS line_id FROM !table as exit_link
+		WHERE json_extract(exit_link.document, '$.type') == "exit_link"
+	)
+	;
+	:acc_code=$ligne_immo.account_code
+	!table =$module.table
+	assign="credit_line"
+	}}
+	{{if $credit_line.amount == $solde}}
+		{{:assign var="exit_lines." value=$credit_line}}
+	{{/if}}
+{{/select}}
+
+{{:admin_header title="Écritures de cession du compte d'immobilisation" custom_css="./style.css" current="module_amortization"}}
+
+<div class="informations">
+	<dl class="describe">
+		<dt>Immobilisation</dt>
+		<dd><span class="num"><a href="{{$trans_url}}">#{{$ligne_immo.trans_id}}</a></span> {{$label_immo}}</dd>
+		<dt>Montant</dt>
+		<dd class="money strong">{{"%f"|math:$ligne_immo.amount|money_currency_html:false|raw}}</dd>
+		<dt>Date de l'immobilisation</dt>
+		<dd>{{$date_debut|date_short}}</dd>
+	</dl>
+</div>
+
+{{if $exit_lines}}
+	<table class="list">
+		<thead>
+			<tr>
+				<td class="num">N°</td>
+				<td>Date</td>
+				<td>Libellé</td>
+				<td class="nombre">Montant</td>
+				<td>N° compte</td>
+				<td>Compte</td>
+				<td class="actions"></td>
+			</tr>
+		</thead>
+		<tbody>
+				{{#foreach from=$exit_lines item="line"}}
+					{{:assign exit_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.trans_id}}
+					{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.year}}
+					<tr>
+						<td class="num"><a href="{{$exit_url}}">#{{$line.trans_id}}</a></td>
+						<td>{{$line.date|date_short}}</td>
+						<td>{{$line.trans_label}}
+							{{if $line.line_label != null && $line.line_label != $line.trans_label}} — {{$line.line_label}}{{/if}}
+						</td>
+						<td class="money">{{"%f"|math:$line.amount|money_html:false|raw}}</td>
+						<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
+						<td>{{$line.account_label}}</td>
+						<td class="actions">
+							{{:linkbutton label="Attacher" href="attach_exit.html?immo_doc_id=%s&exit_line_id=%s&from=exit"|args:$_GET.immo_doc_id:$line.credit_line_id shape="plus"}}
+						</td>
+					</tr>
+				{{/foreach}}
+		</tbody>
+			<p class="help">Sélectionner une écriture de sortie de bilan pour l'associer à l'immobilisation</p>
+	</table>
+{{/if}}
