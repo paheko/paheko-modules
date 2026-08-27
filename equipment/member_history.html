@@ -7,7 +7,9 @@
 	- id : id du membre
 *}}
 
-{{#restrict}}{{/restrict}}
+{{if $_GET.id|intval !== $logged_user.id}}
+  {{#restrict section="users" level="read" block=true}}{{/restrict}}
+{{/if}}
 
 {{:admin_header title="Historique membre" custom_css="./style.css" current="module_equipment"}}
 
