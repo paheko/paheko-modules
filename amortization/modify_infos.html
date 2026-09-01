@@ -167,3 +167,11 @@
 </form>
 
 {{:admin_footer}}
+
+<script type="text/javascript">
+(function () {
+	document.getElementById('f_date_achat').addEventListener("change", (e) => {
+		document.getElementById('f_date_mes').value = document.getElementById('f_date_achat').value;
+	});
+})();
+</script>

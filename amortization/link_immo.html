@@ -4,6 +4,8 @@
 	Lister les écritures au crédit du compte de l'immobilisation
 	paramètre et proposer de les attacher à l'immo paramètre
 	@param immo_doc_id : document associé à l'immo
+	@param filter : si vrai ne montrer que les écritures du compte de l'immobilisation (et sous-comptes)
+		dans le cas contraire, montrer les écritures du compte d'immo à deux chiffres (et sous-comptes)
  *}}
 
 {{:include file="_get_immo_data.html" immo_doc_id=$_GET.immo_doc_id|intval keep="info_immo, ligne_immo, message"}}
@@ -54,7 +56,7 @@
 	INNER JOIN acc_accounts AS account ON account.id = line.id_account
 	INNER JOIN acc_years AS y ON y.id = trans.id_year
 	WHERE account.code LIKE :account_code AND credit > 0
-	AND trans.date >= :date_immo
+	AND trans.date > :date_immo
 	AND credit_line_id NOT IN (
 		SELECT json_extract(link.document, '$.credit_line_id') AS credit_line_id FROM !table as link
 		WHERE json_extract(link.document, '$.type') == "credit_link"
@@ -84,20 +86,22 @@
 }}
 {{/if}}
 
-<nav class="tabs">
-	<ul>
-		<li {{if $_GET.filter}}class="current"{{/if}}>
-			<a href="link_immo.html?immo_doc_id={{$_GET.immo_doc_id}}{{if $dialog}}&_dialog{{/if}}&filter=true&from={{$_GET.from}}">
-				Compte {{$ligne_immo.account_code}} et sous-comptes
-			</a>
-		</li>
-		<li {{if ! $_GET.filter}}class="current"{{/if}}>
-			<a href="link_immo.html?immo_doc_id={{$_GET.immo_doc_id}}{{if $dialog}}&_dialog{{/if}}&from={{$_GET.from}}">
-				Compte {{$ligne_immo.account_code|substr:0:2}} et sous-comptes
-			</a>
-		</li>
-	</ul>
-</nav>
+{{if $ligne_immo.account_code|substr:0:2 != $ligne_immo.account_code}}
+	<nav class="tabs">
+		<ul>
+			<li {{if $_GET.filter}}class="current"{{/if}}>
+				<a href="link_immo.html?immo_doc_id={{$_GET.immo_doc_id}}{{if $dialog}}&_dialog{{/if}}&filter=true&from={{$_GET.from}}">
+					Compte {{$ligne_immo.account_code}} et sous-comptes
+				</a>
+			</li>
+				<li {{if ! $_GET.filter}}class="current"{{/if}}>
+					<a href="link_immo.html?immo_doc_id={{$_GET.immo_doc_id}}{{if $dialog}}&_dialog{{/if}}&from={{$_GET.from}}">
+						Compte {{$ligne_immo.account_code|substr:0:2}} et sous-comptes
+					</a>
+				</li>
+		</ul>
+	</nav>
+{{/if}}
 
 <section class="immobilisation">
 	<div class="informations">
@@ -146,7 +150,11 @@
 			<p class="help">Sélectionner une écriture d'avoir ou autre réduction du montant de l'acquisition pour l'associer à l'immobilisation</p>
 		</table>
 	{{else}}
-		<p class="block alert">Aucune écriture au crédit du compte « {{$ligne_immo.account_code}} »</p>
+		{{if $_GET.filter}}
+			<p class="block alert">Aucune écriture au crédit du compte {{$ligne_immo.account_code}} et sous-comptes</p>
+		{{else}}
+			<p class="block alert">Aucune écriture au crédit du compte {{$ligne_immo.account_code|substr:0:2}} et sous-comptes</p>
+		{{/if}}
 	{{/if}}
 </section>
 {{:form_errors}}

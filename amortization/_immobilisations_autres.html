@@ -32,7 +32,7 @@
 {{if $module.table != null}}
 	{{:assign columns="$$.status as status, SUM($$.amount) as amount,"}}
 	{{:assign table_join="LEFT JOIN !table AS info ON $$.line = line.id"}}
-	{{:assign doc_condition="($$.status IS NULL OR $$.status == 'managed' OR $$.status == 'ignored')"}}
+	{{:assign doc_condition="($$.status IS NULL OR $$.status == 'managed' OR $$.status == 'ignored' OR $$.status == 'amortized')"}}
 {{else}}
 	{{:assign columns=""}}
 	{{:assign table_join=""}}
@@ -102,11 +102,11 @@
 			{{:continue}}
 		{{/if}}
 	{{/if}}
-	{{if $status == null}}
+	{{if $immo_line.status == null}}
 		{{:assign nb_null="%d+1"|math:$nb_null}}
-	{{elseif $status == 'managed'}}
+	{{elseif $immo_line.status == 'managed'}}
 		{{:assign nb_managed="%d+1"|math:$nb_managed}}
-	{{elseif $status == 'ignored'}}
+	{{elseif $immo_line.status == 'ignored'}}
 		{{:assign nb_ignored="%d+1"|math:$nb_ignored}}
 	{{else}}
 		{{:assign nb_other="%d+1"|math:$nb_other}}
