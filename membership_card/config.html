@@ -28,7 +28,7 @@
 <fieldset>
 	<legend>Configuration du modèle de carte de membre</legend>
 	<dl>
-		{{:input type="textarea" cols="30" rows="4" name="header" required=false source=$module.config label="En-tête, à afficher en haut de la carte" default="**%s**\n%s"|args:$config.org_name:$config.org_address}}
+		{{:input type="textarea" cols="30" rows="4" name="header" required=false source=$module.config label="En-tête, à afficher en haut de la carte" default="**%s**\n%s"|args:$config.org_name:$config.org_full_address}}
 		<dd class="help">Syntaxe Markdown acceptée.
 			{{:linkbutton shape="help" label="Aide de la syntaxe Markdown" href="!static/doc/markdown.html"}}
 		</dd>

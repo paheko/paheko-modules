@@ -126,7 +126,7 @@ iframe {
 		{{#module name="bookings"}}
 			{{:input type="checkbox" name="show_bookings" value=1 label="Accès aux réservations" source=$module.config default=1}}
 		{{/module}}
-		{{if $config.org_address}}
+		{{if $config.org_full_address}}
 			{{:input type="checkbox" name="show_address" value=1 label="Adresse physique" source=$module.config default=1}}
 			{{:input type="checkbox" name="show_marker" value=1 label="Lien pour ouvrir l'adresse sur une carte" source=$module.config default=1}}
 		{{/if}}

@@ -18,7 +18,7 @@
 				{{$config.org_infos|escape|nl2br}}
 			</h2>
 		{{/if}}
-		<h3>{{$config.org_address|replace:"\n":" — "}}</h3>
+		<h3>{{$config.org_full_address|escape|replace:"\n":" — "}}</h3>
 		<h4>
 			{{if $config.org_phone}}<a href="tel:{{$config.org_phone}}">{{$config.org_phone}}</a>{{/if}}
 			{{if $config.org_email}}<a href="mailto:{{$config.org_email}}">{{$config.org_email}}</a>{{/if}}
