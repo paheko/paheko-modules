@@ -10,6 +10,11 @@
 
 {{#restrict section="accounting" level="write"}}
 	{{:assign is_admin=true}}
+	{{:assign can_write=true}}
+
+	{{if $logged_user.id !== $claim.user_id || !$module.config.restrict_self_accept}}
+		{{:assign can_accept=true}}
+	{{/if}}
 {{else}}
 	{{:assign is_admin=false}}
 	{{#restrict section="accounting" level="read"}}
@@ -17,12 +22,23 @@
 		{{if $claim.user_id !== $logged_user.id}}
 			{{:error message="L'accès à cette note de frais est interdit"}}
 		{{/if}}
+		{{:assign can_write=true}}
 	{{/restrict}}
 {{/restrict}}
 
+{{if $can_write}}
+	{{if $claim.status === 'draft'}}
+		{{:assign can_edit=true}}
+	{{elseif $is_admin && $claim.status === 'payable'}}
+		{{:assign can_edit=true}}
+	{{elseif $is_admin && $claim.status === 'waiting'}}
+		{{:assign can_edit=true}}
+	{{/if}}
+{{/if}}
+
 {{:assign var="upload_path" value=$claim.key}}
 
-{{if $claim.status === 'draft'}}
+{{if $claim.status === 'draft' && $can_write}}
 	{{#form on="validate"}}
 		{{:save key=$claim.key status="waiting"}}
 		{{:include file="./messages/validate.txt" claim=$claim capture="message"}}
@@ -47,13 +63,11 @@
 		{{:redirect to="details.html?key=%s"|args:$claim.key}}
 	{{/form}}
 
-{{elseif $claim.status === 'waiting'}}
-	{{if $claim.user_id === $logged_user.id}}
-		{{#form on="cancel"}}
-			{{:save key=$claim.key status="cancelled"}}
-			{{:redirect to="details.html?key=%s"|args:$claim.key}}
-		{{/form}}
-	{{/if}}
+{{elseif $claim.status === 'waiting' && $claim.user_id === $logged_user.id}}
+	{{#form on="cancel"}}
+		{{:save key=$claim.key status="cancelled"}}
+		{{:redirect to="details.html?key=%s"|args:$claim.key}}
+	{{/form}}
 {{/if}}
 
 {{:assign title="Note de frais n°%d"|args:$claim.number}}
@@ -90,14 +104,6 @@
 		{{:linkbutton shape="delete" label="Supprimer" href="./delete.html?claim=%s"|args:$claim.key}}
 {{/if}}
 
-{{if $claim.status === 'draft' || $claim.status === 'cancelled'}}
-	{{:assign can_edit=true}}
-{{elseif $is_admin && $claim.status === 'payable'}}
-	{{:assign can_edit=true}}
-{{elseif $is_admin && $claim.status === 'waiting'}}
-	{{:assign can_edit=true}}
-{{/if}}
-
 {{if $can_edit}}
 		{{:linkbutton shape="edit" label="Modifier" href="./edit.html?claim=%s"|args:$claim.key target="_dialog"}}
 {{/if}}
@@ -127,13 +133,13 @@
 
 <form method="post" action="">
 
-{{if $claim.status === 'draft' && $total}}
+{{if $can_write && $claim.status === 'draft' && $total}}
 	<div class="alert block">
 		<h3>Statut&nbsp;: brouillon</h3>
 		<p class="submit">{{:button shape="check" name="validate" label="Valider" type="submit" class="main"}}</p>
 		<p>En cliquant sur ce bouton, la note de frais sera transmise aux comptables, elle ne pourra plus être modifiée.</p>
 	</div>
-{{elseif $claim.status === 'waiting'}}
+{{elseif !$is_admin && $can_write && $claim.status === 'waiting'}}
 	<div class="alert block">
 		<h3>Statut&nbsp;: en attente de validation</h3>
 		<p>{{:button shape="delete" name="cancel" label="Annuler" type="submit"}}</p>
@@ -141,11 +147,7 @@
 	</div>
 {{/if}}
 
-{{if $logged_user.id !== $claim.user_id || !$module.config.restrict_self_accept}}
-	{{:assign can_accept=true}}
-{{/if}}
-
-{{if $is_admin && $claim.status === 'waiting' && $can_accept}}
+{{if $can_accept && $claim.status === 'waiting'}}
 	<fieldset>
 		<legend>Accepter cette note de frais ?</legend>
 		<p class="submit">{{:linkbutton href="accept.html?claim=%s"|args:$claim.key shape="check" label="Accepter cette note de frais" class="main"}}</p>
@@ -242,7 +244,7 @@
 		<td>{{$category}}</td>
 		<td class="money">{{$amount|money_currency}}</td>
 		<td class="actions">
-			{{if $.claim.status === 'draft'}}
+			{{if $can_write && $.claim.status === 'draft'}}
 				{{:linkbutton label="Modifier" shape="edit" href="line.html?claim=%s&line=%s"|args:$claim:$key target="_dialog"}}
 				{{:button name="delete_line" type="submit" value=$key label="Supprimer" shape="delete"}}
 			{{/if}}
