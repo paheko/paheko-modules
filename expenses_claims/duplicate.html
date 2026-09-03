@@ -7,6 +7,12 @@
 	{{:assign is_admin=true}}
 {{else}}
 	{{:assign is_admin=false}}
+	{{#restrict section="accounting" level="read"}}
+	{{else}}
+		{{if $claim.user_id !== $logged_user.id}}
+			{{:error message="L'accès à cette note de frais est interdit"}}
+		{{/if}}
+	{{/restrict}}
 {{/restrict}}
 
 {{#form on="save"}}
