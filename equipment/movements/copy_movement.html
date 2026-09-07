@@ -6,8 +6,12 @@
 	Dupliquer un mouvement
 	paramètres :
 	- key : clé du mouvement à dupliquer
-	- prop = 1 si matériel appartient à l'asso
+	- prop = 1 si matériel appartient à l'asso, 0 sinon
 *}}
+
+{{if $_GET.prop == null || $_GET.prop|intval != 0 &&  $_GET.prop|intval != 1}}
+	{{:error message="Opération interdite"}}
+{{/if}}
 
 {{* récupérer les infos du mouvement à dupliquer *}}
 {{#load key=$_GET.key assign="mvt_new"}}
@@ -49,8 +53,8 @@
 {{if $mvt_new.direction == "input"}}
 	{{* types d'entrées *}}
 	{{#foreach from=$config.input_nature key=key}}
-		{{if $_GET.prop && $type == "définitif" ||
-			 ! $_GET.prop && $type == "temporaire"
+		{{if $_GET.prop|intval == 1 && $type == "définitif" ||
+			 $_GET.prop|intval == 0 && $type == "temporaire"
 		}}
 			{{:assign var="input_labels.%s"|args:$key value=$label}}
 		{{/if}}
@@ -58,7 +62,7 @@
 {{else}}
 	{{* types de sorties *}}
 	{{#foreach from=$config.output_nature key=key}}
-		{{if $_GET.prop && $type != "retour"}}
+		{{if $_GET.prop|intval == 1 && $type != "retour"}}
 			{{:assign var="output_labels.%s"|args:$key value=$label}}
 		{{/if}}
 	{{/foreach}}

@@ -20,6 +20,8 @@
 
 {{* récupérer les informations du matériel et de sa catégorie *}}
 {{#load key=$_GET.key assign="equipment"}}
+{{else}}
+	{{:error message="Aucun matériel avec la clé « %s »"|args:$_GET.key}}
 {{/load}}
 {{#load where="key = :key" :key=$equipment.category assign="category"}}
 {{/load}}

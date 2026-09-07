@@ -25,7 +25,7 @@
 {{#foreach from=$directions key="direction" item="item"}}
 
 	{{* types de mouvements qui ne peuvent être supprimés *}}
-	{{#load type="movement" where="$$.direction='%s'"|args:$direction group="$$.operation"}}
+	{{#load type="movement" where="$$.direction=:direction" :direction=$direction group="$$.operation"}}
 		{{:assign var="locked." value=$operation}}
 	{{/load}}
 

@@ -32,11 +32,12 @@
 
 {{* condition de filtrage *}}
 {{if $selected_category != null}}
+	{{:assign cat_key=$selected_category|quote_sql}}
 	{{:assign cat_condition="(SELECT key
 			FROM @TABLE AS cat
 			WHERE cat.key = (SELECT $$.category
 								FROM @TABLE AS mat
-								WHERE mat.key = @TABLE.$$.equipment)) = '%s'"|args:$selected_category}}
+								WHERE mat.key = @TABLE.$$.equipment)) = %s"|args:$cat_key}}
 {{else}}
 	{{:assign cat_condition=1}}
 {{/if}}
@@ -47,8 +48,10 @@
 {{else}}
 	{{if $_GET.prop == -1}}
 		{{:assign selected_prop=null}}
-	{{else}}
+	{{elseif $_GET.prop == 1 || $_GET.prop == 0}}
 		{{:assign selected_prop=$_GET.prop}}
+	{{else}}
+		{{:assign selected_prop=$user_filters.hist_prop}}
 	{{/if}}
 	{{:assign var="user_filters.hist_prop" value=$selected_prop}}
 	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}

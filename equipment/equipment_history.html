@@ -15,7 +15,7 @@
 {{:assign equipment_key=$_GET.key|trim}}
 {{#load key=$equipment_key assign="equipment"}}
 {{else}}
-	{{:error message="Pas de matériel avec la clé %s"|args:$equipment_key}}
+	{{:error message="Aucun matériel avec la clé %s"|args:$equipment_key}}
 {{/load}}
 
 {{#load type="category" where="key = :cle" :cle=$equipment.category assign="category"}}
@@ -40,8 +40,10 @@
 {{else}}
 	{{if $_GET.prop == -1}}
 		{{:assign selected_prop=null}}
-	{{else}}
+	{{elseif $_GET.prop == 1 || $_GET.prop == 0}}
 		{{:assign selected_prop=$_GET.prop}}
+	{{else}}
+		{{:assign selected_prop=$user_filters.eqpmt_hist_prop}}
 	{{/if}}
 	{{:assign var="user_filters.eqpmt_hist_prop value=$selected_prop}}
 	{{:assign var="saved_filters.%s"|args:$logged_user.id value=$user_filters}}

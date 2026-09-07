@@ -5,7 +5,7 @@
 {{* récupérer les infos du lieu de stockage *}}
 {{#load key=$_GET.key assign="storage"}}
 {{else}}
-	{{:error message="Lieu de stockage introuvable"}}
+	{{:error message="Ce lieu de stockage n'existe pas"}}
 {{/load}}
 
 {{* Traiter l'envoi du formulaire *}}

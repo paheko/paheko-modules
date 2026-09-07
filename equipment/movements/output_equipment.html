@@ -5,7 +5,7 @@
 {{*
 	paramètres :
 	- key		: clé du matériel à sortir
-	- output_type : loan (prêt), rent (location), rien (cas général)
+	- output_type : (OBSOLÈTE ?) loan (prêt), rent (location), rien (cas général)
 *}}
 
 {{* récupérer la config des entrées/sorties *}}
@@ -25,11 +25,16 @@
 		{{:assign var="output_labels.%s"|args:$key value=$label}}
 	{{elseif $type == 'temporaire' && $_GET.output_type == "rent" && $fee == 'payant'}}
 		{{:assign var="output_labels.%s"|args:$key value=$label}}
+	{{else}}
+		{{:error message="Opération interdite"}}
 	{{/if}}
 {{/foreach}}
 
 {{* récupérer les infos du matériel *}}
-{{#load key=$_GET.key assign="equipment"}}{{/load}}
+{{#load key=$_GET.key assign="equipment"}}
+{{else}}
+	{{:error message="Aucun matériel avec la clé %s"|args:$_GET.key}}
+{{/load}}
 
 {{* Traiter l'envoi du formulaire *}}
 {{#form on="save"}}
@@ -72,7 +77,7 @@
 	{{:assign insere=false}}
 
 	{{* lister tous les mouvements du matériel *}}
-	{{#load type="movement" where="$$.equipment = '%s'"|args:$_GET.key assign="mvt" order="$$.date ASC"}}
+	{{#load type="movement" where="$$.equipment = :eqpmt_key" :eqpmt_key=$_GET.key assign="mvt" order="$$.date ASC"}}
 		{{* traiter le nouveau mouvement *}}
 		{{if ! $insere && $mvt.date > $_POST.date|parse_date}}
 			{{:assign insere=true}}

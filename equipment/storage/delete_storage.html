@@ -22,7 +22,10 @@
 {{:admin_header title="Lieux de stockage" custom_css="../style.css" current="module_equipment"}}
 {{:form_errors}}
 
-{{#load key=$_GET.key limit="1" assign="store"}}{{/load}}
+{{#load key=$_GET.key limit="1" assign="store"}}
+{{else}}
+	{{:error message="Ce lieu de stockage n'existe pas !"}}
+{{/load}}
 {{:delete_form
 	legend="Supprimer %s ?"|args:$store.name
 	warning="Confirmer la suppression de « %s »"|args:$store.name
