@@ -15,7 +15,7 @@ La note de frais a été supprimée.
 {{elseif $action === 'draft'}}
 La note de frais est repassée en brouillon.
 
-Vous pouvez la corriger et re-demander sa validation ici :
+Vous pouvez la corriger et la transmettre à nouveau ici :
 
 {{$module.url|raw}}details.html?key={{$claim.key}}
 {{elseif $action === 'cancel'}}

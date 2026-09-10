@@ -6,7 +6,7 @@
 {{/load}}
 
 {{if $claim.status !== 'waiting'}}
-	{{:error message="Cette note de frais n'est pas en attente de validation: %s"|args:$claim.status}}
+	{{:error message="Cette note de frais n'est pas en attente d'acceptation : %s"|args:$claim.status}}
 {{/if}}
 
 {{:assign var="upload_path" value=$claim.key}}

@@ -69,15 +69,15 @@
 		<td>{{$col4}}</td>
 		<td>
 			{{if $status === 'waiting'}}
-				{{:tag label=$col5 color="lightcoral"}}
+				{{:tag label=$col5 status="red"}}
 			{{elseif $status === 'payable'}}
-				{{:tag label=$col5 color="darkorange"}}
+				{{:tag label=$col5 status="orange"}}
 			{{elseif $status === 'paid'}}
-				{{:tag label=$col5 color="darkseagreen"}}
+				{{:tag label=$col5 status="green"}}
 			{{elseif $status === 'cancelled'}}
-				{{:tag label=$col5 color="#999"}}
+				{{:tag label=$col5 status="grey"}}
 			{{else}}
-				{{:tag label=$col5 color="tan"}}
+				{{:tag label=$col5 status="tan"}}
 			{{/if}}
 		</td>
 		<td>{{$col6|money_currency}}</td>

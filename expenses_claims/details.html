@@ -136,12 +136,12 @@
 {{if $can_write && $claim.status === 'draft' && $total}}
 	<div class="alert block">
 		<h3>Statut&nbsp;: brouillon</h3>
-		<p class="submit">{{:button shape="check" name="validate" label="Valider" type="submit" class="main"}}</p>
+		<p class="submit">{{:button shape="check" name="validate" label="Transmettre la note" type="submit" class="main"}}</p>
 		<p>En cliquant sur ce bouton, la note de frais sera transmise aux comptables, elle ne pourra plus être modifiée.</p>
 	</div>
 {{elseif !$is_admin && $can_write && $claim.status === 'waiting'}}
 	<div class="alert block">
-		<h3>Statut&nbsp;: en attente de validation</h3>
+		<h3>Statut&nbsp;: en attente d'acceptation</h3>
 		<p>{{:button shape="delete" name="cancel" label="Annuler" type="submit"}}</p>
 		<p>En cliquant sur ce bouton, la note de frais sera annulée.</p>
 	</div>
@@ -187,9 +187,9 @@
 	<dt>Préférence de remboursement</dt>
 	<dd>
 		{{if $claim.user_preferred_resolution === 'pay'}}
-			{{:tag label="Remboursement" color="RebeccaPurple"}}
+			{{:tag label="Remboursement" status="purple"}}
 		{{elseif $claim.user_preferred_resolution === 'abandon'}}
-			{{:tag label="Abandon" color="darkcyan"}}
+			{{:tag label="Abandon" status="greyblue"}}
 		{{else}}
 			{{:tag label="Pas de préférence"}}
 		{{/if}}
@@ -197,15 +197,15 @@
 	<dt>Statut</dt>
 	<dd>
 		{{if $claim.status === 'waiting'}}
-			{{:tag label="En attente d'acceptation" color="lightcoral"}}
+			{{:tag label="En attente d'acceptation" status="red"}}
 		{{elseif $claim.status === 'payable'}}
-			{{:tag label="Acceptée, en attente de paiement" color="darkorange"}}
+			{{:tag label="Acceptée, en attente de paiement" status="orange"}}
 		{{elseif $claim.status === 'paid'}}
-			{{:tag label="Payée" color="darkseagreen"}}
+			{{:tag label="Payée" status="green"}}
 		{{elseif $claim.status === 'cancelled'}}
-			{{:tag label="Annulée" color="#999"}}
+			{{:tag label="Annulée" status="grey"}}
 		{{else}}
-			{{:tag label="Brouillon" color="tan"}}
+			{{:tag label="Brouillon" status="tan"}}
 		{{/if}}
 	</dd>
 
