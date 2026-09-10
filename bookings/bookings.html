@@ -152,9 +152,9 @@
 				{{if $_GET.users}}
 					<td>
 						{{if $user}}
-							{{:tag color="darkgreen" label="Oui"}}
+							{{:tag status="green" label="Oui"}}
 						{{else}}
-							{{:tag color="#999" label="Non"}}
+							{{:tag status="grey" label="Non"}}
 						{{/if}}
 					</td>
 					<td>
@@ -162,11 +162,11 @@
 						{{#subscriptions user=$user.id by_service=true archived=false}}
 							{{$label}}
 							{{if $status === -1}}
-								{{:tag small=true color="darkred" label="Expiré"}}
+								{{:tag small=true status="red" label="Expiré"}}
 							{{elseif $status === 1}}
-								{{:tag small=true color="darkgreen" label="En cours"}}
+								{{:tag small=true status="green" label="En cours"}}
 							{{else}}
-								{{:tag small=true color="#999" label="Inscrit"}}
+								{{:tag small=true status="grey" label="Inscrit"}}
 							{{/if}}
 							<br />
 						{{/subscriptions}}
