@@ -4,166 +4,177 @@
 
 {{:include file="_get_config.html" keep="module.config"}}
 
-<p class="help">
+<p class="block help">
 	{{if $type_immo == "managed"}}
-		Cette page liste les immobilisations en cours d'amortissement
+		Cet onglet liste les immobilisations en cours d'amortissement.
 	{{elseif $type_immo == "amortized"}}
-		Cette page liste les immobilisations dont l'amortissement est terminé
+		Cet onglet liste les
+		immobilisations dont l'amortissement est terminé mais qui sont
+		encore utilisées dans l'association, donc encore présentes au
+		bilan.
 	{{/if}}
 </p>
 
 {{if $module.table != null}}
-	<table class="list">
-		<thead>
-			<tr>
-				<th class="num">N°</th>
-				<th>Date</th>
-				<th>Libellé</th>
-				<th class="nombre">Montant</th>
-				<th class="nombre">Durée</th>
-				<th class="nombre">Amortissements</th>
-				<th class="nombre">Valeur nette</th>
-				<th>N° compte</th>
-				<th class="actions"></th>
-			</tr>
-		</thead>
-		<tbody>
+	{{* lister les immobilisations *}}
+	{{:assign account_condition="("}}
+	{{#foreach from=$module.config.prefixes item="code"}}
+		{{:assign code=$code|cat:"%"|quote_sql}}
+		{{:assign account_condition=$account_condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
+	{{/foreach}}
+	{{:assign account_condition=$account_condition|cat:"0)"}}
+	{{:assign status_condition="($$.status = 'managed' OR $$.status = 'amortized')"}}
+	{{:assign condition=$account_condition|cat:" AND line.debit > 0 AND "|cat:$status_condition}}
 
-			{{* lister les immobilisations *}}
-			{{:assign account_condition="("}}
-			{{#foreach from=$module.config.prefixes item="code"}}
-				{{:assign code=$code|cat:"%"|quote_sql}}
-				{{:assign account_condition=$account_condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
-			{{/foreach}}
-			{{:assign account_condition=$account_condition|cat:"0)"}}
-			{{:assign status_condition="($$.status = 'managed' OR $$.status = 'amortized')"}}
-			{{:assign condition=$account_condition|cat:" AND line.debit > 0 AND "|cat:$status_condition}}
-
-			{{:assign nb_immo=0}}
-			{{:assign total_immo = 0}}
-			{{#select
-				trans.id as immo_trans_id,
-				trans.label as trans_label,
-				trans.date as trans_date,
-				line.id as immo_line_id,
-				line.debit AS debit,
-				line.label AS line_label,
-				account.id as account_id,
-				account.code as account_code,
-				trans.id_year as trans_id_year,
-				info.id as immo_doc_id,
-				$$.duration as duration,
-				$$.label as doc_label,
-				$$.amount as doc_amount,
-				$$.date_achat as doc_date_achat,
-				$$.date as doc_date_mes,
-				$$.status as status
-				FROM acc_transactions AS trans
-				INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
-				INNER JOIN acc_accounts AS account ON line.id_account = account.id
-				INNER JOIN acc_years AS years ON trans.id_year = years.id
-				INNER JOIN !table AS info ON $$.line = line.id
-				WHERE !condition
-				ORDER BY COALESCE(doc_date_achat, trans_date) DESC;
-				!table=$module.table
-				!condition=$condition
-			}}
-				{{if $status != "managed" && $status != "amortized"}}
-					{{:continue}}
-				{{/if}}
-				{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$immo_trans_id}}
-				{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$account_id:$trans_id_year}}
-				{{:assign montant_immo=$doc_amount|or:$debit}}
-				{{:assign immo_date = $doc_date_achat|or:$trans_date}}
-				{{:assign label_immo=$doc_label|or:$trans_label}}
-				{{if $label_immo|strpos:$line_label === false}}
-					{{:assign label_immo=$label_immo|cat:" — "|cat:$line_label}}
-				{{/if}}
-
-				{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
-				{{#load
-					type="credit_link"
-					where="$$.immo_doc_id = :immo_doc_id" :immo_doc_id = $immo_doc_id
+	{{#select
+		trans.id as immo_trans_id,
+		trans.label as trans_label,
+		trans.date as trans_date,
+		line.id as immo_line_id,
+		line.debit AS debit,
+		line.label AS line_label,
+		account.id as account_id,
+		account.code as account_code,
+		trans.id_year as trans_id_year,
+		info.id as immo_doc_id,
+		$$.duration as duration,
+		$$.label as doc_label,
+		$$.amount as doc_amount,
+		$$.date_achat as doc_date_achat,
+		$$.date as doc_date_mes,
+		$$.status as status
+		FROM acc_transactions AS trans
+		INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+		INNER JOIN acc_accounts AS account ON line.id_account = account.id
+		INNER JOIN acc_years AS years ON trans.id_year = years.id
+		INNER JOIN !table AS info ON $$.line = line.id
+		WHERE !condition
+		ORDER BY COALESCE(doc_date_achat, trans_date) DESC;
+		!table=$module.table
+		!condition=$condition
+		assign="immo_line"
+	}}
+		{{:assign montant_immo=$doc_amount|or:$debit}}
+		{{* déduire le montant des écritures liées à l'immo courante au crédit du même compte *}}
+		{{#load
+			type="credit_link"
+			where="$$.immo_doc_id = :immo_doc_id" :immo_doc_id = $immo_doc_id
+		}}
+			{{if $amount == null}}
+				{{#select credit FROM acc_transactions_lines WHERE id = :credit_line_id;
+					:credit_line_id=$credit_line_id
 				}}
-					{{if $amount == null}}
-						{{#select credit FROM acc_transactions_lines WHERE id = :credit_line_id;
-							:credit_line_id=$credit_line_id
-						}}
-							{{:assign montant_immo="%d-%d"|math:$montant_immo:$credit}}
-						{{/select}}
-					{{else}}
-						{{:assign montant_immo="%d-%d"|math:$montant_immo:$amount}}
-					{{/if}}
-				{{/load}}
+					{{:assign montant_immo="%d-%d"|math:$montant_immo:$credit}}
+				{{/select}}
+			{{else}}
+				{{:assign montant_immo="%d-%d"|math:$montant_immo:$amount}}
+			{{/if}}
+		{{/load}}
 
-				{{if $montant_immo == 0}}
-					{{* Immobilisation soldée *}}
-					{{:continue}}
-				{{/if}}
+		{{if $montant_immo == 0}}
+			{{* Immobilisation soldée *}}
+			{{:continue}}
+		{{else}}
+			{{:assign var="immo_line.montant_immo" value=$montant_immo}}
+		{{/if}}
 
-				{{* montant des amortissements liés à l'immobilisation *}}
-				{{:include file="./_get_amort_lines.html" immo_doc_id=$immo_doc_id keep="total_amort"}}
-				{{:assign amort_amount=$total_amort}}
+		{{* montant des amortissements liés à l'immobilisation *}}
+		{{:include file="./_get_amort_lines.html" immo_doc_id=$immo_doc_id keep="total_amort"}}
+		{{:assign amort_amount=$total_amort}}
 
-				{{* classement par onglet *}}
-				{{if $type_immo == "managed" && $amort_amount >= $montant_immo}}{{:continue}}{{/if}}
-				{{if $type_immo == "amortized" && $amort_amount < $montant_immo}}{{:continue}}{{/if}}
+		{{* classement par onglet *}}
+		{{if $type_immo == "managed" && $amort_amount >= $montant_immo}}{{:continue}}{{/if}}
+		{{if $type_immo == "amortized" && $amort_amount < $montant_immo}}{{:continue}}{{/if}}
+		{{:assign var="immo_line.amort_amount" value=$amort_amount}}
 
-				{{:assign nb_immo="%d+1"|math:$nb_immo}}
-				{{:assign total_immo="%d+%d"|math:$total_immo:$montant_immo}}
-				{{:assign var="montant" from="sommes_immo.%s"|args:$account_code}}
-				{{:assign var="sommes_immo.%s"|args:$account_code value="%d+%d"|math:$montant:$montant_immo}}
-			<tr>
-				<td class="num"><a href="{{$trans_url}}">#{{$immo_trans_id}}</a></td>
-				<td>{{$immo_date|date_short}}</td>
-				<td>{{$label_immo}}</td>
-				<td class="money">{{$montant_immo|money_html:false|raw}}</td>
-				<td class="money">{{if $duration != null}}{{$duration}}{{/if}}</td>
-				<td class="money">{{$amort_amount|money_html:false|raw}}</td>
-				<td class="money">{{"%d-%d"|math:$montant_immo:$amort_amount|money_html:false|raw}}</td>
-				<td><a href="{{$compte_url}}">{{$account_code}}</a></td>
-				<td class="actions">
-					{{:linkbutton
-						label="Détails"
-						href="amortization.html?immo_doc_id=%s&type_immo=%s"|args:$immo_doc_id:$type_immo shape="eye"
-					}}
-				</td>
-			</tr>
-			{{/select}}
-		</tbody>
-		<tfoot>
-			{{if $total_immo != 0}}
+		{{:assign var="immo_lines." value=$immo_line}}
+	{{/select}}
+
+	{{if $immo_lines|count > 0}}
+		<table class="list">
+			<thead>
 				<tr>
-					<td colspan="9">
+					<th class="num">N°</th>
+					<th>Date</th>
+					<th>Libellé</th>
+					<th class="nombre">Montant</th>
+					<th class="nombre">Durée</th>
+					<th class="nombre">Amortissements</th>
+					<th class="nombre">Valeur nette</th>
+					<th>N° compte</th>
+					<th class="actions"></th>
 				</tr>
-				{{#foreach from=$sommes_immo|ksort key="code" item="value"}}
+			</thead>
+			<tbody>
+
+				{{:assign total_immo = 0}}
+				{{#foreach from=$immo_lines}}
+					{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$immo_trans_id}}
+					{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$account_id:$trans_id_year}}
+					{{:assign immo_date = $doc_date_achat|or:$trans_date}}
+					{{:assign label_immo=$doc_label|or:$trans_label}}
+					{{if $label_immo|strpos:$line_label === false}}
+						{{:assign label_immo=$label_immo|cat:" — "|cat:$line_label}}
+					{{/if}}
+
+					{{:assign total_immo="%d+%d"|math:$total_immo:$montant_immo}}
+					{{:assign var="montant" from="sommes_immo.%s"|args:$account_code}}
+					{{:assign var="sommes_immo.%s"|args:$account_code value="%d+%d"|math:$montant:$montant_immo}}
+
+					<tr>
+						<td class="num"><a href="{{$trans_url}}">#{{$immo_trans_id}}</a></td>
+						<td>{{$immo_date|date_short}}</td>
+						<td>{{$label_immo}}</td>
+						<td class="money">{{$montant_immo|money_html:false|raw}}</td>
+						<td class="money">{{if $duration != null}}{{$duration}}{{/if}}</td>
+						<td class="money">{{$amort_amount|money_html:false|raw}}</td>
+						<td class="money">{{"%d-%d"|math:$montant_immo:$amort_amount|money_html:false|raw}}</td>
+						<td><a href="{{$compte_url}}">{{$account_code}}</a></td>
+						<td class="actions">
+							{{:linkbutton
+								label="Détails"
+								href="amortization.html?immo_doc_id=%s&type_immo=%s"|args:$immo_doc_id:$type_immo shape="eye"
+							}}
+						</td>
+					</tr>
+
+				{{/foreach}}
+
+			</tbody>
+			<tfoot>
+				{{if $total_immo != 0}}
+					<tr>
+						<td colspan="9">
+					</tr>
+					{{#foreach from=$sommes_immo|ksort key="code" item="value"}}
+						<tr>
+							<td></td>
+							<td></td>
+							<td>Total du compte {{$code}}</td>
+							<td class="money">{{$value|money_html:false|raw}}</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td class="actions"></td>
+						</tr>
+					{{/foreach}}
 					<tr>
 						<td></td>
 						<td></td>
-						<td>Total du compte {{$code}}</td>
-						<td class="money">{{$value|money_html:false|raw}}</td>
+						<td class="strong">Total des immobilisations</td>
+						<td class="money strong">{{$total_immo|money_html|raw}}</td>
 						<td></td>
 						<td></td>
 						<td></td>
 						<td></td>
 						<td class="actions"></td>
 					</tr>
-				{{/foreach}}
-				<tr>
-					<td></td>
-					<td></td>
-					<td class="strong">Total des immobilisations</td>
-					<td class="money strong">{{$total_immo|money_html|raw}}</td>
-					<td></td>
-					<td></td>
-					<td></td>
-					<td></td>
-					<td class="actions"></td>
-				</tr>
-			{{/if}}
-		</tfoot>
-	</table>
+				{{/if}}
+			</tfoot>
+		</table>
+	{{/if}}
 {{/if}}
-{{if $nb_immo == 0 || $module.table == null}}
+{{if $immo_lines|count == 0 || $module.table == null}}
 	<p class="block alert">Aucune immobilisation</p>
 {{/if}}

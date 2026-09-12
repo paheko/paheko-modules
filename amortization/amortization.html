@@ -139,25 +139,28 @@
 			<dt>Montant à amortir</dt>
 			<dd class="money strong">{{"%f"|math:$solde|money_currency_html:false|raw}}</dd>
 		{{/if}}
-		{{if $valeur_residuelle > 0}}
-			<dt>Montant des amortissements</dt>
-			<dd>{{$total_amort|money_currency_html:false|raw}}</dd>
-			<dt>Valeur nette résiduelle</dt>
-			<dd>{{$valeur_residuelle|money_currency_html:false|raw}}</dd>
-		{{/if}}
+		<dt>Montant des amortissements</dt>
+		<dd>{{$total_amort|money_currency_html:false|raw}}</dd>
+		<dt>Valeur nette résiduelle</dt>
+		<dd>{{$valeur_residuelle|money_currency_html:false|raw}}</dd>
 		{{if $info_immo.duration != null && $valeur_residuelle > 0}}
+			{{:assign annuite="%f/%d"|math:$solde:$info_immo.duration}}
 			<dt>Annuité estimée</dt>
-			<dd>{{"min(%d, %f/%d)"|math:$valeur_residuelle:$solde:$info_immo.duration|money_currency_html:false|raw}}</dd>
+			<dd>{{"min(%d, %d)"|math:$valeur_residuelle:$annuite|money_currency_html:false|raw}}
+				{{if $annuite <= $valeur_residuelle}}
+					<span class="help"> pour un exercice de 365 jours</span>
+				{{/if}}
+			</dd>
 		{{/if}}
 	</dl>
 </div>
 
-{{if $valeur_residuelle > 0 || $linked_immos != null}}
+{{if ! $created_amort || $linked_immos != null}}
 	<h3 class="ruler">Avoirs</h3>
+{{/if}}
+{{if ! $created_amort}}
 	<nav class="actions">
-		{{if $total_amort == 0 || ! $created_amort}}
-			{{:linkbutton label="Attacher une écriture d'avoir" href="link_immo.html?immo_doc_id=%s&filter=true"|args:$_GET.immo_doc_id shape="link" target="_dialog"}}
-		{{/if}}
+		{{:linkbutton label="Attacher une écriture d'avoir" href="link_immo.html?immo_doc_id=%s&filter=true"|args:$_GET.immo_doc_id shape="link" target="_dialog"}}
 	</nav>
 {{/if}}
 
@@ -263,7 +266,14 @@
 {{/if}}
 
 {{if $linked_amort == null}}
-	<p class="block alert">Aucun amortissement enregistré pour cette immobilisation ; utilisez le bouton « Enregistrer un amortissement » pour enregistrer un nouvel amortissement</p>
+	<p class="block alert">Aucun amortissement enregistré pour cette
+	immobilisation ; en fin d'exercice vous pouvez enregistrer un
+	nouvel amortissement à l'aide du bouton « Enregistrer un
+	amortissement »</p>
+{{elseif $_GET.type_immo == "managed"}}
+	<p class="block alert">En fin d'exercice vous pouvez enregistrer
+	un nouvel amortissement à l'aide du bouton « Enregistrer un
+	amortissement »</p>
 {{/if}}
 
 {{:form_errors}}

@@ -41,6 +41,11 @@
 	{{:assign amort_label=$line_label|or:$trans_label}}
 {{/foreach}}
 
+{{* date de début du 1er exercice dans paheko *}}
+{{#years order="start_date" limit=1}}
+	{{:assign first_date=$start_date}}
+{{/years}}
+
 {{if $total_amort == 0}}
 	{{* 1er amortissement *}}
 	{{*	déterminer le compte d'amortissement en fonction du compte d'immobilisation *}}
@@ -55,8 +60,10 @@
 	{{:assign var=libelle value="Amortissement %s"|args:$ligne_immo.trans_label}}
 {{else}}
 	{{* amortissements suivants *}}
-	{{:assign date_debut=$date_debut|strtotime}}
-	{{:assign date_debut="%d+(60*60*24)"|math:$date_debut|date:"Y-m-d"}}
+	{{if $date_debut != $first_date}}
+		{{:assign date_debut=$date_debut|strtotime}}
+		{{:assign date_debut="%d+(60*60*24)"|math:$date_debut|date:"Y-m-d"}}
+	{{/if}}
 {{/if}}
 
 {{*
@@ -219,13 +226,13 @@
 
 {{if $years|count == 1}}
 	{{:assign var=selected_year value=$years.0.id}}
+	{{:assign var=date_amort value=$years.0.end_date}}
+	{{:include file="_calcul_dates.html" date_debut=$date_debut date_fin=$date_amort keep="nbjours"}}
+	{{* montant de l'amortissement *}}
+	{{:assign montant_amort="%f/%f/365*%d"|math:$ligne_immo.amount:$info_immo.duration:$nbjours|intval}}
+	{{:assign montant_amort="min(%f, %d-%d)"|math:$montant_amort:$ligne_immo.amount:$total_amort}}
 {{/if}}
-{{:assign var=date_amort value=$years.0.end_date}}
-{{:include file="_calcul_dates.html" date_debut=$date_debut date_fin=$date_amort keep="nbjours"}}
 
-{{* montant de l'amortissement *}}
-{{:assign montant_amort="%f/%f/365*%d"|math:$ligne_immo.amount:$info_immo.duration:$nbjours|intval}}
-{{:assign montant_amort="min(%f, %d-%d)"|math:$montant_amort:$ligne_immo.amount:$total_amort}}
 {{:assign var="debit_account.6811" value="6811 — Dot. aux amortissements des immobilisations"}}
 {{:assign var="credit_account.%s"|args:$code_amort value="%s — "|args:$code_amort|cat:$amort_account_label}}
 
@@ -242,7 +249,10 @@
 			{{:input type="select" default=$selected_year name="id_year" label="Exercice" required=true default_empty="— Faire un choix —" options=$open_years}}
 			{{:input type="date" name="date_amort" label="Date" required=true default=$date_amort|date_short}}
 			{{:input type="text" name="designation" label="Libellé" required=true default=$amort_label size="50"}}
-			{{:input type="money" name="montant" label="Montant" required=true default=$montant_amort}}
+			{{if $total_amort == 0 || $nbjours < 365 || $nbjours > 366}}
+				{{:assign msg="Montant calculé au prorata du nombre de jours d'amortissement dans l'exercice"}}
+			{{/if}}
+			{{:input type="money" name="montant" label="Montant" required=true default=$montant_amort help=$msg}}
 			{{:input
 				type="list"
 				name="debit_account"

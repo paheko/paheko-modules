@@ -2,33 +2,121 @@
 
 {{* Liste des immobilisations en cours de constitution *}}
 
-<section class="immobilisation">
+<p class="block help">
+	Cet onglet liste les immobilisations en cours de
+	constitution ; vous pouvez les sélectionner pour créer une
+	immobilisation amortissable (exemple : achat de matériaux pour
+	la construction d'un bâtiment destiné à être amorti)
+</p>
 
-	<p class="help">
-		Cette page liste les immobilisations en cours de constitution, donc non amortissables
-	</p>
+{{:include file="_get_config.html" keep="module.config"}}
+{{:assign saved_hides=$module.config.hides}}
+{{:assign var="user_hides" from="saved_hides.%s"|args:$logged_user.id}}
 
-	{{:include file="_get_config.html" keep="module.config"}}
-	{{:assign saved_hides=$module.config.hides}}
-	{{:assign var="user_hides" from="saved_hides.%s"|args:$logged_user.id}}
-
-	{{if $_POST|count == 0}}
-		{{:assign unhide=$user_hides.unhide_unfinished}}
+{{if $_POST|count == 0}}
+	{{:assign unhide=$user_hides.unhide_unfinished}}
+{{else}}
+	{{if $_POST.unhide == null}}
+		{{:assign unhide=0}}
 	{{else}}
-		{{if $_POST.unhide == null}}
-			{{:assign unhide=0}}
-		{{else}}
-			{{:assign unhide=1}}
-		{{/if}}
-		{{:assign var="user_hides.unhide_unfinished" value=$unhide"}}
-		{{:assign var="saved_hides.%s"|args:$logged_user.id value=$user_hides}}
-		{{:save key="config" hides=$saved_hides}}
+		{{:assign unhide=1}}
 	{{/if}}
-	{{if $unhide}}
-		{{:assign checked="checked"}}
+	{{:assign var="user_hides.unhide_unfinished" value=$unhide"}}
+	{{:assign var="saved_hides.%s"|args:$logged_user.id value=$user_hides}}
+	{{:save key="config" hides=$saved_hides}}
+{{/if}}
+{{if $unhide}}
+	{{:assign checked="checked"}}
+{{/if}}
+
+{{* lister les immobilisations en cours de constitution *}}
+{{:assign first_code=null}}
+{{:assign accounts_condition="("}}
+{{#foreach from=$module.config.unfinished item="elem"}}
+	{{if $elem.code != null}}
+		{{:assign code=$elem.code}}
+	{{else}}
+		{{:assign code=$elem}}
+	{{/if}}
+	{{if $first_code == null}}
+		{{:assign first_code=$code}}
+	{{/if}}
+	{{:assign code=$code|cat:"%"|quote_sql}}
+	{{:assign accounts_condition=$accounts_condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
+{{/foreach}}
+{{:assign accounts_condition=$accounts_condition|cat:"0)"}}
+{{:assign condition=$accounts_condition|cat:" AND debit > 0 AND NOT (trans.status & 16)"}}
+
+{{:assign filter_condition=" NOT ("}}
+{{#foreach from=$module.config.filters item="filter"}}
+	{{:assign filter="%"|cat:$filter|cat:"%"|quote_sql}}
+	{{:assign filter_condition=$filter_condition|cat:" trans_label LIKE "|cat:$filter|cat:" OR "}}
+{{/foreach}}
+{{:assign filter_condition=$filter_condition|cat:"0)"}}
+{{:assign condition=$condition|cat:" AND "|cat:$filter_condition}}
+
+{{:assign nb_ignored=0}}
+{{#select
+	trans.id as trans_id,
+	trans.label as trans_label,
+	trans.date as trans_date,
+	line.id as immo_line_id,
+	account.id as account_id,
+	account.code as account_code,
+	account.label as account_label,
+	sum(line.debit) AS debit,
+	trans.id_year as trans_id_year
+	FROM acc_transactions AS trans
+	INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+	INNER JOIN acc_accounts AS account ON line.id_account = account.id
+	INNER JOIN acc_years AS years ON trans.id_year = years.id
+	WHERE !condition
+	GROUP BY trans.id
+	ORDER BY trans.date DESC;
+	!condition=$condition
+	assign="immo_line"
+}}
+	{{* voir si l'écriture a été marquée ignorée *}}
+	{{:assign var="immo_line.ignore" value=false}}
+	{{#load type="immo" assign="info_immo" where="$$.line = :line_id AND $$.status = 'ignored'" :line_id=$immo_line_id|intval}}
+		{{:assign var="immo_line.ignore" value=true}}
+	{{/load}}
+	{{if $immo_line.ignore}}
+		{{:assign nb_ignored="%d + 1"|math:$nb_ignored}}
+	{{/if}}
+	{{if $immo_line.ignore && $unhide == null}}
+		{{:continue}}
 	{{/if}}
 
-	<form method="post" action="">
+	{{*
+		TODO cas où :
+		- il y a (au moins) une écriture d'avoir
+	*}}
+
+	{{* voir s'il existe une écriture qui solde l'immobilisation (voir ci-dessus) *}}
+	{{#select
+		count(*) AS count
+		FROM acc_transactions AS trans
+		INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
+		INNER JOIN acc_accounts AS account ON line.id_account = account.id
+		WHERE line.credit = :amount AND code = :account_code
+		;
+		:amount = $debit
+		:account_code = $account_code
+		}}
+		{{:assign count=$count}}
+	{{/select}}
+
+	{{* S'il y a plus d'une écriture de même montant on ne peut pas décider *}}
+	{{if $count == 1}}
+		{{:continue}}
+	{{/if}}
+
+	{{:assign var="immo_lines." value=$immo_line}}
+{{/select}}
+
+<form method="post" action="">
+	{{if $immo_lines|count > 0}}
 		<fieldset class="shortFormLeft">
 			<legend>Transférer une ou plusieurs lignes vers une immobilisation amortissable</legend>
 			<p class="help">
@@ -54,159 +142,90 @@
 				</p>
 			</div>
 		</fieldset>
+	{{/if}}
+	{{if $nb_ignored !== 0}}
 		<fieldset>
-			{{:input type="checkbox" value=1 name="unhide" checked="%s"|args:$checked label="Afficher toutes les écritures" }}
+			{{:input type="checkbox" value=1 name="unhide" checked="%s"|args:$checked label="Afficher les écritures ignorées" }}
 		</fieldset>
-	</form>
+	{{/if}}
+</form>
 
-	<table class="list">
-		<thead>
-			<tr>
-				<th class="check"></th>
-				<th class="num">N°</th>
-				<th>Date</th>
-				<th>Libellé</th>
-				<th class="nombre">Montant</th>
-				<th>N° compte</th>
-				<th>Compte</th>
-				<th class="actions"></th>
-			</tr>
-		</thead>
-		<tbody>
+{{if $immo_lines|count > 0}}
+	<section class="immobilisation">
+		<table class="list">
+			<thead>
+				<tr>
+					<th class="check"></th>
+					<th class="num">N°</th>
+					<th>Date</th>
+					<th>Libellé</th>
+					<th class="nombre">Montant</th>
+					<th>N° compte</th>
+					<th>Compte</th>
+					<th class="actions"></th>
+				</tr>
+			</thead>
+			<tbody>
 
-			{{* lister les immobilisations en cours de constitution *}}
+				{{:assign total_immo = 0}}
+				{{#foreach from=$immo_lines}}
+					{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$trans_id}}
+					{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$account_id:$trans_id_year}}
+					{{:assign total_immo="%d+%d"|math:$total_immo:$debit}}
+					{{:assign var="montant" from="sommes_immo.%s"|args:$account_code}}
+					{{:assign var="sommes_immo.%s"|args:$account_code value="%d+%d"|math:$montant:$debit}}
 
-			{{:assign accounts_condition="("}}
-			{{#foreach from=$module.config.unfinished item="elem"}}
-				{{if $elem.code != null}}
-					{{:assign code=$elem.code}}
-				{{else}}
-					{{:assign code=$elem}}
-				{{/if}}
-				{{:assign code=$code|cat:"%"|quote_sql}}
-				{{:assign accounts_condition=$accounts_condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
-			{{/foreach}}
-			{{:assign accounts_condition=$accounts_condition|cat:"0)"}}
-			{{:assign condition=$accounts_condition|cat:" AND debit > 0 AND NOT (trans.status & 16)"}}
+					<tr {{if $ignore}}class="checked"{{/if}}>
+						<td class="check">{{:input type="checkbox" name="selected[]" value=$trans_id}}</td>
+						<td class="num"><a href="{{$trans_url}}">#{{$trans_id}}</a></td>
+						<td>{{$trans_date|date_short}}</td>
+						<td>{{$trans_label}}</td>
+						<td class="money">{{"%f"|math:$debit|money_html:false|raw}}</td>
+						<td class="account_code"><a href="{{$compte_url}}">{{$account_code}}</a></td>
+						<td>{{$account_label}}</td>
+						<td class="actions">
+							{{:linkbutton
+							label="Modifier"
+							href="ignore.html?immo_line_id=%s"|args:$immo_line_id
+							shape="edit"
+							target="_dialog"
+							}}
+						</td>
+					</tr>
+				{{/foreach}}
 
-			{{:assign filter_condition=" NOT ("}}
-			{{#foreach from=$module.config.filters item="filter"}}
-				{{:assign filter="%"|cat:$filter|cat:"%"|quote_sql}}
-				{{:assign filter_condition=$filter_condition|cat:" trans_label LIKE "|cat:$filter|cat:" OR "}}
-			{{/foreach}}
-			{{:assign filter_condition=$filter_condition|cat:"0)"}}
-			{{:assign condition=$condition|cat:" AND "|cat:$filter_condition}}
-			{{:assign nb_immo=0}}
-			{{:assign total_immo = 0}}
-			{{#select
-				trans.id as trans_id,
-				trans.label as trans_label,
-				trans.date as trans_date,
-				line.id as immo_line_id,
-				account.id as account_id,
-				account.code as account_code,
-				account.label as account_label,
-				sum(line.debit) AS debit,
-				trans.id_year as trans_id_year
-				FROM acc_transactions AS trans
-				INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
-				INNER JOIN acc_accounts AS account ON line.id_account = account.id
-				INNER JOIN acc_years AS years ON trans.id_year = years.id
-				WHERE !condition
-				GROUP BY trans.id
-				ORDER BY trans.date DESC;
-				!condition=$condition
-			}}
-				{{* voir si l'écriture a été marquée ignorée *}}
-				{{:assign ignore=false}}
-				{{#load type="immo" assign="info_immo" where="$$.line = :line_id AND $$.status = 'ignored'" :line_id=$immo_line_id|intval}}
-					{{:assign ignore=true}}
-				{{/load}}
-				{{if $ignore && $unhide == null}}
-					{{:continue}}
-				{{/if}}
-
-				{{*
-					TODO cas où :
-					- il y a (au moins) une écriture d'avoir
-				*}}
-
-				{{* voir s'il existe une écriture qui solde l'immobilisation (voir ci-dessus) *}}
-				{{#select
-					count(*) AS count
-					FROM acc_transactions AS trans
-					INNER JOIN acc_transactions_lines AS line ON line.id_transaction = trans.id
-					INNER JOIN acc_accounts AS account ON line.id_account = account.id
-					WHERE line.credit = :amount AND code = :account_code
-					;
-					:amount = $debit
-					:account_code = $account_code
-					}}
-					{{:assign count=$count}}
-				{{/select}}
-
-				{{* S'il y a plus d'une écriture de même montant on ne peut pas décider *}}
-				{{if $count == 1}}
-					{{:continue}}
-				{{/if}}
-
-				{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$trans_id}}
-				{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$account_id:$trans_id_year}}
-				{{:assign nb_immo="%d+1"|math:$nb_immo}}
-				{{:assign total_immo="%d+%d"|math:$total_immo:$debit}}
-				{{:assign var="montant" from="sommes_immo.%s"|args:$account_code}}
-				{{:assign var="sommes_immo.%s"|args:$account_code value="%d+%d"|math:$montant:$debit}}
-
-			<tr {{if $ignore}}class="checked"{{/if}}>
-				<td class="check">{{:input type="checkbox" name="selected[]" value=$trans_id}}</td>
-				<td class="num"><a href="{{$trans_url}}">#{{$trans_id}}</a></td>
-				<td>{{$trans_date|date_short}}</td>
-				<td>{{$trans_label}}</td>
-				<td class="money">{{"%f"|math:$debit|money_html:false|raw}}</td>
-				<td class="account_code"><a href="{{$compte_url}}">{{$account_code}}</a></td>
-				<td>{{$account_label}}</td>
-				<td class="actions">
-					{{:linkbutton
-					label="Modifier"
-					href="ignore.html?immo_line_id=%s"|args:$immo_line_id
-					shape="edit"
-					target="_dialog"
-					}}
-				</td>
-			</tr>
-			{{/select}}
-		</tbody>
-		<tfoot>
-			{{if $total_immo != 0}}
-				{{#foreach from=$sommes_immo|ksort key="code" item="value"}}
+			</tbody>
+			<tfoot>
+				{{if $total_immo != 0}}
+					{{#foreach from=$sommes_immo|ksort key="code" item="value"}}
+						<tr>
+							<td></td>
+							<td></td>
+							<td></td>
+							<td>Total du compte {{$code}}</td>
+							<td class="money">{{$value|money_html|raw}}</td>
+							<td></td>
+							<td></td>
+							<td class="actions"></td>
+						</tr>
+					{{/foreach}}
 					<tr>
 						<td></td>
 						<td></td>
 						<td></td>
-						<td>Total du compte {{$code}}</td>
-						<td class="money">{{$value|money_html|raw}}</td>
+						<td class="strong">Total des immobilisations</td>
+						<td class="money strong">{{$total_immo|money_html|raw}}</td>
 						<td></td>
 						<td></td>
 						<td class="actions"></td>
 					</tr>
-				{{/foreach}}
-				<tr>
-					<td></td>
-					<td></td>
-					<td></td>
-					<td class="strong">Total des immobilisations</td>
-					<td class="money strong">{{$total_immo|money_html|raw}}</td>
-					<td></td>
-					<td></td>
-					<td class="actions"></td>
-				</tr>
-			{{/if}}
-		</tfoot>
-	</table>
-	{{if $nb_immo == 0}}
-		<p class="block alert">Aucune immobilisation</p>
-	{{/if}}
-</section>
+				{{/if}}
+			</tfoot>
+		</table>
+	</section>
+{{else}}
+	<p class="block alert">Aucune écriture d'immobilisation trouvée dans la comptabilité (compte {{$first_code}} et sous-comptes)</p>
+{{/if}}
 
 <script type="text/javascript" src="scripts.js"></script>
 <script type="text/javascript" async="async">

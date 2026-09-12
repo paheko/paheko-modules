@@ -3,10 +3,11 @@
 {{* Liste des immobilisations non gérées ou non entièrement affectées *}}
 
 {{:include file="_get_config.html" keep="module.config"}}
-<p class="help">
-	Cette page liste les immobilisations pas encore prises en charge
-	par le module ou les écritures de la balance d'ouverture initiale
-	dont le montant n'est pas encore totalement affecté
+<p class="block help">
+	Cet onglet liste les immobilisations créées en dehors du module et
+	pas encore prises en charge par le module ou les écritures de la
+	balance d'ouverture initiale dont le montant n'est pas encore
+	totalement affecté
 </p>
 
 {{:assign saved_hides=$module.config.hides}}
@@ -49,24 +50,9 @@
 	{{:assign account_condition=$account_condition|cat:" account.code LIKE "|cat:$code|cat:" OR "}}
 {{/foreach}}
 {{:assign account_condition=$account_condition|cat:"0)"}}
+{{:assign condition=$account_condition|cat:" AND debit > 0 AND NOT (trans.status & 16) AND "|cat:$doc_condition}}
 
-{{if $unhide ==  null}}
-	{{:assign filter_condition="NOT ("}}
-	{{#foreach from=$module.config.filters item="filter"}}
-		{{:assign filter="%"|cat:$filter|cat:"%"|quote_sql}}
-		{{:assign filter_condition=$filter_condition|cat:" trans_label LIKE "|cat:$filter|cat:" OR "}}
-	{{/foreach}}
-	{{:assign filter_condition=$filter_condition|cat:"0)"}}
-{{else}}
-	{{:assign filter_condition="1"}}
-{{/if}}
-
-{{:assign condition=$account_condition|cat:" AND debit > 0 AND NOT (trans.status & 16) AND "|cat:$filter_condition|cat:" AND "|cat:$doc_condition}}
-
-{{:assign nb_managed=0}}
 {{:assign nb_ignored=0}}
-{{:assign nb_null=0}}
-{{:assign nb_other=0}}
 {{#select
 	trans.id as immo_trans_id,
 	trans.label as trans_label,
@@ -92,94 +78,86 @@
 	!table=$module.table
 	!condition=$condition
 	assign="immo_line"
-	}}
-	{{*
-		parmi les immos gérées, ne conserver que celles dont le montant dans le doc est non nul
-		et inférieur au montant de l'écriture d'immo
-	*}}
+}}
 	{{if $immo_line.status == 'managed'}}
 		{{if $immo_line.amount == null || $immo_line.amount == 0 || $immo_line.amount == $immo_line.debit}}
 			{{:continue}}
 		{{/if}}
 	{{/if}}
-	{{if $immo_line.status == null}}
-		{{:assign nb_null="%d+1"|math:$nb_null}}
-	{{elseif $immo_line.status == 'managed'}}
-		{{:assign nb_managed="%d+1"|math:$nb_managed}}
-	{{elseif $immo_line.status == 'ignored'}}
+
+	{{if $immo_line.status == 'ignored'}}
 		{{:assign nb_ignored="%d+1"|math:$nb_ignored}}
-	{{else}}
-		{{:assign nb_other="%d+1"|math:$nb_other}}
 	{{/if}}
 
+	{{if $unhide == null && $immo_line.status == "ignored"}}
+		{{:continue}}
+	{{/if}}
+
+	{{* vérifier si le libellé aurait pu être filtré *}}
+	{{#foreach from=$module.config.filters item="filter"}}
+		{{if $trans_label|strpos:$filter !== false}}
+			{{:assign var="immo_line.status" value="ignored"}}
+			{{:assign nb_ignored="%d+1"|math:$nb_ignored}}
+		{{/if}}
+	{{/foreach}}
+
+	{{if $unhide == null && $immo_line.status == "ignored"}}
+		{{:continue}}
+	{{/if}}
 	{{:assign var="immo_lines." value=$immo_line}}
 {{/select}}
 
-<form method="post" action="">
-	<fieldset>
-		{{:input type="checkbox" value=1 name="unhide" checked="%s"|args:$checked label="Afficher les écritures ignorées" }}
-	</fieldset>
-</form>
+{{if $nb_ignored > 0}}
+	<form method="post" action="">
+		<fieldset>
+			{{:input type="checkbox" value=1 name="unhide" checked="%s"|args:$checked label="Afficher les écritures ignorées" }}
+		</fieldset>
+	</form>
+{{/if}}
 
 {{if $immo_lines|count > 0}}
-<table class="list">
-	<thead>
-		<tr>
-			<th class="num">N°</th>
-			<th class="nombre">Ligne</th>
-			<th>Date</th>
-			<th>Libellé</th>
-			<th class="nombre">Montant</th>
-			<th class="nombre">Affecté</th>
-			<th class="nombre">Reste</th>
-			<th>N° compte</th>
-			<th>Compte</th>
-			<th class="actions"></th>
-		</tr>
-	</thead>
-	<tbody>
-		{{#foreach from=$immo_lines item="line"}}
-
-		{{if $unhide == null}}
-			{{if $status == "ignored"}}
-				{{:continue}}
-			{{/if}}
-		{{else}}
-			{{* vérifier si le libellé aurait pu être filtré *}}
-			{{#foreach from=$module.config.filters item="filter"}}
-				{{if $trans_label|strpos:$filter !== false}}
-					{{:assign status="ignored"}}
-				{{else}}
-					{{:assign status=""}}
-				{{/if}}
-			{{/foreach}}
-		{{/if}}
-
-		{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.immo_trans_id}}
-		{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.trans_id_year}}
-		{{:assign reste="%d-%d"|math:$line.debit:$line.amount}}
-		<tr {{if $status == "ignored"}}class="ignored"{{/if}}>
-			<td class="num"><a href="{{$trans_url}}">#{{$line.immo_trans_id}}</a></td>
-			<td class="nombre">{{$line.immo_line_id}}</td>
-			<td>{{$trans_date|date_short}}</td>
-			<td>{{$line.trans_label}}{{if $line.line_label != null && $line.line_label != $line.trans_label}} — {{$line.line_label}}{{/if}}</td>
-			<td class="money">{{"%f"|math:$line.debit|money_html:false|raw}}</td>
-			<td class="money">{{"%f"|math:$line.amount|money_html:false|raw}}</td>
-			<td class="money">{{"%f"|math:$reste|money_html:false|raw}}</td>
-			<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
-			<td>{{$line.account_label}}</td>
-			<td class="actions">
-				{{:linkbutton
-					label="Paramètres"
-					href="add_infos.html?immo_line_id=%s"|args:$immo_line_id
-					shape="settings"
-					target="_dialog"
-				}}
-			</td>
-		</tr>
-	{{/foreach}}
-	</tbody>
-</table>
+	<table class="list">
+		<thead>
+			<tr>
+				<th class="num">N°</th>
+				<th class="nombre">Ligne</th>
+				<th>Date</th>
+				<th>Libellé</th>
+				<th class="nombre">Montant</th>
+				<th class="nombre">Affecté</th>
+				<th class="nombre">Reste</th>
+				<th>N° compte</th>
+				<th>Compte</th>
+				<th class="actions"></th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#foreach from=$immo_lines item="line"}}
+			{{:assign trans_url="%s/acc/transactions/details.php?id=%s"|args:$admin_url:$line.immo_trans_id}}
+			{{:assign compte_url="%s/acc/accounts/journal.php?id=%s&year=%s"|args:$admin_url:$line.account_id:$line.trans_id_year}}
+			{{:assign reste="%d-%d"|math:$line.debit:$line.amount}}
+			<tr {{if $status == "ignored"}}class="ignored"{{/if}}>
+				<td class="num"><a href="{{$trans_url}}">#{{$line.immo_trans_id}}</a></td>
+				<td class="nombre">{{$line.immo_line_id}}</td>
+				<td>{{$trans_date|date_short}}</td>
+				<td>{{$line.trans_label}}{{if $line.line_label != null && $line.line_label != $line.trans_label}} — {{$line.line_label}}{{/if}}</td>
+				<td class="money">{{"%f"|math:$line.debit|money_html:false|raw}}</td>
+				<td class="money">{{"%f"|math:$line.amount|money_html:false|raw}}</td>
+				<td class="money">{{"%f"|math:$reste|money_html:false|raw}}</td>
+				<td><a href="{{$compte_url}}">{{$line.account_code}}</a></td>
+				<td>{{$line.account_label}}</td>
+				<td class="actions">
+					{{:linkbutton
+						label="Paramètres"
+						href="add_infos.html?immo_line_id=%s"|args:$immo_line_id
+						shape="settings"
+						target="_dialog"
+					}}
+				</td>
+			</tr>
+		{{/foreach}}
+		</tbody>
+	</table>
 {{else}}
 	<p class="block alert">Aucune immobilisation</p>
 {{/if}}
