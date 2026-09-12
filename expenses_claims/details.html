@@ -22,8 +22,10 @@
 		{{if $claim.user_id !== $logged_user.id}}
 			{{:error message="L'accès à cette note de frais est interdit"}}
 		{{/if}}
-		{{:assign can_write=true}}
 	{{/restrict}}
+	{{if $claim.user_id === $logged_user.id}}
+		{{:assign can_write=true}}
+	{{/if}}
 {{/restrict}}
 
 {{if $can_write}}
